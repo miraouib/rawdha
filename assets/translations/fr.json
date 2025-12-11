@@ -1,0 +1,200 @@
+{
+    "app_name": "روضتي - Rawdhati",
+    "welcome": "Bienvenue",
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "manager": {
+        "title": "Espace Manager",
+        "username": "Nom d'utilisateur",
+        "password": "Mot de passe",
+        "login_button": "Se connecter",
+        "device_not_authorized": "Appareil non autorisé",
+        "dashboard": "Tableau de bord",
+        "welcome": "Bienvenue",
+        "dashboard_subtitle": "Tableau de bord de gestion",
+        "quick_actions": "Accès rapides",
+        "stats": {
+            "students": "Élèves",
+            "employees": "Employés",
+            "payments": "Paiements",
+            "classes": "Classes"
+        },
+        "actions": {
+            "manage_students": "Gestion des élèves",
+            "manage_students_desc": "Ajouter, modifier, consulter",
+            "manage_parents": "Gestion des parents",
+            "manage_parents_desc": "Codes d'accès, liaison enfants",
+            "manage_modules": "Modules pédagogiques",
+            "manage_modules_desc": "Créer et assigner des modules",
+            "manage_payments": "Paiements",
+            "manage_payments_desc": "Suivi des paiements mensuels",
+            "manage_classes": "Classes & Niveaux",
+            "manage_classes_desc": "Groupes, niveaux, maîtresses",
+            "manage_hr": "Ressources Humaines",
+            "manage_hr_desc": "Employés, absences, salaires",
+            "manage_finance": "Gestion Financière",
+            "manage_finance_desc": "Suivi des revenus et charges",
+            "to_implement": "À implémenter"
+        }
+    },
+    "announcements": {
+        "title": "Annonces",
+        "new_announcement": "Nouvelle Annonce",
+        "form_title": "Créer une Annonce",
+        "field_title": "Titre",
+        "field_content": "Contenu",
+        "field_tag": "Type",
+        "field_dates": "Période (Max 14 jours)",
+        "tags": {
+            "info": "Information",
+            "warning": "Urgent",
+            "event": "Événement"
+        },
+        "errors": {
+            "overlap": "Une autre annonce est déjà active sur cette période.",
+            "max_duration": "La durée ne doit pas dépasser 14 jours.",
+            "past_date": "La date de début doit être future ou aujourd'hui."
+        },
+        "status": {
+            "active": "Active",
+            "scheduled": "Programmée",
+            "past": "Passée"
+        }
+    },
+    "parent": {
+        "title": "Espace Parent",
+        "enter_code": "Entrez votre code unique",
+        "code_placeholder": "• • • • • •",
+        "login_button": "Se connecter",
+        "invalid_code": "Code invalide",
+        "my_children": "Mes enfants",
+        "child_details": "Détails de l'enfant"
+    },
+    "student": {
+        "students": "Élèves",
+        "add_student": "Ajouter un élève",
+        "first_name": "Prénom",
+        "last_name": "Nom",
+        "class": "Classe",
+        "level": "Niveau",
+        "monthly_fee": "Frais mensuels",
+        "present": "Présent",
+        "absent": "Absent"
+    },
+    "module": {
+        "management_title": "Modules Pédagogiques",
+        "new_module": "Nouveau Module",
+        "module_of_week": "Module de la semaine",
+        "title": "Titre",
+        "letter": "Lettre",
+        "word": "Mot",
+        "number": "Chiffre",
+        "color": "Couleur",
+        "prayer": "Doua",
+        "song": "Coran / Anachid",
+        "description": "Description",
+        "active_label": "Module Actif En Ce Moment",
+        "active_badge": "ACTIVÉ",
+        "no_active_module": "Aucun module actif",
+        "no_active_desc": "Activez un module existant ou créez-en un nouveau.",
+        "manage_all": "Gérer / Voir tous les modules",
+        "all_modules": "Tous les Modules",
+        "period_label": "Période du Module",
+        "select_dates": "Sélectionner les dates",
+        "save_btn": "Enregistrer le Module",
+        "edit_btn": "Modifier",
+        "period_format": "Du {} au {} ({} jours)"
+    },
+    "levels": {
+        "level_3": "Petite Section (3 Ans)",
+        "level_3_desc": "Enfants de 3 ans",
+        "level_4": "Moyenne Section (4 Ans)",
+        "level_4_desc": "Enfants de 4 ans",
+        "level_5": "Grande Section (5 Ans)",
+        "level_5_desc": "Enfants de 5 ans / Préparatoire"
+    },
+    "absence": {
+        "absence": "Absence",
+        "start_date": "Date début",
+        "end_date": "Date fin",
+        "cause": "Cause",
+        "add_absence": "Ajouter une absence"
+    },
+    "payment": {
+        "payments": "Paiements",
+        "paid": "Payé",
+        "partial": "Partiel",
+        "unpaid": "Non payé",
+        "amount": "Montant",
+        "month": "Mois"
+    },
+    "finance": {
+        "title": "Gestion Financière",
+        "expenses": "Dépenses (Charges)",
+        "revenue": "Revenus (Paiements)",
+        "new_expense": "Nouvelle Charge",
+        "new_payment": "Nouveau Paiement",
+        "add_revenue": "Ajouter Revenu",
+        "record_revenue": "Enregistrer un Revenu",
+        "search_parent": "Rechercher un parent",
+        "parent": "Parent",
+        "results": "résultats",
+        "expected_amount": "Montant Dû",
+        "amount_paid": "Montant Payé",
+        "payment_date": "Date de paiement",
+        "note": "Note",
+        "note_optional": "Note (Optionnel)",
+        "required": "Requis",
+        "invalid": "Invalide",
+        "select_parent": "Veuillez sélectionner un parent",
+        "payment_saved": "Paiement enregistré",
+        "status_paid": "Payé (Vert)",
+        "status_partial": "Partiel (Orange)",
+        "status_unpaid": "Non Payé (Rouge)",
+        "total_expenses": "Total Charges",
+        "total_revenue": "Total Revenus",
+        "no_expenses": "Aucune dépense ce mois-ci",
+        "no_revenue": "Aucun paiement ce mois-ci",
+        "month_details": "Détails du mois",
+        "currency": "TND",
+        "expense_types": {
+            "salary": "Salaires",
+            "cleaning": "Nettoyage",
+            "school_supplies": "Fournitures scolaires",
+            "rent": "Loyer",
+            "utilities": "Services publics",
+            "other": "Autre"
+        }
+    },
+    "employee": {
+        "employees": "Employés",
+        "add_employee": "Ajouter un employé",
+        "salary": "Salaire",
+        "phone": "Téléphone",
+        "birthdate": "Date de naissance"
+    },
+    "school": {
+        "levels_management": "Gestion des Niveaux",
+        "class_name_label": "Nom de la classe (ex: Groupe A)",
+        "capacity_label": "Capacité",
+        "teacher_label": "Maîtresse / Éducatrice",
+        "no_teacher": "Aucune",
+        "add_class": "Ajouter classe",
+        "edit_class": "Modifier classe",
+        "class_added": "Classe ajoutée",
+        "class_updated": "Classe modifiée",
+        "no_classes": "Aucune classe dans ce niveau",
+        "add_first_class": "Ajouter une classe"
+    },
+    "common": {
+        "save": "Enregistrer",
+        "cancel": "Annuler",
+        "delete": "Supprimer",
+        "edit": "Modifier",
+        "search": "Rechercher",
+        "filter": "Filtrer",
+        "loading": "Chargement...",
+        "error": "Erreur",
+        "success": "Succès"
+    }
+}

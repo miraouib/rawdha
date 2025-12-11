@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "56073575416",
+    "project_id": "rawdha-2d4e1",
+    "storage_bucket": "rawdha-2d4e1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:56073575416:android:7b44d046992b8f0de3540d",
+        "android_client_info": {
+          "package_name": "com.rawdha.rawdha"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuB7MEcKQFldUgvVXvH0MYhS9sRh7LZ3o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

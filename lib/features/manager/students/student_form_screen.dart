@@ -21,7 +21,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
-  final _monthlyFeeController = TextEditingController();
+  // final _monthlyFeeController = TextEditingController(); // Removed per request
   String _gender = 'boy';
   String? _selectedLevelId;
   String? _selectedParentId;
@@ -39,13 +39,13 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
     if (widget.student != null) {
       _firstNameController.text = widget.student!.firstName;
       _lastNameController.text = widget.student!.lastName;
-      _monthlyFeeController.text = widget.student!.monthlyFee.toString(); 
+      // _monthlyFeeController.text = widget.student!.monthlyFee.toString(); 
       _gender = widget.student!.gender;
       _selectedLevelId = widget.student!.levelId.isNotEmpty ? widget.student!.levelId : null;
       _selectedParentId = widget.student!.parentIds.isNotEmpty ? widget.student!.parentIds.first : null;
       _birthdate = widget.student!.birthdate;
     } else {
-      _monthlyFeeController.text = '0.0'; 
+      // _monthlyFeeController.text = '0.0'; 
     }
   }
 
@@ -53,7 +53,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
   void dispose() {
     _firstNameController.dispose();
     _lastNameController.dispose();
-    _monthlyFeeController.dispose();
+    // _monthlyFeeController.dispose();
     super.dispose();
   }
 
@@ -94,7 +94,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
         levelId: _selectedLevelId!,
         classId: '', // Class assignment later
         encryptedMonthlyFee: '', // Fee later
-        monthlyFee: double.tryParse(_monthlyFeeController.text.trim()) ?? 0.0,
+        monthlyFee: 0.0, // Removed from form, defaults to 0
         birthdate: _birthdate,
         photoUrl: widget.student?.photoUrl,
         createdAt: widget.student?.createdAt ?? DateTime.now(),
@@ -181,6 +181,8 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
               validator: (v) => v!.isEmpty ? 'Requis' : null,
             ),
             const SizedBox(height: 12),
+            // Monthly fee field removed
+            /*
             TextFormField(
               controller: _monthlyFeeController,
               keyboardType: TextInputType.number,
@@ -192,6 +194,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
               },
             ),
             const SizedBox(height: 12),
+            */
             Row(
               children: [
                 Expanded(

@@ -59,7 +59,8 @@
             "active": "Active",
             "scheduled": "Programmée",
             "past": "Passée"
-        }
+        },
+        "confirm_delete": "Voulez-vous vraiment supprimer cette annonce ?"
     },
     "parent": {
         "title": "Espace Parent",
@@ -68,7 +69,8 @@
         "login_button": "Se connecter",
         "invalid_code": "Code invalide",
         "my_children": "Mes enfants",
-        "child_details": "Détails de l'enfant"
+        "child_details": "Détails de l'enfant",
+        "monthly_fee_label": "Montant Mensuel Fixe (Optionnel)"
     },
     "student": {
         "students": "Élèves",
@@ -195,6 +197,7 @@
         "filter": "Filtrer",
         "loading": "Chargement...",
         "error": "Erreur",
-        "success": "Succès"
+        "success": "Succès",
+        "total": "Total"
     }
 }

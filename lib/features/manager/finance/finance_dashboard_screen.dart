@@ -33,7 +33,12 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> with Si
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
+    _tabController.animation?.addListener(_handleTabChange);
+  }
+
+  void _handleTabChange() {
+    setState(() {});
   }
 
   @override
@@ -59,6 +64,7 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> with Si
           tabs: [
             Tab(text: 'finance.expenses'.tr()),
             Tab(text: 'finance.revenue'.tr()),
+            Tab(text: "Non Payés"), // Localize later if needed or add key
           ],
         ),
       ),
@@ -67,25 +73,28 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> with Si
         children: [
           _buildExpensesTab(),
           _buildRevenueTab(),
+          _buildUnpaidTab(),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButtonLocation: (_tabController.animation?.value ?? 0) > 0.5 && (_tabController.animation?.value ?? 0) < 1.5
+          ? FloatingActionButtonLocation.startFloat 
+          : FloatingActionButtonLocation.endFloat,
+      floatingActionButton: (_tabController.index == 2) ? null : FloatingActionButton(
         onPressed: () {
-          if (_tabController.index == 0) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ExpenseFormScreen()),
-            );
-          } else {
+          if ((_tabController.animation?.value ?? 0) > 0.5) {
              Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const RevenueFormScreen()),
             );
+          } else {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ExpenseFormScreen()),
+            );
           }
         },
-        label: Text(_tabController.index == 0 ? 'finance.new_expense'.tr() : 'finance.new_payment'.tr()),
-        icon: const Icon(Icons.add),
-        backgroundColor: _tabController.index == 0 ? AppTheme.accentOrange : AppTheme.primaryBlue,
+        backgroundColor: (_tabController.animation?.value ?? 0) > 0.5 ? AppTheme.primaryBlue : AppTheme.accentOrange,
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -238,6 +247,109 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> with Si
           Text('finance.no_revenue'.tr(), style: const TextStyle(fontSize: 18, color: Colors.grey)),
         ],
       ),
+    );
+  }
+
+  Widget _buildUnpaidTab() {
+    return Column(
+      children: [
+        // Month Selector
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          color: Colors.white,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(onPressed: () => _changeMonth(-1), icon: const Icon(Icons.chevron_left)),
+              Text(
+                DateFormat('MMMM yyyy', 'fr_FR').format(_currentMonth).toUpperCase(),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              IconButton(onPressed: () => _changeMonth(1), icon: const Icon(Icons.chevron_right)),
+            ],
+          ),
+        ),
+        
+        // Search Bar
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: TextField(
+            decoration: InputDecoration(
+              hintText: 'Rechercher un parent', // Localize if possible
+              prefixIcon: const Icon(Icons.search),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+            ),
+            onChanged: (value) => setState(() => _revenueSearchQuery = value.toLowerCase()),
+          ),
+        ),
+        
+        Expanded(
+          child: StreamBuilder<List<ParentModel>>(
+            stream: _parentService.getParents(),
+            builder: (context, parentSnapshot) {
+              if (!parentSnapshot.hasData) return const Center(child: CircularProgressIndicator());
+              final allParents = parentSnapshot.data!;
+
+              return StreamBuilder<List<PaymentModel>>(
+                stream: _paymentService.getPaymentsByMonth(_currentMonth.month, _currentMonth.year),
+                builder: (context, paymentSnapshot) {
+                  if (paymentSnapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  final payments = paymentSnapshot.data ?? [];
+                  final paidParentIds = payments.map((p) => p.parentId).toSet();
+
+                  final unpaidParents = allParents.where((p) {
+                    if (paidParentIds.contains(p.id)) return false; // Already has a record
+                    
+                    if (_revenueSearchQuery.isNotEmpty) {
+                      final fullName = '${p.firstName} ${p.lastName}'.toLowerCase();
+                     if (!fullName.contains(_revenueSearchQuery)) return false;
+                    }
+                    return true;
+                  }).toList();
+
+                  if (unpaidParents.isEmpty) {
+                    return const Center(child: Text('Tout le monde a payé ! 🎉', style: TextStyle(fontSize: 18, color: Colors.grey)));
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: unpaidParents.length,
+                    itemBuilder: (context, index) {
+                      final parent = unpaidParents[index];
+                      // Calculate expected amount if possible (or just show stored monthly fee)
+                      final monthlyFee = parent.monthlyFee ?? 0.0; // Simple fallback
+                      
+                      return Card(
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.red.withOpacity(0.1),
+                            child: const Icon(Icons.warning, color: Colors.red),
+                          ),
+                          title: Text('${parent.firstName} ${parent.lastName}'),
+                          subtitle: Text('Montant attendu: ${monthlyFee > 0 ? monthlyFee : "??"} TND'),
+                          trailing: ElevatedButton(
+                            child: const Text('Payer'),
+                            onPressed: () {
+                              Navigator.push(
+                                context, 
+                                MaterialPageRoute(builder: (context) => RevenueFormScreen(parentId: parent.id))
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 

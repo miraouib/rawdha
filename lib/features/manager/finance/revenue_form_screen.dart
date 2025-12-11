@@ -59,20 +59,69 @@ class _RevenueFormScreenState extends State<RevenueFormScreen> {
     }
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
+  Future<void> _showMonthPicker(BuildContext context) async {
+    int tempYear = _selectedYear;
+    await showDialog(
       context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2030),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.chevron_left),
+                  onPressed: () => setState(() => tempYear--),
+                ),
+                Text('$tempYear', style: const TextStyle(fontWeight: FontWeight.bold)),
+                IconButton(
+                  icon: const Icon(Icons.chevron_right),
+                  onPressed: () => setState(() => tempYear++),
+                ),
+              ],
+            ),
+            content: SizedBox(
+              width: 300,
+              height: 300,
+              child: GridView.count(
+                crossAxisCount: 3,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+                childAspectRatio: 1.5,
+                children: List.generate(12, (index) {
+                  final month = index + 1;
+                  final isSelected = month == _selectedMonth && tempYear == _selectedYear;
+                  return InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                      this.setState(() {
+                         _selectedYear = tempYear;
+                         _selectedMonth = month;
+                         _selectedDate = DateTime(tempYear, month, 1);
+                      });
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppTheme.primaryBlue : Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        DateFormat('MMM', 'fr').format(DateTime(2022, month)),
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          );
+        },
+      ),
     );
-    if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-        _selectedMonth = picked.month;
-        _selectedYear = picked.year;
-      });
-    }
   }
 
   Color _getStatusColor() {
@@ -241,13 +290,13 @@ class _RevenueFormScreenState extends State<RevenueFormScreen> {
                       const SizedBox(height: 16),
 
                       // Date
-                      InkWell(
-                        onTap: () => _selectDate(context),
-                        child: InputDecorator(
-                          decoration: InputDecoration(labelText: 'finance.payment_date'.tr(), prefixIcon: const Icon(Icons.calendar_today)),
-                          child: Text(DateFormat('dd/MM/yyyy').format(_selectedDate)),
+                        InkWell(
+                          onTap: () => _showMonthPicker(context),
+                          child: InputDecorator(
+                            decoration: InputDecoration(labelText: 'Mois Concerné', prefixIcon: const Icon(Icons.calendar_month)),
+                            child: Text(DateFormat('MM-yyyy').format(_selectedDate), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          ),
                         ),
-                      ),
                       const SizedBox(height: 16),
                       
                       // Note

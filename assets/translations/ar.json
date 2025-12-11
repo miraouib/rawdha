@@ -59,7 +59,8 @@
             "active": "نشط",
             "scheduled": "مجدول",
             "past": "منتهي"
-        }
+        },
+        "confirm_delete": "هل أنت متأكد أنك تريد حذف هذا الإعلان؟"
     },
     "parent": {
         "title": "مساحة الوالدين",
@@ -68,7 +69,8 @@
         "login_button": "تسجيل الدخول",
         "invalid_code": "رمز غير صالح",
         "my_children": "أطفالي",
-        "child_details": "تفاصيل الطفل"
+        "child_details": "تفاصيل الطفل",
+        "monthly_fee_label": "رسوم شهرية ثابتة (اختياري)"
     },
     "student": {
         "students": "التلاميذ",
@@ -195,6 +197,7 @@
         "filter": "تصفية",
         "loading": "جاري التحميل...",
         "error": "خطأ",
-        "success": "نجاح"
+        "success": "نجاح",
+        "total": "المجموع"
     }
 }

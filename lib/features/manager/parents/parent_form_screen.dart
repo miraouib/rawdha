@@ -188,10 +188,9 @@ class _ParentFormScreenState extends State<ParentFormScreen> {
                 controller: _monthlyFeeController,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
-                  labelText: 'Montant Mensuel Fixe (Optionnel)',
+                  labelText: 'parent.monthly_fee_label'.tr(),
                   prefixIcon: Icon(Icons.monetization_on),
-                  hintText: 'Laisser vide pour calculer via les élèves',
-                  helperText: 'Si renseigné, remplace le calcul automatique',
+
                 ),
               ),
               

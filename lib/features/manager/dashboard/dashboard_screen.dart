@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_theme.dart';
 import '../employees/hr_management_screen.dart';
 import '../school/school_management_screen.dart';
@@ -12,8 +13,41 @@ import '../announcements/announcement_list_screen.dart';
 /// Dashboard Manager
 /// 
 /// Écran principal après connexion manager avec statistiques et accès rapides
-class ManagerDashboardScreen extends StatelessWidget {
+class ManagerDashboardScreen extends StatefulWidget {
   const ManagerDashboardScreen({super.key});
+
+  @override
+  State<ManagerDashboardScreen> createState() => _ManagerDashboardScreenState();
+}
+
+class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
+  bool _isGridView = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadViewPreference();
+  }
+
+  Future<void> _loadViewPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _isGridView = prefs.getBool('dashboard_is_grid') ?? false;
+      });
+    }
+  }
+
+  Future<void> _toggleView() async {
+    final prefs = await SharedPreferences.getInstance();
+    final newValue = !_isGridView;
+    await prefs.setBool('dashboard_is_grid', newValue);
+    if (mounted) {
+      setState(() {
+        _isGridView = newValue;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +58,12 @@ class ManagerDashboardScreen extends StatelessWidget {
         actions: [
           // Sélecteur de langue
           _LanguageSelector(),
+          const SizedBox(width: 8),
+          IconButton(
+            icon: Icon(_isGridView ? Icons.view_list : Icons.grid_view),
+            onPressed: _toggleView,
+            tooltip: _isGridView ? 'Vue Liste' : 'Vue Grille', // Could be localized
+          ),
           const SizedBox(width: 8),
           IconButton(
             icon: const Icon(Icons.logout),
@@ -44,19 +84,13 @@ class ManagerDashboardScreen extends StatelessWidget {
               '${'manager.welcome'.tr()}, Admin',
               style: Theme.of(context).textTheme.displaySmall,
             ),
-            const SizedBox(height: 8),
-            Text(
-              'manager.dashboard_subtitle'.tr(),
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppTheme.textGray,
-              ),
-            ),
+           
             const SizedBox(height: 32),
             
-            // Cartes de statistiques
-            _buildStatsCards(),
+            // Cartes de statistiques supprimées
+            // _buildStatsCards(),
             
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
             
             // Accès rapides
             Text(
@@ -72,225 +106,150 @@ class ManagerDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsCards() {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: _StatCard(
-                title: 'manager.stats.students'.tr(),
-                value: '0',
-                icon: Icons.school,
-                gradient: AppTheme.primaryGradient,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _StatCard(
-                title: 'manager.stats.employees'.tr(),
-                value: '0',
-                icon: Icons.people,
-                gradient: LinearGradient(
-                  colors: [AppTheme.accentTeal, AppTheme.accentGreen],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _StatCard(
-                title: 'manager.stats.payments'.tr(),
-                value: '0',
-                icon: Icons.payments,
-                gradient: LinearGradient(
-                  colors: [AppTheme.accentOrange, AppTheme.accentYellow],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _StatCard(
-                title: 'manager.stats.classes'.tr(),
-                value: '0',
-                icon: Icons.class_,
-                gradient: AppTheme.parentGradient,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
+
 
   Widget _buildQuickActions(BuildContext context) {
-    return Column(
-      children: [
-        _QuickActionTile(
-          title: 'manager.actions.manage_classes'.tr(),
-          subtitle: 'manager.actions.manage_classes_desc'.tr(),
-          icon: Icons.school,
-          color: AppTheme.primaryPurple,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const SchoolManagementScreen(),
-              ),
-            );
-          },
+    // Defines actions data for simpler grid/list generation
+    final actions = [
+      _ActionData(
+        title: 'manager.actions.manage_classes'.tr(),
+        subtitle: 'manager.actions.manage_classes_desc'.tr(),
+        icon: Icons.school,
+        color: AppTheme.primaryPurple,
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SchoolManagementScreen())),
+      ),
+      _ActionData(
+        title: 'manager.actions.manage_students'.tr(),
+        subtitle: 'manager.actions.manage_students_desc'.tr(),
+        icon: Icons.school,
+        color: AppTheme.primaryBlue,
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentListScreen())),
+      ),
+      _ActionData(
+        title: 'manager.actions.manage_parents'.tr(),
+        subtitle: 'manager.actions.manage_parents_desc'.tr(),
+        icon: Icons.family_restroom,
+        color: AppTheme.accentPink,
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ParentListScreen())),
+      ),
+      _ActionData(
+        title: 'manager.actions.manage_modules'.tr(),
+        subtitle: 'manager.actions.manage_modules_desc'.tr(),
+        icon: Icons.book,
+        color: AppTheme.accentTeal,
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ModuleListScreen())),
+      ),
+      _ActionData(
+        title: 'manager.actions.manage_finance'.tr(),
+        subtitle: 'manager.actions.manage_finance_desc'.tr(),
+        icon: Icons.account_balance_wallet,
+        color: AppTheme.accentOrange,
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const FinanceDashboardScreen())),
+      ),
+      _ActionData(
+        title: 'announcements.title'.tr(),
+        subtitle: 'announcements.form_title'.tr(),
+        icon: Icons.notifications_active,
+        color: AppTheme.primaryPurple,
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AnnouncementListScreen())),
+      ),
+      _ActionData(
+        title: 'manager.actions.manage_hr'.tr(),
+        subtitle: 'manager.actions.manage_hr_desc'.tr(),
+        icon: Icons.badge,
+        color: AppTheme.accentGreen,
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const HRManagementScreen())),
+      ),
+    ];
+
+    if (_isGridView) {
+      return GridView.count(
+        crossAxisCount: 2,
+        shrinkWrap: true,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: 1.1, // Adjust as needed
+        physics: const NeverScrollableScrollPhysics(),
+        children: actions.map((action) => _QuickActionGridTile(action: action)).toList(),
+      );
+    } else {
+      return Column(
+        children: actions.map((action) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _QuickActionTile(
+              title: action.title,
+              subtitle: action.subtitle,
+              icon: action.icon,
+              color: action.color,
+              onTap: action.onTap,
+            ),
+          );
+        }).toList(),
+      );
+    }
+  }
+}
+
+class _ActionData {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  _ActionData({required this.title, required this.subtitle, required this.icon, required this.color, required this.onTap});
+}
+
+class _QuickActionGridTile extends StatelessWidget {
+  final _ActionData action;
+
+  const _QuickActionGridTile({required this.action});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: action.onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.borderColor),
+          boxShadow: AppTheme.cardShadow,
         ),
-        const SizedBox(height: 12),
-        _QuickActionTile(
-          title: 'manager.actions.manage_students'.tr(),
-          subtitle: 'manager.actions.manage_students_desc'.tr(),
-          icon: Icons.school,
-          color: AppTheme.primaryBlue,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const StudentListScreen(),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: action.color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
               ),
-            );
-          },
-        ),
-        const SizedBox(height: 12),
-        _QuickActionTile(
-          title: 'manager.actions.manage_parents'.tr(),
-          subtitle: 'manager.actions.manage_parents_desc'.tr(),
-          icon: Icons.family_restroom,
-          color: AppTheme.accentPink,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const ParentListScreen(),
+              child: Icon(action.icon, color: action.color, size: 32),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              action.title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
               ),
-            );
-          },
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
-        const SizedBox(height: 12),
-        _QuickActionTile(
-          title: 'manager.actions.manage_modules'.tr(),
-          subtitle: 'manager.actions.manage_modules_desc'.tr(),
-          icon: Icons.book,
-          color: AppTheme.accentTeal,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const ModuleListScreen(),
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 12),
-        _QuickActionTile(
-          title: 'manager.actions.manage_finance'.tr(),
-          subtitle: 'manager.actions.manage_finance_desc'.tr(),
-          icon: Icons.account_balance_wallet,
-          color: AppTheme.accentOrange,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const FinanceDashboardScreen(),
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 12),
-        _QuickActionTile(
-          title: 'announcements.title'.tr(), 
-          subtitle: 'announcements.form_title'.tr(), // Or a betterdesc
-          icon: Icons.notifications_active,
-          color: AppTheme.primaryPurple,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const AnnouncementListScreen(),
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 12),
-        _QuickActionTile(
-          title: 'manager.actions.manage_hr'.tr(),
-          subtitle: 'manager.actions.manage_hr_desc'.tr(),
-          icon: Icons.badge,
-          color: AppTheme.accentGreen,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const HRManagementScreen(),
-              ),
-            );
-          },
-        ),
-      ],
+      ),
     );
   }
 }
 
 /// Carte de statistique avec gradient
-class _StatCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-  final LinearGradient gradient;
 
-  const _StatCard({
-    required this.title,
-    required this.value,
-    required this.icon,
-    required this.gradient,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: gradient,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: AppTheme.gradientCardShadow,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: Colors.white, size: 32),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white.withOpacity(0.9),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 /// Tuile d'action rapide
 class _QuickActionTile extends StatelessWidget {

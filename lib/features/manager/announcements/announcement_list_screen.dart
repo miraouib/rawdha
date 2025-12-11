@@ -162,7 +162,7 @@ class AnnouncementListScreen extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('common.delete'.tr()),
-        content: const Text('Voulez-vous vraiment supprimer cette annonce ?'), // Should be tr()
+        content: Text('announcements.confirm_delete'.tr()),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text('common.cancel'.tr())),
           TextButton(

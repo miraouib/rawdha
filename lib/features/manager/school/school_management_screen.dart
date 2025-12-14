@@ -84,25 +84,15 @@ class _LevelCard extends StatelessWidget {
     }
 
     return GestureDetector(
-      onTap: () async {
-        // Logique "si 1 seule classe, lier directement"
-        final schoolService = SchoolService();
-        final classCount = await schoolService.countClassesInLevel(level.id);
-        
-        if (context.mounted) {
-          // Pour l'instant on ouvre toujours le détail du niveau
-          // Si on veut rediriger direct vers la classe unique, il faudrait
-          // récupérer l'ID de la classe unique et aller vers StudentListScreen
-          // Mais StudentListScreen n'existe pas encore.
-          // Donc on garde la navigation standard pour le moment.
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => LevelDetailScreen(level: level),
-            ),
-          );
-        }
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => LevelDetailScreen(level: level),
+          ),
+        );
       },
+
       child: Container(
         // height removed for dynamic sizing
         constraints: const BoxConstraints(minHeight: 140),

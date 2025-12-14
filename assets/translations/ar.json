@@ -1,4 +1,5 @@
 {
+    "version": "1.0",
     "app_name": "روضتي",
     "welcome": "مرحبا",
     "login": "تسجيل الدخول",
@@ -8,6 +9,7 @@
         "username": "اسم المستخدم",
         "password": "كلمة المرور",
         "login_button": "تسجيل الدخول",
+        "remember_me": "تذكرني",
         "device_not_authorized": "الجهاز غير مصرح",
         "dashboard": "لوحة القيادة",
         "welcome": "مرحبا",
@@ -186,7 +188,17 @@
         "class_added": "تمت إضافة القسم",
         "class_updated": "تم تعديل القسم",
         "no_classes": "لا توجد أقسام في هذا المستوى",
-        "add_first_class": "إضافة قسم"
+        "add_first_class": "إضافة قسم",
+        "configuration": "إعدادات المدرسة",
+        "config_desc": "الاسم، العنوان، الهاتف، الشعار",
+        "fields": {
+            "name": "اسم المدرسة",
+            "address": "العنوان",
+            "phone": "الهاتف",
+            "email": "البريد الإلكتروني",
+            "logo_url": "رابط الشعار",
+            "reg_number": "المعرف الجبائي"
+        }
     },
     "common": {
         "save": "حفظ",

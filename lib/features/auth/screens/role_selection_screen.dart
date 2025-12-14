@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_theme.dart';
 import 'manager_login_screen.dart';
@@ -65,12 +66,7 @@ class RoleSelectionScreen extends StatelessWidget {
                   icon: Icons.admin_panel_settings,
                   gradient: AppTheme.primaryGradient,
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ManagerLoginScreen(),
-                      ),
-                    );
+                    context.pushNamed('manager_login');
                   },
                 ),
                 const SizedBox(height: 16),
@@ -81,6 +77,7 @@ class RoleSelectionScreen extends StatelessWidget {
                   icon: Icons.family_restroom,
                   gradient: AppTheme.parentGradient,
                   onTap: () {
+                    // context.pushNamed('parent_login'); // Not yet configured in router?
                     Navigator.push(
                       context,
                       MaterialPageRoute(

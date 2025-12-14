@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../models/parent_model.dart';
 import '../../../services/parent_service.dart';
@@ -187,10 +188,9 @@ class _ParentFormScreenState extends State<ParentFormScreen> {
               TextFormField(
                 controller: _monthlyFeeController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'parent.monthly_fee_label'.tr(),
-                  prefixIcon: Icon(Icons.monetization_on),
-
+                  prefixIcon: const Icon(Icons.monetization_on),
                 ),
               ),
               

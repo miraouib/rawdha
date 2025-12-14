@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'core/theme/app_theme.dart';
-import 'features/auth/screens/role_selection_screen.dart';
+import 'core/theme/app_theme.dart';
+import 'core/router/app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,14 +30,17 @@ void main() async {
   );
 }
 
-class RawdhaApp extends StatelessWidget {
+class RawdhaApp extends ConsumerWidget {
   const RawdhaApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final goRouter = ref.watch(appRouterProvider);
+
+    return MaterialApp.router(
       title: 'app_name'.tr(),
       debugShowCheckedModeBanner: false,
+      routerConfig: goRouter,
       
       // Localisation
       localizationsDelegates: context.localizationDelegates,
@@ -45,9 +49,6 @@ class RawdhaApp extends StatelessWidget {
       
       // Thème
       theme: AppTheme.lightTheme,
-      
-      // Page d'accueil
-      home: const RoleSelectionScreen(),
     );
   }
 }

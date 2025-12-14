@@ -30,7 +30,9 @@ class PaymentModel {
   });
 
   PaymentStatus get status {
-    if (amount >= expectedAmount) return PaymentStatus.paid;
+    // Use a small epsilon for floating point comparison
+    const epsilon = 0.01;
+    if (amount >= expectedAmount - epsilon) return PaymentStatus.paid;
     if (amount > 0) return PaymentStatus.partial;
     return PaymentStatus.unpaid;
   }

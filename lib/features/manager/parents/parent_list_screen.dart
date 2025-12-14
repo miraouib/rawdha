@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart'; // For Clipboard
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/helpers/level_helper.dart';
 import '../../../models/parent_model.dart';
 import '../../../models/student_model.dart';
 import '../../../services/parent_service.dart';
@@ -116,10 +118,7 @@ class _ParentListScreenState extends State<ParentListScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const ParentFormScreen()),
-          );
+          context.pushNamed('parent_add');
         },
         label: const Text('Nouveau Parent'),
         icon: const Icon(Icons.add),
@@ -240,13 +239,17 @@ class _ParentCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton.icon(
+                  icon: const Icon(Icons.account_balance_wallet, size: 18),
+                  label: const Text('Paiements'),
+                  onPressed: () {
+                    context.pushNamed('parent_payment_history', extra: parent);
+                  },
+                ),
+                TextButton.icon(
                   icon: const Icon(Icons.edit, size: 18),
                   label: const Text('Modifier'),
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => ParentFormScreen(parent: parent)),
-                    );
+                    context.pushNamed('parent_edit', extra: parent);
                   },
                 ),
               ],
@@ -328,7 +331,7 @@ class _ParentChildrenList extends StatelessWidget {
                 child: student.photoUrl == null ? Text(student.firstName[0], style: const TextStyle(fontSize: 10)) : null,
               ),
               title: Text('${student.firstName} ${student.lastName}'),
-              subtitle: Text(student.levelId.isNotEmpty ? student.levelId : 'Niveau ?'),
+              subtitle: Text(student.levelId.isNotEmpty ? LevelHelper.getLevelName(student.levelId) : 'Niveau ?'),
               trailing: const Icon(Icons.chevron_right, size: 16),
               onTap: () {
                 // Future: Navigate to student detail

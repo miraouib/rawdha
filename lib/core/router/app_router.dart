@@ -1,0 +1,163 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../features/auth/screens/role_selection_screen.dart';
+import '../../features/auth/screens/manager_login_screen.dart';
+import '../../features/auth/screens/parent_login_screen.dart'; // Import this
+import '../../features/manager/dashboard/dashboard_screen.dart';
+import '../../features/manager/students/student_list_screen.dart';
+import '../../features/manager/students/student_form_screen.dart'; // Import form
+import '../../features/manager/students/student_detail_screen.dart'; // Import detail
+import '../../features/manager/parents/parent_list_screen.dart';
+
+import '../../features/manager/parents/parent_form_screen.dart'; // Import form
+import '../../features/manager/finance/finance_dashboard_screen.dart';
+import '../../features/manager/finance/expense_form_screen.dart'; // Import expense form
+import '../../features/manager/finance/revenue_form_screen.dart'; // Import revenue form
+import '../../features/manager/finance/parent_payment_history_screen.dart'; // Import payment history
+import '../../features/manager/modules/module_list_screen.dart';
+import '../../features/manager/announcements/announcement_list_screen.dart';
+import '../../features/manager/school/school_management_screen.dart';
+import '../../features/manager/settings/school_config_screen.dart';
+import '../../features/manager/employees/hr_management_screen.dart';
+import '../../models/student_model.dart';
+import '../../models/parent_model.dart';
+
+final appRouterProvider = Provider<GoRouter>((ref) {
+  return GoRouter(
+    initialLocation: '/',
+    routes: [
+      // Role Selection (Home)
+      GoRoute(
+        path: '/',
+        name: 'role_selection',
+        builder: (context, state) => const RoleSelectionScreen(),
+      ),
+
+      // Manager Auth
+      GoRoute(
+        path: '/login/manager',
+        name: 'manager_login',
+        builder: (context, state) => const ManagerLoginScreen(),
+      ),
+      
+      // Parent Auth (Added)
+      GoRoute(
+        path: '/login/parent',
+        name: 'parent_login',
+        builder: (context, state) => const ParentLoginScreen(),
+      ),
+
+      // Manager Dashboard & Features
+      GoRoute(
+        path: '/dashboard',
+        name: 'manager_dashboard',
+        builder: (context, state) => const ManagerDashboardScreen(),
+        routes: [
+          GoRoute(
+            path: 'student-detail',
+            name: 'student_detail',
+            builder: (context, state) {
+               final student = state.extra as StudentModel;
+               return StudentDetailScreen(student: student);
+            }
+          ),
+          GoRoute(
+            path: 'parent-payment-history',
+            name: 'parent_payment_history',
+            builder: (context, state) {
+               final parent = state.extra as ParentModel;
+               return ParentPaymentHistoryScreen(parent: parent);
+            }
+          ),
+          GoRoute(
+            path: 'students',
+            name: 'student_list',
+            builder: (context, state) => const StudentListScreen(),
+            routes: [
+               GoRoute(
+                 path: 'add',
+                 name: 'student_add',
+                 builder: (context, state) => const StudentFormScreen(),
+               ),
+               GoRoute(
+                 path: 'edit',
+                 name: 'student_edit',
+                 builder: (context, state) {
+                    final student = state.extra as StudentModel;
+                    return StudentFormScreen(student: student);
+                 }
+               )
+            ],
+          ),
+          GoRoute(
+            path: 'parents',
+            name: 'parent_list',
+            builder: (context, state) => const ParentListScreen(),
+            routes: [
+               GoRoute(
+                 path: 'add',
+                 name: 'parent_add',
+                 builder: (context, state) => const ParentFormScreen(),
+               ),
+               GoRoute(
+                 path: 'edit',
+                 name: 'parent_edit',
+                 builder: (context, state) {
+                    final parent = state.extra as ParentModel;
+                    return ParentFormScreen(parent: parent);
+                 }
+               )
+            ],
+          ),
+          GoRoute(
+            path: 'finance',
+            name: 'finance_dashboard',
+            builder: (context, state) => const FinanceDashboardScreen(),
+            routes: [
+               GoRoute(
+                 path: 'expense/add', // Add expense
+                 name: 'expense_add',
+                 builder: (context, state) => const ExpenseFormScreen(),
+               ),
+               GoRoute(
+                 path: 'revenue/add', // Add revenue
+                 name: 'revenue_add',
+                 builder: (context, state) {
+                    final parentId = state.extra as String?;
+                    return RevenueFormScreen(parentId: parentId);
+                 },
+               ),
+            ],
+          ),
+          GoRoute(
+            path: 'modules',
+            name: 'module_list',
+            builder: (context, state) => const ModuleListScreen(),
+          ),
+          GoRoute(
+            path: 'announcements',
+            name: 'announcement_list',
+            builder: (context, state) => const AnnouncementListScreen(),
+          ),
+          GoRoute(
+            path: 'school-config', // Classes Management
+            name: 'school_management',
+            builder: (context, state) => const SchoolManagementScreen(),
+          ),
+          GoRoute(
+            path: 'settings', // Global Config
+            name: 'school_settings',
+            builder: (context, state) => const SchoolConfigScreen(),
+          ),
+           GoRoute(
+            path: 'hr', 
+            name: 'hr_management',
+            builder: (context, state) => const HRManagementScreen(),
+          ),
+        ],
+      ),
+    ],
+  );
+});

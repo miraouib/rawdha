@@ -10,7 +10,6 @@ class StudentModel {
   final String gender; // 'boy' ou 'girl'
   final List<String> parentIds; // IDs des parents
   final String levelId; // ID du niveau (Tamhidi, Ta7dhiri, etc.)
-  final String classId; // ID de la classe
   final String encryptedMonthlyFee; // Frais mensuels chiffrés
   final double monthlyFee; // Frais mensuels (non chiffrés pour MVP)
   final DateTime? birthdate;
@@ -25,7 +24,6 @@ class StudentModel {
     required this.gender,
     required this.parentIds,
     required this.levelId,
-    required this.classId,
     required this.encryptedMonthlyFee,
     this.monthlyFee = 0.0,
     this.birthdate,
@@ -43,7 +41,6 @@ class StudentModel {
       gender: data['gender'] ?? 'boy',
       parentIds: List<String>.from(data['parentIds'] ?? []),
       levelId: data['levelId'] ?? '',
-      classId: data['classId'] ?? '',
       encryptedMonthlyFee: data['encryptedMonthlyFee'] ?? '',
       monthlyFee: (data['monthlyFee'] ?? 0).toDouble(),
       birthdate: (data['birthdate'] as Timestamp?)?.toDate(),
@@ -61,7 +58,6 @@ class StudentModel {
       'gender': gender,
       'parentIds': parentIds,
       'levelId': levelId,
-      'classId': classId,
       'encryptedMonthlyFee': encryptedMonthlyFee,
       'monthlyFee': monthlyFee,
       'birthdate': birthdate != null ? Timestamp.fromDate(birthdate!) : null,
@@ -87,7 +83,6 @@ class StudentModel {
     String? gender,
     List<String>? parentIds,
     String? levelId,
-    String? classId,
     String? encryptedMonthlyFee,
     double? monthlyFee,
     DateTime? birthdate,
@@ -102,7 +97,6 @@ class StudentModel {
       gender: gender ?? this.gender,
       parentIds: parentIds ?? this.parentIds,
       levelId: levelId ?? this.levelId,
-      classId: classId ?? this.classId,
       encryptedMonthlyFee: encryptedMonthlyFee ?? this.encryptedMonthlyFee,
       monthlyFee: monthlyFee ?? this.monthlyFee,
       birthdate: birthdate ?? this.birthdate,

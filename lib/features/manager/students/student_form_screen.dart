@@ -92,7 +92,6 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
         gender: _gender,
         parentIds: [_selectedParentId!], // Linking logic
         levelId: _selectedLevelId!,
-        classId: '', // Class assignment later
         encryptedMonthlyFee: '', // Fee later
         monthlyFee: 0.0, // Removed from form, defaults to 0
         birthdate: _birthdate,
@@ -100,6 +99,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
         createdAt: widget.student?.createdAt ?? DateTime.now(),
         active: true,
       );
+
 
       if (widget.student == null) {
         await _studentService.addStudent(student);

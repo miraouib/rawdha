@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/student_model.dart';
-import '../core/encryption/encryption_service.dart';
+
+
 
 class StudentService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -22,17 +23,8 @@ class StudentService {
     });
   }
 
-  /// Récupérer les élèves d'une classe spécifique
-  Stream<List<StudentModel>> getStudentsByClass(String classId) {
-    return _studentsCollection
-        .where('classId', isEqualTo: classId)
-        .snapshots()
-        .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return StudentModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
-      }).toList();
-    });
-  }
+  // Method getStudentsByClass removed as class concept is deprecated
+
   
   /// Récupérer les élèves d'un niveau
   Stream<List<StudentModel>> getStudentsByLevel(String levelId) {

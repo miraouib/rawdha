@@ -1,54 +1,106 @@
 import 'package:flutter/material.dart';
-import 'package:easy_localization/easy_localization.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../models/school_level_model.dart';
-import '../../../models/school_class_model.dart';
-import '../../../services/school_service.dart';
-import 'class_form_dialog.dart';
+import '../../../models/student_model.dart';
+import '../../../services/student_service.dart';
+import '../../../services/parent_service.dart';
 
-/// Détails d'un niveau : Liste des classes
-class LevelDetailScreen extends StatelessWidget {
+/// Détails d'un niveau : Liste des élèves
+class LevelDetailScreen extends StatefulWidget {
   final SchoolLevelModel level;
 
   const LevelDetailScreen({super.key, required this.level});
 
   @override
-  Widget build(BuildContext context) {
-    final schoolService = SchoolService();
+  State<LevelDetailScreen> createState() => _LevelDetailScreenState();
+}
 
+class _LevelDetailScreenState extends State<LevelDetailScreen> {
+  final StudentService _studentService = StudentService();
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: Text('levels.${level.id}'.tr()),
+        title: Text('${widget.level.name} - Élèves'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => _showAddClassDialog(context, level.id),
+            onPressed: () {
+               context.pushNamed('student_add');
+            },
           ),
         ],
       ),
-      body: StreamBuilder<List<SchoolClassModel>>(
-        stream: schoolService.getClassesForLevel(level.id),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Rechercher un élève',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _searchQuery.isNotEmpty
+                  ? IconButton(icon: const Icon(Icons.clear), onPressed: () {
+                      _searchController.clear();
+                      setState(() => _searchQuery = '');
+                    })
+                  : null,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              ),
+              onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
+            ),
+          ),
+          Expanded(
+            child: StreamBuilder<List<StudentModel>>(
+              stream: _studentService.getStudentsByLevel(widget.level.id),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return _buildEmptyState(context);
-          }
+                if (snapshot.hasError) {
+                   return Center(child: Text('Erreur: ${snapshot.error}'));
+                }
 
-          final classes = snapshot.data!;
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return _buildEmptyState(context);
+                }
 
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: classes.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              return _ClassCard(classModel: classes[index]);
-            },
-          );
-        },
+                final students = snapshot.data!.where((s) {
+                  return s.firstName.toLowerCase().contains(_searchQuery) || 
+                         s.lastName.toLowerCase().contains(_searchQuery);
+                }).toList();
+
+                if (students.isEmpty) {
+                   return const Center(child: Text('Aucun résultat trouvé'));
+                }
+
+                return ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  itemCount: students.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final student = students[index];
+                    return _StudentCard(student: student);
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -58,36 +110,31 @@ class LevelDetailScreen extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.class_outlined, size: 80, color: AppTheme.textLight),
+          Icon(Icons.school_outlined, size: 80, color: AppTheme.textLight),
           const SizedBox(height: 16),
-          Text(
-            'school.no_classes'.tr(),
+          const Text(
+            'Aucun élève dans ce niveau',
             style: TextStyle(fontSize: 18, color: AppTheme.textGray),
           ),
           const SizedBox(height: 16),
           ElevatedButton.icon(
-            onPressed: () => _showAddClassDialog(context, level.id),
+            onPressed: () {
+               context.pushNamed('student_add');
+            },
             icon: const Icon(Icons.add),
-            label: Text('school.add_first_class'.tr()),
+            label: const Text('Ajouter un élève'),
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryBlue, foregroundColor: Colors.white),
           ),
         ],
       ),
     );
   }
-
-  void _showAddClassDialog(BuildContext context, String levelId) {
-    showDialog(
-      context: context,
-      builder: (context) => ClassFormDialog(levelId: levelId),
-    );
-  }
 }
 
-class _ClassCard extends StatelessWidget {
-  final SchoolClassModel classModel;
+class _StudentCard extends StatelessWidget {
+  final StudentModel student;
 
-  const _ClassCard({required this.classModel});
+  const _StudentCard({required this.student});
 
   @override
   Widget build(BuildContext context) {
@@ -95,34 +142,39 @@ class _ClassCard extends StatelessWidget {
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
         leading: CircleAvatar(
-          backgroundColor: AppTheme.accentPurple.withOpacity(0.1),
-          child: Icon(Icons.school, color: AppTheme.accentPurple),
+          backgroundImage: student.photoUrl != null ? NetworkImage(student.photoUrl!) : null,
+          child: student.photoUrl == null ? Text(student.firstName[0]) : null,
         ),
         title: Text(
-          classModel.name,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          '${student.firstName} ${student.lastName}',
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        subtitle: Text('Capacité: ${classModel.capacity} élèves'),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (student.parentIds.isNotEmpty)
+              FutureBuilder(
+                future: ParentService().getParentById(student.parentIds.first),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData && snapshot.data != null) {
+                    final parent = snapshot.data!;
+                    return Text(
+                      'Resp: ${parent.firstName} - ${parent.phone}',
+                      style: TextStyle(color: AppTheme.textGray, fontSize: 12),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+          ],
+        ),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         onTap: () {
-          // TODO: Naviguer vers la liste des élèves de cette classe
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Liste des élèves à venir...')),
-          );
-        },
-        onLongPress: () {
-          // TODO: Modifier/Supprimer la classe
-          showDialog(
-            context: context,
-            builder: (context) => ClassFormDialog(
-              levelId: classModel.levelId,
-              schoolClass: classModel,
-            ),
-          );
+          context.pushNamed('student_detail', extra: student);
         },
       ),
     );
   }
 }
+

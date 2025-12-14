@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/helpers/level_helper.dart';
 import '../../../models/student_model.dart';
 import '../../../models/student_model.dart';
 import '../../../models/school_level_model.dart';
 import '../../../services/student_service.dart';
 import '../../../services/school_service.dart';
-import 'student_form_screen.dart';
+import '../../../services/parent_service.dart';
+
 
 class StudentListScreen extends StatefulWidget {
   const StudentListScreen({super.key});
@@ -132,10 +135,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const StudentFormScreen()),
-          );
+          context.pushNamed('student_add');
         },
         label: const Text('Nouvel Élève'),
         icon: const Icon(Icons.add),
@@ -180,15 +180,32 @@ class _StudentCard extends StatelessWidget {
           '${student.firstName} ${student.lastName}',
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        subtitle: Text(student.levelId.isEmpty ? 'Niveau non défini' : student.levelId),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(student.levelId.isEmpty ? 'Niveau non défini' : LevelHelper.getLevelName(student.levelId)),
+            if (student.parentIds.isNotEmpty)
+              FutureBuilder(
+                future: ParentService().getParentById(student.parentIds.first),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData && snapshot.data != null) {
+                    final parent = snapshot.data!;
+                    return Text(
+                      'Resp: ${parent.firstName} - ${parent.phone}',
+                      style: TextStyle(color: AppTheme.textGray, fontSize: 12),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+          ],
+        ),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => StudentFormScreen(student: student)),
-          );
+          context.pushNamed('student_detail', extra: student);
         },
       ),
     );
   }
 }
+

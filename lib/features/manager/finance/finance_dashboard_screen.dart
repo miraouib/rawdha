@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../models/expense_model.dart';
@@ -82,15 +83,9 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> with Si
       floatingActionButton: (_tabController.index == 2) ? null : FloatingActionButton(
         onPressed: () {
           if ((_tabController.animation?.value ?? 0) > 0.5) {
-             Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const RevenueFormScreen()),
-            );
+             context.pushNamed('revenue_add');
           } else {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ExpenseFormScreen()),
-            );
+            context.pushNamed('expense_add');
           }
         },
         backgroundColor: (_tabController.animation?.value ?? 0) > 0.5 ? AppTheme.primaryBlue : AppTheme.accentOrange,
@@ -334,10 +329,7 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> with Si
                           trailing: ElevatedButton(
                             child: const Text('Payer'),
                             onPressed: () {
-                              Navigator.push(
-                                context, 
-                                MaterialPageRoute(builder: (context) => RevenueFormScreen(parentId: parent.id))
-                              );
+                              context.pushNamed('revenue_add', extra: parent.id);
                             },
                           ),
                         ),

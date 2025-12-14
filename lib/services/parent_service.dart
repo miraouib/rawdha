@@ -33,19 +33,24 @@ class ParentService {
     return _parentsCollection.orderBy('createdAt', descending: true).snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
-        // Decrypt fields if needed. For now assuming stored PLAIN or Service handles it.
-        // If we want encryption, we should decrypt here.
-        // Assuming encrypted storage based on user request "code secret".
-        
-        // Example decryption (uncomment if implementing encryption):
-        // data['phone'] = _encryptionService.decrypt(data['phone']);
-        // data['familyCode'] = _encryptionService.decrypt(data['familyCode']);
-        // data['accessCode'] = _encryptionService.decrypt(data['accessCode']);
-        
         return ParentModel.fromFirestore(data, doc.id);
       }).toList();
     });
   }
+
+  /// Récupérer un parent par son ID
+  Future<ParentModel?> getParentById(String id) async {
+    try {
+      final doc = await _parentsCollection.doc(id).get();
+      if (doc.exists) {
+        return ParentModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
 
   Future<void> addParent(ParentModel parent) async {
     // Encrypt sensitive data before saving

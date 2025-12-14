@@ -1,13 +1,16 @@
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import '../../models/school_level_model.dart';
-import '../../models/school_class_model.dart';
+import '../../models/school_config_model.dart';
 
-/// Service de gestion de l'école (Niveaux et Classes)
+/// Service de gestion de l'école (Niveaux)
 class SchoolService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
 
   CollectionReference get _levelsCollection => _firestore.collection('school_levels');
-  CollectionReference get _classesCollection => _firestore.collection('school_classes');
+  CollectionReference get _configCollection => _firestore.collection('school_config');
 
   /// Initialiser les niveaux par défaut si inexistants
   Future<void> initializeDefaultLevels() async {
@@ -34,34 +37,32 @@ class SchoolService {
     });
   }
 
-  /// Récupérer les classes d'un niveau
-  Stream<List<SchoolClassModel>> getClassesForLevel(String levelId) {
-    return _classesCollection.where('levelId', isEqualTo: levelId).snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return SchoolClassModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
-      }).toList();
+
+  /// Récupérer la configuration de l'école
+  Stream<SchoolConfigModel> getSchoolConfig() {
+    return _configCollection.doc('main').snapshots().map((doc) {
+      if (!doc.exists) {
+        return const SchoolConfigModel(name: 'Ma Maternelle'); // Default
+      }
+      return SchoolConfigModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
     });
   }
 
-  /// Créer une classe
-  Future<void> createClass(SchoolClassModel schoolClass) async {
-    await _classesCollection.add(schoolClass.toFirestore());
+  /// Sauvegarder la configuration de l'école
+  Future<void> saveSchoolConfig(SchoolConfigModel config) async {
+    await _configCollection.doc('main').set(config.toFirestore());
   }
 
-  /// Mettre à jour une classe
-  Future<void> updateClass(SchoolClassModel schoolClass) async {
-    await _classesCollection.doc(schoolClass.id).update(schoolClass.toFirestore());
-  }
-
-  /// Supprimer une classe
-  Future<void> deleteClass(String classId) async {
-    // Vérifier si des élèves sont liés avant de supprimer ? (À faire plus tard)
-    await _classesCollection.doc(classId).delete();
-  }
-
-  /// Compter le nombre de classes par niveau
-  Future<int> countClassesInLevel(String levelId) async {
-    final snapshot = await _classesCollection.where('levelId', isEqualTo: levelId).get();
-    return snapshot.size;
+  /// Téléverser le logo de l'école
+  Future<String> uploadSchoolLogo(File imageFile) async {
+    final ref = _storage.ref().child('school').child('logo.jpg');
+    // On écrase toujours 'logo.jpg' pour économiser l'espace, ou on peut utiliser un ID unique
+    // Pour une config école unique, écraser c'est bien.
+    // Mais attention au cache. On va ajouter un timestamp.
+    
+    // Upload
+    final uploadTask = await ref.putFile(imageFile);
+    final url = await uploadTask.ref.getDownloadURL();
+    return url;
   }
 }

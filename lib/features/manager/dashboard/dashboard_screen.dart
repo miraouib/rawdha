@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_theme.dart';
@@ -9,6 +10,7 @@ import '../parents/parent_list_screen.dart';
 import '../students/student_list_screen.dart';
 import '../finance/finance_dashboard_screen.dart';
 import '../announcements/announcement_list_screen.dart';
+import '../settings/school_config_screen.dart';
 
 /// Dashboard Manager
 /// 
@@ -69,7 +71,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
             icon: const Icon(Icons.logout),
             onPressed: () {
               // TODO: Implémenter logout
-              Navigator.of(context).popUntil((route) => route.isFirst);
+              context.go('/'); // Go back to Role Selection (or Login)
             },
           ),
         ],
@@ -116,49 +118,56 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
         subtitle: 'manager.actions.manage_classes_desc'.tr(),
         icon: Icons.school,
         color: AppTheme.primaryPurple,
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SchoolManagementScreen())),
+        onTap: () => context.pushNamed('school_management'),
       ),
       _ActionData(
         title: 'manager.actions.manage_students'.tr(),
         subtitle: 'manager.actions.manage_students_desc'.tr(),
         icon: Icons.school,
         color: AppTheme.primaryBlue,
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentListScreen())),
+        onTap: () => context.pushNamed('student_list'),
       ),
       _ActionData(
         title: 'manager.actions.manage_parents'.tr(),
         subtitle: 'manager.actions.manage_parents_desc'.tr(),
         icon: Icons.family_restroom,
         color: AppTheme.accentPink,
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ParentListScreen())),
+        onTap: () => context.pushNamed('parent_list'),
       ),
       _ActionData(
         title: 'manager.actions.manage_modules'.tr(),
         subtitle: 'manager.actions.manage_modules_desc'.tr(),
         icon: Icons.book,
         color: AppTheme.accentTeal,
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ModuleListScreen())),
+        onTap: () => context.pushNamed('module_list'),
       ),
       _ActionData(
         title: 'manager.actions.manage_finance'.tr(),
         subtitle: 'manager.actions.manage_finance_desc'.tr(),
         icon: Icons.account_balance_wallet,
         color: AppTheme.accentOrange,
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const FinanceDashboardScreen())),
+        onTap: () => context.pushNamed('finance_dashboard'),
       ),
       _ActionData(
         title: 'announcements.title'.tr(),
         subtitle: 'announcements.form_title'.tr(),
         icon: Icons.notifications_active,
         color: AppTheme.primaryPurple,
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AnnouncementListScreen())),
+        onTap: () => context.pushNamed('announcement_list'),
       ),
       _ActionData(
         title: 'manager.actions.manage_hr'.tr(),
         subtitle: 'manager.actions.manage_hr_desc'.tr(),
         icon: Icons.badge,
         color: AppTheme.accentGreen,
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const HRManagementScreen())),
+        onTap: () => context.pushNamed('hr_management'),
+      ),
+      _ActionData(
+        title: 'school.configuration'.tr(),
+        subtitle: 'school.config_desc'.tr(),
+        icon: Icons.settings,
+        color: Colors.blueGrey,
+        onTap: () => context.pushNamed('school_settings'),
       ),
     ];
 

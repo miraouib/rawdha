@@ -1,4 +1,5 @@
 {
+    "version": "1.0",
     "app_name": "روضتي - Rawdhati",
     "welcome": "Bienvenue",
     "login": "Connexion",
@@ -8,6 +9,7 @@
         "username": "Nom d'utilisateur",
         "password": "Mot de passe",
         "login_button": "Se connecter",
+        "remember_me": "Se souvenir de moi",
         "device_not_authorized": "Appareil non autorisé",
         "dashboard": "Tableau de bord",
         "welcome": "Bienvenue",
@@ -186,7 +188,17 @@
         "class_added": "Classe ajoutée",
         "class_updated": "Classe modifiée",
         "no_classes": "Aucune classe dans ce niveau",
-        "add_first_class": "Ajouter une classe"
+        "add_first_class": "Ajouter une classe",
+        "configuration": "Configuration de l'école",
+        "config_desc": "Nom, adresse, contact, logo",
+        "fields": {
+            "name": "Nom de l'école",
+            "address": "Adresse",
+            "phone": "Téléphone",
+            "email": "Email",
+            "logo_url": "URL du Logo",
+            "reg_number": "Matricule Fiscale"
+        }
     },
     "common": {
         "save": "Enregistrer",

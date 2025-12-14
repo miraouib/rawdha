@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_theme.dart';
 import '../services/manager_auth_service.dart';
 import '../../manager/dashboard/dashboard_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../core/encryption/encryption_service.dart';
 
 /// Écran de connexion Manager
 /// 
@@ -20,6 +23,31 @@ class _ManagerLoginScreenState extends State<ManagerLoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _rememberMe = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedCredentials();
+  }
+
+  Future<void> _loadSavedCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _rememberMe = prefs.getBool('remember_me') ?? false;
+      if (_rememberMe) {
+        _usernameController.text = prefs.getString('remember_username') ?? '';
+        final encryptedPassword = prefs.getString('remember_password_enc');
+        if (encryptedPassword != null) {
+          try {
+            _passwordController.text = EncryptionService().decryptString(encryptedPassword);
+          } catch (e) {
+            print('Error decrypting password: $e');
+          }
+        }
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -44,12 +72,21 @@ class _ManagerLoginScreenState extends State<ManagerLoginScreen> {
       );
 
       if (manager != null && mounted) {
+        // Sauvegarder ou effacer les identifiants
+        final prefs = await SharedPreferences.getInstance();
+        if (_rememberMe) {
+          await prefs.setBool('remember_me', true);
+          await prefs.setString('remember_username', _usernameController.text.trim());
+          await prefs.setString('remember_password_enc', EncryptionService().encryptString(_passwordController.text.trim()));
+        } else {
+          await prefs.remove('remember_me');
+          await prefs.remove('remember_username');
+          await prefs.remove('remember_password_enc');
+        }
+
         // Connexion réussie - naviguer vers le dashboard
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => const ManagerDashboardScreen(),
-          ),
-        );
+        // Connexion réussie - naviguer vers le dashboard
+        context.goNamed('manager_dashboard');
       }
     } catch (e) {
       if (mounted) {
@@ -160,6 +197,23 @@ class _ManagerLoginScreenState extends State<ManagerLoginScreen> {
                             return null;
                           },
                         ),
+                        const SizedBox(height: 16),
+                        
+                        // Checkbox Se souvenir de moi
+                        CheckboxListTile(
+                          title: Text('manager.remember_me'.tr(), style: const TextStyle(fontSize: 14)),
+                          value: _rememberMe,
+                          onChanged: (value) {
+                            setState(() {
+                              _rememberMe = value ?? false;
+                            });
+                          },
+                          controlAffinity: ListTileControlAffinity.leading,
+                          contentPadding: EdgeInsets.zero,
+                          dense: true,
+                          activeColor: AppTheme.primaryBlue,
+                        ),
+
                         const SizedBox(height: 24),
                         
                         // Bouton de connexion

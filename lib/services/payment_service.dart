@@ -30,11 +30,8 @@ class PaymentService {
 
   /// Récupérer l'historique d'un parent
   Stream<List<PaymentModel>> getPaymentsByParent(String parentId) {
-    // Depuis Septembre dernier ?
-    // On récupère tout et on filtre ou trie par date
     return _paymentsCollection
         .where('parentId', isEqualTo: parentId)
-        .orderBy('date', descending: true)
         .snapshots()
         .map((snapshot) {
       return snapshot.docs.map((doc) {

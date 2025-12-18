@@ -309,16 +309,20 @@ class _RevenueFormScreenState extends State<RevenueFormScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _isLoading ? null : _savePayment,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
-                  backgroundColor: AppTheme.primaryBlue,
+              SafeArea(
+                top: false,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _savePayment,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 50),
+                    backgroundColor: AppTheme.primaryBlue,
+                  ),
+                  child: _isLoading 
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : Text('finance.add_revenue'.tr(), style: const TextStyle(fontSize: 18, color: Colors.white)),
                 ),
-                child: _isLoading 
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : Text('finance.add_revenue'.tr(), style: const TextStyle(fontSize: 18, color: Colors.white)),
               ),
+              const SizedBox(height: 20),
             ],
           ),
         ),

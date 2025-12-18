@@ -35,7 +35,7 @@ class _ParentListScreenState extends State<ParentListScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: const Text('Gestion des Parents'),
+        title: Text('parent.management'.tr()),
       ),
       body: Column(
         children: [
@@ -45,7 +45,7 @@ class _ParentListScreenState extends State<ParentListScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Rechercher un parent (nom, téléphone...)',
+                hintText: 'parent.search_parent'.tr(),
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
@@ -99,7 +99,7 @@ class _ParentListScreenState extends State<ParentListScreen> {
                 });
 
                 if (parents.isEmpty) {
-                  return Center(child: Text('Aucun résultat pour "$_searchQuery"'));
+                  return Center(child: Text('common.search'.tr() + ': "$_searchQuery"'));
                 }
 
                 return ListView.separated(
@@ -120,7 +120,7 @@ class _ParentListScreenState extends State<ParentListScreen> {
         onPressed: () {
           context.pushNamed('parent_add');
         },
-        label: const Text('Nouveau Parent'),
+        label: Text('parent.add_parent'.tr()),
         icon: const Icon(Icons.add),
         backgroundColor: AppTheme.primaryBlue,
       ),
@@ -134,9 +134,9 @@ class _ParentListScreenState extends State<ParentListScreen> {
         children: [
           Icon(Icons.family_restroom, size: 80, color: AppTheme.textLight),
           const SizedBox(height: 16),
-          const Text(
-            'Aucun parent enregistré',
-            style: TextStyle(fontSize: 18, color: AppTheme.textGray),
+          Text(
+            'parent.no_parent'.tr(),
+            style: const TextStyle(fontSize: 18, color: AppTheme.textGray),
           ),
         ],
       ),
@@ -209,7 +209,7 @@ class _ParentCard extends StatelessWidget {
                    Column(
                      crossAxisAlignment: CrossAxisAlignment.start,
                      children: [
-                       const Text('Conjoint', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                        Text('parent.spouse_name'.tr(), style: const TextStyle(fontSize: 12, color: Colors.grey)),
                        Text(parent.spouseName, style: const TextStyle(fontWeight: FontWeight.bold)),
                      ],
                    ),
@@ -240,14 +240,14 @@ class _ParentCard extends StatelessWidget {
               children: [
                 TextButton.icon(
                   icon: const Icon(Icons.account_balance_wallet, size: 18),
-                  label: const Text('Paiements'),
+                  label: Text('parent.view_payments'.tr()),
                   onPressed: () {
                     context.pushNamed('parent_payment_history', extra: parent);
                   },
                 ),
                 TextButton.icon(
                   icon: const Icon(Icons.edit, size: 18),
-                  label: const Text('Modifier'),
+                  label: Text('common.edit'.tr()),
                   onPressed: () {
                     context.pushNamed('parent_edit', extra: parent);
                   },
@@ -319,9 +319,9 @@ class _ParentChildrenList extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Text('Enfants inscrits :', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text('parent.children_enrolled'.tr() + ' :', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
             ),
             ...students.map((student) => ListTile(
               dense: true,

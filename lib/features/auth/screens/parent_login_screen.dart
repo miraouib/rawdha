@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../services/parent_service.dart';
+import '../../../services/session_service.dart';
 
 /// Écran de connexion Parent
 /// 
@@ -14,22 +17,58 @@ class ParentLoginScreen extends StatefulWidget {
 }
 
 class _ParentLoginScreenState extends State<ParentLoginScreen> {
-  final _codeController = TextEditingController();
+  final _idController = TextEditingController();
+  final _pinController = TextEditingController();
+  final _parentService = ParentService();
+  final _sessionService = SessionService();
+  
   bool _isLoading = false;
+  bool _rememberMe = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeApp();
+  }
+
+  Future<void> _initializeApp() async {
+    setState(() => _isLoading = true);
+    
+    // 1. Pre-fill credentials if they exist
+    final creds = await _sessionService.getSavedCredentials();
+    if (creds['familyCode'] != null) {
+      _idController.text = creds['familyCode']!;
+    }
+    if (creds['accessCode'] != null) {
+      _pinController.text = creds['accessCode']!;
+    }
+
+    // 2. Try auto-login
+    final parent = await _sessionService.tryAutoLogin();
+    if (parent != null && mounted) {
+      context.goNamed('parent_dashboard', extra: parent);
+    } else {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   void dispose() {
-    _codeController.dispose();
+    _idController.dispose();
+    _pinController.dispose();
     super.dispose();
   }
 
   Future<void> _handleLogin() async {
-    final code = _codeController.text.trim();
+    final familyCode = _idController.text.trim().toUpperCase();
+    final accessCode = _pinController.text.trim();
     
-    if (code.length != 6) {
+    debugPrint('Attempting login for: $familyCode');
+    
+    if (familyCode.isEmpty || accessCode.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Le code doit contenir 6 chiffres'),
+          content: Text('common.error'.tr()),
           backgroundColor: AppTheme.errorRed,
         ),
       );
@@ -38,23 +77,42 @@ class _ParentLoginScreenState extends State<ParentLoginScreen> {
 
     setState(() => _isLoading = true);
 
-    // TODO: Implémenter la logique de connexion
-    // 1. Rechercher le parent avec ce code (chiffré)
-    // 2. Si trouvé, récupérer les enfants
-    // 3. Naviguer vers la liste des enfants
-
-    await Future.delayed(const Duration(seconds: 2)); // Simulation
-
-    if (mounted) {
-      setState(() => _isLoading = false);
+    try {
+      final parent = await _parentService.loginParent(familyCode, accessCode);
       
-      // Afficher un message de succès (temporaire)
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Connexion réussie! (À implémenter)'),
-          backgroundColor: AppTheme.successGreen,
-        ),
-      );
+      if (parent != null) {
+        debugPrint('Login success for: ${parent.id}');
+        if (_rememberMe) {
+          debugPrint('Saving session for: $familyCode');
+          await _sessionService.saveSession(familyCode, accessCode);
+        } else {
+          debugPrint('Not saving session (rememberMe=false)');
+        }
+        
+        if (mounted) {
+           context.goNamed('parent_dashboard', extra: parent);
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('parent.invalid_credentials'.tr()),
+              backgroundColor: AppTheme.errorRed,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur: $e'),
+            backgroundColor: AppTheme.errorRed,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -104,7 +162,6 @@ class _ParentLoginScreenState extends State<ParentLoginScreen> {
                 ),
                 const SizedBox(height: 48),
                 
-                // Carte de saisie du code
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
@@ -114,43 +171,53 @@ class _ParentLoginScreenState extends State<ParentLoginScreen> {
                   ),
                   child: Column(
                     children: [
-                      // Champ de code
-                      TextField(
-                        controller: _codeController,
-                        keyboardType: TextInputType.number,
-                        textAlign: TextAlign.center,
-                        maxLength: 6,
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 8,
-                        ),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
+                      // Champ ID
+                      TextFormField(
+                        controller: _idController,
                         decoration: InputDecoration(
-                          hintText: 'parent.code_placeholder'.tr(),
-                          hintStyle: TextStyle(
-                            color: AppTheme.textLight,
-                            letterSpacing: 8,
-                          ),
-                          counterText: '',
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
+                          labelText: 'parent.family_id_label'.tr(),
+                          prefixIcon: const Icon(Icons.badge_outlined),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                         ),
-                        onSubmitted: (_) => _handleLogin(),
+                        textCapitalization: TextCapitalization.characters,
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      // Champ PIN
+                      TextFormField(
+                        controller: _pinController,
+                        keyboardType: TextInputType.number,
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          labelText: 'parent.access_pin_label'.tr(),
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        maxLength: 6,
                       ),
                       
-                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: _rememberMe,
+                            activeColor: AppTheme.accentPink,
+                            onChanged: (v) => setState(() => _rememberMe = v ?? true),
+                          ),
+                          Text('parent.remember_me'.tr(), style: const TextStyle(fontSize: 14)),
+                        ],
+                      ),
+                      
+                      const SizedBox(height: 16),
                       
                       // Bouton de connexion
                       SizedBox(
                         width: double.infinity,
+                        height: 50,
                         child: ElevatedButton(
                           onPressed: _isLoading ? null : _handleLogin,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppTheme.accentPink,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
                           child: _isLoading
                               ? const SizedBox(
@@ -161,7 +228,7 @@ class _ParentLoginScreenState extends State<ParentLoginScreen> {
                                     color: Colors.white,
                                   ),
                                 )
-                              : Text('parent.login_button'.tr()),
+                              : Text('parent.login_button'.tr(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                         ),
                       ),
                     ],
@@ -200,6 +267,7 @@ class _ParentLoginScreenState extends State<ParentLoginScreen> {
                     ],
                   ),
                 ),
+                const SizedBox(height: 48), // Padding at the bottom for system nav
               ],
             ),
           ),

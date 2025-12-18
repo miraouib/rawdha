@@ -123,7 +123,7 @@ class _ModuleFormScreenState extends State<ModuleFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.module != null ? 'Modifier Module' : 'Nouveau Module'),
+        title: Text(widget.module != null ? 'module.edit_title'.tr() : 'module.add_title'.tr()),
       ),
       body: Form(
         key: _formKey,
@@ -139,18 +139,18 @@ class _ModuleFormScreenState extends State<ModuleFormScreen> {
                   children: [
                     TextFormField(
                       controller: _titleController,
-                      decoration: const InputDecoration(
-                        labelText: 'Titre du Module (ex: Les Fruits)',
-                        prefixIcon: Icon(Icons.title),
+                      decoration: InputDecoration(
+                        labelText: 'module.form_title_label'.tr(),
+                        prefixIcon: const Icon(Icons.title),
                       ),
-                      validator: (v) => v!.isEmpty ? 'Requis' : null,
+                      validator: (v) => v!.isEmpty ? 'common.required'.tr() : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _descriptionController,
-                      decoration: const InputDecoration(
-                        labelText: 'Description',
-                        prefixIcon: Icon(Icons.description),
+                      decoration: InputDecoration(
+                        labelText: 'module.form_desc_label'.tr(),
+                        prefixIcon: const Icon(Icons.description),
                       ),
                       maxLines: 2,
                     ),
@@ -175,7 +175,8 @@ class _ModuleFormScreenState extends State<ModuleFormScreen> {
             const SizedBox(height: 16),
             
             // Contenu Éducatif
-            Text('Contenu Pédagogique', style: AppTheme.lightTheme.textTheme.titleMedium),
+            // Contenu Éducatif
+            Text('module.form_content_title'.tr(), style: AppTheme.lightTheme.textTheme.titleMedium),
             const SizedBox(height: 8),
             Card(
               child: Padding(
@@ -184,23 +185,23 @@ class _ModuleFormScreenState extends State<ModuleFormScreen> {
                   children: [
                     Row(
                       children: [
-                        Expanded(child: _buildField(_letterController, 'Lettre (ex: A)', Icons.abc)),
+                        Expanded(child: _buildField(_letterController, 'module.letter_hint'.tr(), Icons.abc)),
                         const SizedBox(width: 8),
-                        Expanded(child: _buildField(_numberController, 'Chiffre (ex: 1)', Icons.numbers)),
+                        Expanded(child: _buildField(_numberController, 'module.number_hint'.tr(), Icons.numbers)),
                       ],
                     ),
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        Expanded(child: _buildField(_wordController, 'Mot (ex: Arbre)', Icons.text_fields)),
+                        Expanded(child: _buildField(_wordController, 'module.word_hint'.tr(), Icons.text_fields)),
                         const SizedBox(width: 8),
-                        Expanded(child: _buildField(_colorController, 'Couleur', Icons.color_lens)),
+                        Expanded(child: _buildField(_colorController, 'module.color_hint'.tr(), Icons.color_lens)),
                       ],
                     ),
                     const SizedBox(height: 12),
-                    _buildField(_prayerController, 'Douaa / Sourate', Icons.mosque),
+                    _buildField(_prayerController, 'module.prayer_hint'.tr(), Icons.mosque),
                     const SizedBox(height: 12),
-                    _buildField(_songController, 'Chant / Comptine', Icons.music_note),
+                    _buildField(_songController, 'module.song_hint'.tr(), Icons.music_note),
                   ],
                 ),
               ),
@@ -220,7 +221,7 @@ class _ModuleFormScreenState extends State<ModuleFormScreen> {
                   : Text('module.save_btn'.tr(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
-            const SizedBox(height: 20), // More bottom padding
+            const SizedBox(height: 48), // Increased bottom padding for system nav
           ],
         ),
       ),

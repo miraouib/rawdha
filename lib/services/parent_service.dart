@@ -38,6 +38,25 @@ class ParentService {
     });
   }
 
+  /// Vérifier les identifiants d'un parent
+  Future<ParentModel?> loginParent(String familyCode, String accessCode) async {
+    try {
+      final snapshot = await _parentsCollection
+          .where('familyCode', isEqualTo: familyCode)
+          .where('accessCode', isEqualTo: accessCode)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        final doc = snapshot.docs.first;
+        return ParentModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   /// Récupérer un parent par son ID
   Future<ParentModel?> getParentById(String id) async {
     try {

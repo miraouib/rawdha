@@ -21,6 +21,11 @@ import '../../features/manager/announcements/announcement_list_screen.dart';
 import '../../features/manager/school/school_management_screen.dart';
 import '../../features/manager/settings/school_config_screen.dart';
 import '../../features/manager/employees/hr_management_screen.dart';
+import '../../features/parent/dashboard/parent_dashboard_screen.dart';
+import '../../features/parent/students/student_modules_screen.dart';
+import '../../features/parent/students/student_history_screen.dart';
+import '../../features/parent/payments/parent_payment_unpaid_screen.dart';
+import '../../features/parent/announcements/parent_announcement_screen.dart';
 import '../../models/student_model.dart';
 import '../../models/parent_model.dart';
 
@@ -108,7 +113,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     final parent = state.extra as ParentModel;
                     return ParentFormScreen(parent: parent);
                  }
-               )
+               ),
+               GoRoute(
+                 name: 'parent_announcements',
+                 path: 'announcements',
+                 builder: (context, state) => const ParentAnnouncementScreen(),
+               ),
             ],
           ),
           GoRoute(
@@ -155,6 +165,44 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: 'hr', 
             name: 'hr_management',
             builder: (context, state) => const HRManagementScreen(),
+          ),
+        ],
+      ),
+
+      // Parent Dashboard & Features
+      GoRoute(
+        path: '/parent/dashboard',
+        name: 'parent_dashboard',
+        builder: (context, state) {
+          final parent = state.extra as ParentModel;
+          return ParentDashboardScreen(parent: parent);
+        },
+        routes: [
+           GoRoute(
+            path: 'modules',
+            name: 'student_modules',
+            builder: (context, state) {
+              final student = state.extra as StudentModel;
+              return StudentModulesScreen(student: student);
+            },
+            routes: [
+              GoRoute(
+                path: 'history',
+                name: 'student_history',
+                builder: (context, state) {
+                  final student = state.extra as StudentModel;
+                  return StudentHistoryScreen(student: student);
+                },
+              ),
+            ],
+          ),
+          GoRoute(
+            path: 'payments-unpaid',
+            name: 'parent_payments_unpaid',
+            builder: (context, state) {
+              final parent = state.extra as ParentModel;
+              return ParentPaymentUnpaidScreen(parent: parent);
+            },
           ),
         ],
       ),

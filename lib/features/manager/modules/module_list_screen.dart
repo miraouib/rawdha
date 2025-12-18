@@ -217,34 +217,59 @@ class _ModuleListScreenState extends State<ModuleListScreen> with SingleTickerPr
   }
 
   Widget _buildContentGrid(ModuleModel module) {
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 2.5,
-      mainAxisSpacing: 8,
-      crossAxisSpacing: 8,
+    return Column(
       children: [
-        if (module.letter.isNotEmpty) _contentItem(Icons.abc, module.letter, Colors.orange),
-        if (module.number.isNotEmpty) _contentItem(Icons.numbers, module.number, Colors.blue),
-        if (module.word.isNotEmpty) _contentItem(Icons.text_fields, module.word, Colors.green),
-        if (module.color.isNotEmpty) _contentItem(Icons.color_lens, module.color, Colors.purple),
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          childAspectRatio: 2.5,
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 8,
+          children: [
+            if (module.letter.isNotEmpty) _contentItem(Icons.abc, module.letter, Colors.orange),
+            if (module.number.isNotEmpty) _contentItem(Icons.numbers, module.number, Colors.blue),
+            if (module.word.isNotEmpty) _contentItem(Icons.text_fields, module.word, Colors.green),
+            if (module.color.isNotEmpty) _contentItem(Icons.color_lens, module.color, Colors.purple),
+          ],
+        ),
+        if ((module.prayer != null && module.prayer!.isNotEmpty) || (module.song != null && module.song!.isNotEmpty))
+          const SizedBox(height: 12),
+        if (module.prayer != null && module.prayer!.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: _contentItem(Icons.mosque, module.prayer!, Colors.brown, isFullWidth: true, label: 'module.prayer'.tr()),
+          ),
+        if (module.song != null && module.song!.isNotEmpty)
+          _contentItem(Icons.music_note, module.song!, Colors.redAccent, isFullWidth: true, label: 'module.song'.tr()),
       ],
     );
   }
 
-  Widget _contentItem(IconData icon, String text, Color color) {
+  Widget _contentItem(IconData icon, String text, Color color, {bool isFullWidth = false, String? label}) {
     return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
       ),
+      height: isFullWidth ? 50 : null,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: isFullWidth ? MainAxisAlignment.start : MainAxisAlignment.center,
         children: [
           Icon(icon, color: color, size: 20),
           const SizedBox(width: 8),
-          Text(text, style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+          if (isFullWidth && label != null) ...[
+            Text('$label : ', style: TextStyle(color: color.withOpacity(0.7), fontSize: 13, fontWeight: FontWeight.bold)),
+          ],
+          Expanded(
+            child: Text(
+              text, 
+              style: TextStyle(color: color, fontWeight: FontWeight.bold),
+              textAlign: isFullWidth ? TextAlign.start : TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
     );

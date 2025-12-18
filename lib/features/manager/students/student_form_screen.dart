@@ -142,17 +142,19 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
 
               // 3. Parent Link
               _buildParentSelector(),
-              const SizedBox(height: 32),
-
-              ElevatedButton(
-                onPressed: _isLoading ? null : _saveStudent,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
+              SafeArea(
+                top: false,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _saveStudent,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 50),
+                  ),
+                  child: _isLoading 
+                    ? const CircularProgressIndicator()
+                    : const Text('Enregistrer', style: TextStyle(fontSize: 18)),
                 ),
-                child: _isLoading 
-                  ? const CircularProgressIndicator()
-                  : const Text('Enregistrer', style: TextStyle(fontSize: 18)),
               ),
+              const SizedBox(height: 20),
             ],
           ),
         ),

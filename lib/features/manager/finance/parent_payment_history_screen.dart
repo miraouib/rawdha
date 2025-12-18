@@ -47,7 +47,7 @@ class ParentPaymentHistoryScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: Text('Paiements - ${parent.firstName} ${parent.lastName}'),
+        title: Text('parent.view_payments'.tr() + ' - ${parent.firstName} ${parent.lastName}'),
       ),
       body: StreamBuilder<List<PaymentModel>>(
         stream: paymentService.getPaymentsByParent(parent.id),
@@ -92,7 +92,7 @@ class ParentPaymentHistoryScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Code Famille: ${parent.familyCode}',
+                                '${'parent.family_code'.tr()}: ${parent.familyCode}',
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: AppTheme.textGray,
@@ -100,7 +100,7 @@ class ParentPaymentHistoryScreen extends StatelessWidget {
                               ),
                               if (parent.monthlyFee != null)
                                 Text(
-                                  'Montant mensuel: ${parent.monthlyFee!.toStringAsFixed(2)} TND',
+                                  '${'parent.monthly_fee'.tr()}: ${parent.monthlyFee!.toStringAsFixed(2)} ${'finance.currency'.tr()}',
                                   style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
@@ -118,8 +118,8 @@ class ParentPaymentHistoryScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 
                 // Title
-                const Text(
-                  'Historique des paiements',
+                Text(
+                  'parent.payment_history'.tr(),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -127,7 +127,7 @@ class ParentPaymentHistoryScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Année scolaire ${months.first.year}-${months.first.year + 1}',
+                  'parent.school_year'.tr(namedArgs: {'year': '${months.first.year}-${months.first.year + 1}'}),
                   style: TextStyle(
                     fontSize: 14,
                     color: AppTheme.textGray,
@@ -192,18 +192,18 @@ class ParentPaymentHistoryScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Montant payé: ${payment.amount.toStringAsFixed(2)} TND'),
-                  Text('Date: ${DateFormat('dd/MM/yyyy').format(payment.date)}'),
-                  Text('Statut: ${_getStatusText(payment.status)}'),
+                  Text('${'parent.amount_paid'.tr()}: ${payment.amount.toStringAsFixed(2)} ${'finance.currency'.tr()}'),
+                  Text('${'parent.payment_date'.tr()}: ${DateFormat('dd/MM/yyyy').format(payment.date)}'),
+                  Text('${'parent.status'.tr()}: ${_getStatusText(payment.status)}'),
                   if (payment.note != null && payment.note!.isNotEmpty)
-                    Text('Note: ${payment.note}'),
+                    Text('${'parent.note'.tr()}: ${payment.note}'),
                 ],
               )
-            : const Text('Aucun paiement enregistré pour ce mois'),
+            : Text('parent.no_payment_recorded'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Fermer'),
+            child: Text('parent.close'.tr()),
           ),
           if (payment == null)
             TextButton(
@@ -211,7 +211,7 @@ class ParentPaymentHistoryScreen extends StatelessWidget {
                 Navigator.pop(context);
                 context.pushNamed('revenue_add', extra: parent.id);
               },
-              child: const Text('Ajouter paiement'),
+              child: Text('parent.add_payment'.tr()),
             ),
         ],
       ),
@@ -221,11 +221,11 @@ class ParentPaymentHistoryScreen extends StatelessWidget {
   String _getStatusText(PaymentStatus status) {
     switch (status) {
       case PaymentStatus.paid:
-        return 'Payé';
+        return 'payment.paid'.tr();
       case PaymentStatus.partial:
-        return 'Partiel';
+        return 'payment.partial'.tr();
       case PaymentStatus.unpaid:
-        return 'Non payé';
+        return 'payment.unpaid'.tr();
     }
   }
 }

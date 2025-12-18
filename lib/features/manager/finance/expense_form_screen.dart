@@ -145,18 +145,21 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _isLoading ? null : _saveExpense,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
-                  backgroundColor: AppTheme.accentOrange,
-                  foregroundColor: Colors.white,
+              SafeArea(
+                top: false,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _saveExpense,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 50),
+                    backgroundColor: AppTheme.accentOrange,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: _isLoading 
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : Text('common.save'.tr(), style: const TextStyle(fontSize: 18)),
                 ),
-                child: _isLoading 
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : Text('common.save'.tr(), style: const TextStyle(fontSize: 18)),
               ),
+              const SizedBox(height: 20),
             ],
           ),
         ),

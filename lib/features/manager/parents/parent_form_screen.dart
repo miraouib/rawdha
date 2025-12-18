@@ -216,16 +216,19 @@ class _ParentFormScreenState extends State<ParentFormScreen> {
                 ),
               ),
 
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: _isLoading ? null : _saveParent,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+              SafeArea(
+                top: false,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _saveParent,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: _isLoading 
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text('Enregistrer', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
-                child: _isLoading 
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text('Enregistrer', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ),
+              const SizedBox(height: 20),
             ],
           ),
         ),

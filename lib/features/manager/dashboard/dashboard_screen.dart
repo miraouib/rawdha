@@ -11,6 +11,11 @@ import '../students/student_list_screen.dart';
 import '../finance/finance_dashboard_screen.dart';
 import '../announcements/announcement_list_screen.dart';
 import '../settings/school_config_screen.dart';
+import '../../../services/student_absence_service.dart';
+import '../../../services/student_service.dart';
+import '../../../core/helpers/date_helper.dart';
+import '../../../models/student_absence_model.dart';
+import '../../../models/student_model.dart';
 
 /// Dashboard Manager
 /// 
@@ -56,7 +61,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: Text('manager.dashboard'.tr()),
+        title: Text('app_name'.tr()),
         actions: [
           // Sélecteur de langue
           _LanguageSelector(),
@@ -87,13 +92,13 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
               style: Theme.of(context).textTheme.displaySmall,
             ),
            
+            const SizedBox(height: 24),
+
+            // NOUVEAU: Alerte dernière absence
+            _LatestAbsenceAlert(),
+            
             const SizedBox(height: 32),
-            
-            // Cartes de statistiques supprimées
-            // _buildStatsCards(),
-            
-            const SizedBox(height: 12),
-            
+
             // Accès rapides
             Text(
               'manager.quick_actions'.tr(),
@@ -168,6 +173,13 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
         icon: Icons.settings,
         color: Colors.blueGrey,
         onTap: () => context.pushNamed('school_settings'),
+      ),
+      _ActionData(
+        title: 'manager.actions.manage_absences'.tr(),
+        subtitle: 'manager.actions.manage_absences_desc'.tr(),
+        icon: Icons.notifications_active,
+        color: Colors.orange,
+        onTap: () => context.pushNamed('manager_absences'),
       ),
     ];
 
@@ -403,6 +415,84 @@ class _LanguageButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _LatestAbsenceAlert extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final absenceService = StudentAbsenceService();
+    final studentService = StudentService();
+
+    return StreamBuilder<List<StudentAbsenceModel>>(
+      stream: absenceService.getAllRecentAbsences(limit: 1),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.isEmpty) return const SizedBox.shrink();
+
+        final absence = snapshot.data!.first;
+        return FutureBuilder<StudentModel?>(
+          future: studentService.getStudentById(absence.studentId),
+          builder: (context, studentSnapshot) {
+            final student = studentSnapshot.data;
+            final studentName = student != null ? '${student.firstName} ${student.lastName}' : '...';
+
+            return InkWell(
+              onTap: () => context.pushNamed('manager_absences'),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.notification_important, color: Colors.orange, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'absence.manager_alerts'.tr(),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.orange,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '$studentName - ${'absence.causes.${absence.cause}'.tr()}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      DateHelper.formatDateShort(context, absence.startDate),
+                      style: const TextStyle(fontSize: 11, color: AppTheme.textGray),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.arrow_forward_ios, size: 12, color: Colors.orange),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

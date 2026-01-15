@@ -1,6 +1,6 @@
 {
     "version": "1.0",
-    "app_name": "روضتي",
+    "app_name": "الإسراء",
     "welcome": "مرحبا",
     "login": "تسجيل الدخول",
     "logout": "تسجيل الخروج",
@@ -36,6 +36,8 @@
             "manage_hr_desc": "الموظفون، الغياب، الرواتب",
             "manage_finance": "الإدارة المالية",
             "manage_finance_desc": "متابعة الإيرادات والمصروفات",
+            "manage_absences": "غيابات الطلاب",
+            "manage_absences_desc": "بلاغات أولياء الأمور",
             "to_implement": "قيد التنفيذ"
         }
     },
@@ -109,7 +111,9 @@
         "unpaid_months": "الأشهر غير المدفوعة",
         "no_unpaid_months": "تهانينا! جميع مدفوعاتك محدثة.",
         "total_due": "إجمالي المستحق",
-        "unpaid_badge": "غير مدفوع"
+        "unpaid_badge": "غير مدفوع",
+        "school_details": "معلومات الروضة",
+        "view_school_details": "تفاصيل الروضة"
     },
     "student": {
         "students": "التلاميذ",
@@ -173,7 +177,28 @@
         "start_date": "تاريخ البداية",
         "end_date": "تاريخ النهاية",
         "cause": "السبب",
-        "add_absence": "إضافة غياب"
+        "add_absence": "إضافة غياب",
+        "report_title": "تسجيل غياب",
+        "report_for": "تسجيل غياب لـ",
+        "date_label": "تاريخ الغياب",
+        "submit": "إرسال",
+        "success": "تم تسجيل الغياب بنجاح",
+        "cause_hint": "مثال: مرض، موعد طبي...",
+        "cause_required": "يرجى اختيار السبب",
+        "manager_alerts": "تنبيهات الغياب (أولياء الأمور)",
+        "view_all": "عرض الكل",
+        "no_recent": "لم يتم الإبلاغ عن غيابات مؤخراً",
+        "no_any": "لا يوجد غيابات مسجلة",
+        "manager_title": "الغيابات المبلغ عنها",
+        "description": "الوصف",
+        "description_hint": "تفاصيل إضافية (اختياري)...",
+        "causes": {
+            "sick": "مرض",
+            "travel": "سفر",
+            "medical": "موعد طبي",
+            "family": "مناسبة عائلية",
+            "other": "أخرى"
+        }
     },
     "payment": {
         "payments": "المدفوعات",

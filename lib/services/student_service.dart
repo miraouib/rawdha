@@ -90,4 +90,11 @@ class StudentService {
     // 2. Delete student doc
     await _studentsCollection.doc(studentId).delete();
   }
+
+  /// Récupérer un élève par ID
+  Future<StudentModel?> getStudentById(String studentId) async {
+    final doc = await _studentsCollection.doc(studentId).get();
+    if (!doc.exists) return null;
+    return StudentModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
+  }
 }

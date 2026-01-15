@@ -7,12 +7,16 @@ import '../../features/auth/screens/manager_login_screen.dart';
 import '../../features/auth/screens/parent_login_screen.dart'; // Import this
 import '../../features/manager/dashboard/dashboard_screen.dart';
 import '../../features/manager/students/student_list_screen.dart';
+import '../../features/manager/students/manager_absence_list_screen.dart';
 import '../../features/manager/students/student_form_screen.dart'; // Import form
 import '../../features/manager/students/student_detail_screen.dart'; // Import detail
 import '../../features/manager/parents/parent_list_screen.dart';
 
 import '../../features/manager/parents/parent_form_screen.dart'; // Import form
 import '../../features/manager/finance/finance_dashboard_screen.dart';
+import '../../features/manager/finance/finance_revenue_screen.dart';
+import '../../features/manager/finance/finance_expenses_screen.dart';
+import '../../features/manager/finance/finance_unpaid_screen.dart';
 import '../../features/manager/finance/expense_form_screen.dart'; // Import expense form
 import '../../features/manager/finance/revenue_form_screen.dart'; // Import revenue form
 import '../../features/manager/finance/parent_payment_history_screen.dart'; // Import payment history
@@ -24,8 +28,10 @@ import '../../features/manager/employees/hr_management_screen.dart';
 import '../../features/parent/dashboard/parent_dashboard_screen.dart';
 import '../../features/parent/students/student_modules_screen.dart';
 import '../../features/parent/students/student_history_screen.dart';
+import '../../features/parent/students/parent_absence_form_screen.dart';
 import '../../features/parent/payments/parent_payment_unpaid_screen.dart';
 import '../../features/parent/announcements/parent_announcement_screen.dart';
+import '../../features/parent/dashboard/parent_school_detail_screen.dart';
 import '../../models/student_model.dart';
 import '../../models/parent_model.dart';
 
@@ -127,6 +133,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const FinanceDashboardScreen(),
             routes: [
                GoRoute(
+                 path: 'revenue',
+                 name: 'finance_revenue',
+                 builder: (context, state) => const FinanceRevenueScreen(),
+               ),
+               GoRoute(
+                 path: 'expenses',
+                 name: 'finance_expenses',
+                 builder: (context, state) => const FinanceExpensesScreen(),
+               ),
+               GoRoute(
+                 path: 'unpaid',
+                 name: 'finance_unpaid',
+                 builder: (context, state) => const FinanceUnpaidScreen(),
+               ),
+               GoRoute(
                  path: 'expense/add', // Add expense
                  name: 'expense_add',
                  builder: (context, state) => const ExpenseFormScreen(),
@@ -166,6 +187,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             name: 'hr_management',
             builder: (context, state) => const HRManagementScreen(),
           ),
+          GoRoute(
+            path: 'student-absences',
+            name: 'manager_absences',
+            builder: (context, state) => const ManagerAbsenceListScreen(),
+          ),
         ],
       ),
 
@@ -197,12 +223,25 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ],
           ),
           GoRoute(
+            path: 'absence',
+            name: 'parent_report_absence',
+            builder: (context, state) {
+              final student = state.extra as StudentModel;
+              return ParentAbsenceFormScreen(student: student);
+            },
+          ),
+          GoRoute(
             path: 'payments-unpaid',
             name: 'parent_payments_unpaid',
             builder: (context, state) {
               final parent = state.extra as ParentModel;
               return ParentPaymentUnpaidScreen(parent: parent);
             },
+          ),
+          GoRoute(
+            path: 'school-details',
+            name: 'parent_school_details',
+            builder: (context, state) => const ParentSchoolDetailScreen(),
           ),
         ],
       ),

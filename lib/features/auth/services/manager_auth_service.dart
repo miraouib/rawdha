@@ -44,22 +44,17 @@ class ManagerAuthService {
       // 3. Obtenir l'ID de l'appareil actuel
       final deviceId = await DeviceUtils.getDeviceId();
 
-      // 4. Vérifier l'autorisation de l'appareil
-      if (manager.authorizedDevices.isEmpty) {
-        // Premier appareil → autoriser automatiquement
-        final updatedManager = manager.copyWith(
-          authorizedDevices: [deviceId],
-        );
+      // 4. Vérifier et auto-autoriser l'appareil
+      if (!manager.authorizedDevices.contains(deviceId)) {
+        // Ajouter le nouvel appareil à la liste
+        final updatedDevices = List<String>.from(manager.authorizedDevices)..add(deviceId);
         
         await _firestore
             .collection('managers')
             .doc(manager.managerId)
-            .update({'authorizedDevices': [deviceId]});
+            .update({'authorizedDevices': updatedDevices});
         
-        return updatedManager;
-      } else if (!manager.authorizedDevices.contains(deviceId)) {
-        // Appareil non autorisé
-        throw Exception('Cet appareil n\'est pas autorisé. Contactez un administrateur.');
+        return manager.copyWith(authorizedDevices: updatedDevices);
       }
 
       return manager;

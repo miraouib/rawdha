@@ -1,6 +1,6 @@
 {
     "version": "1.0",
-    "app_name": "روضتي - Rawdhati",
+    "app_name": "ISRAA",
     "welcome": "Bienvenue",
     "login": "Connexion",
     "logout": "Déconnexion",
@@ -36,6 +36,8 @@
             "manage_hr_desc": "Employés, absences, salaires",
             "manage_finance": "Gestion Financière",
             "manage_finance_desc": "Suivi des revenus et charges",
+            "manage_absences": "Absences Élèves",
+            "manage_absences_desc": "Signalements des parents",
             "to_implement": "À implémenter"
         }
     },
@@ -109,7 +111,9 @@
         "unpaid_months": "Mois Non Payés",
         "no_unpaid_months": "Félicitations ! Tous vos paiements sont à jour.",
         "total_due": "Total dû",
-        "unpaid_badge": "NON PAYÉ"
+        "unpaid_badge": "NON PAYÉ",
+        "school_details": "Informations de l'école",
+        "view_school_details": "Détails de l'école"
     },
     "student": {
         "students": "Élèves",
@@ -170,10 +174,31 @@
     },
     "absence": {
         "absence": "Absence",
-        "start_date": "Date début",
-        "end_date": "Date fin",
-        "cause": "Cause",
-        "add_absence": "Ajouter une absence"
+        "start_date": "Date de début",
+        "end_date": "Date de fin",
+        "cause": "Motif",
+        "add_absence": "Ajouter absence",
+        "report_title": "Signaler une absence",
+        "report_for": "Signaler une absence pour",
+        "date_label": "Date de l'absence",
+        "submit": "Envoyer",
+        "success": "Absence signalée avec succès",
+        "cause_hint": "Ex: Maladie, rendez-vous médical...",
+        "cause_required": "Veuillez choisir le motif",
+        "manager_alerts": "Alertes Absences (Parents)",
+        "view_all": "Voir tout",
+        "no_recent": "Aucune absence signalée récemment",
+        "no_any": "Aucune absence signalée.",
+        "manager_title": "Absences Signalées",
+        "description": "Description",
+        "description_hint": "Détails supplémentaires (Optionnel)...",
+        "causes": {
+            "sick": "Maladie",
+            "travel": "Voyage",
+            "medical": "Rendez-vous médical",
+            "family": "Événement familial",
+            "other": "Autre"
+        }
     },
     "payment": {
         "payments": "Paiements",

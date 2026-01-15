@@ -10,6 +10,7 @@ import '../../../core/helpers/level_helper.dart';
 import '../../../core/helpers/date_helper.dart';
 import '../../../models/announcement_model.dart';
 import '../../../services/announcement_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ParentDashboardScreen extends StatelessWidget {
   final ParentModel parent;
@@ -24,7 +25,8 @@ class ParentDashboardScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: Text('parent.my_children'.tr()),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -39,22 +41,78 @@ class ParentDashboardScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // En-tête Bienvenue
+            // Branding Header: Logo & Title Centered
             Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${'welcome'.tr()}, ${parent.firstName}',
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 28),
-                  ),
-                  Text(
-                    'parent.dashboard_subtitle'.tr(),
-                    style: const TextStyle(color: AppTheme.textGray),
-                  ),
-                ],
+              padding: const EdgeInsets.fromLTRB(20, 32, 20, 16),
+              child: Center(
+                child: Column(
+                  children: [
+                    Image.asset(
+                      'assets/images/logo.png',
+                      height: 80,
+                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.school, size: 80, color: AppTheme.primaryBlue),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'app_name'.tr(),
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryBlue,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ],
+                ),
               ),
+            ),
+
+            // En-tête Bienvenue Centré
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Center(
+                child: Column(
+                  children: [
+                    Text(
+                      '${'welcome'.tr()}, ${parent.firstName}',
+                      style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 26, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'parent.dashboard_subtitle'.tr(),
+                      style: const TextStyle(color: AppTheme.textGray, fontSize: 16),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Section Publicité (Banner) - NOUVEAU
+            StreamBuilder<DocumentSnapshot>(
+              stream: FirebaseFirestore.instance.collection('pub').doc('pub').snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData || !snapshot.data!.exists) return const SizedBox.shrink();
+                
+                final data = snapshot.data!.data() as Map<String, dynamic>?;
+                final link = data?['link'] as String?;
+                
+                if (link == null || link.isEmpty) return const SizedBox.shrink();
+
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.network(
+                      link,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                    ),
+                  ),
+                );
+              },
             ),
 
             // Section Mes Enfants
@@ -139,6 +197,14 @@ class ParentDashboardScreen extends StatelessWidget {
                     icon: Icons.payment,
                     color: AppTheme.primaryBlue,
                     onTap: () => context.pushNamed('parent_payments_unpaid', extra: parent),
+                  ),
+                  const SizedBox(height: 12),
+                  _ParentActionTile(
+                    title: 'parent.view_school_details'.tr(),
+                    subtitle: 'Coordonnées, adresse et informations',
+                    icon: Icons.school,
+                    color: AppTheme.primaryPurple,
+                    onTap: () => context.pushNamed('parent_school_details'),
                   ),
                 ],
               ),

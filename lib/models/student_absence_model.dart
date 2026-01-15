@@ -7,6 +7,7 @@ class StudentAbsenceModel {
   final DateTime startDate;
   final DateTime? endDate; // Null si l'absence est en cours
   final String cause; // Raison de l'absence
+  final String? description; // Détails supplémentaires
 
   StudentAbsenceModel({
     required this.absenceId,
@@ -14,6 +15,7 @@ class StudentAbsenceModel {
     required this.startDate,
     this.endDate,
     required this.cause,
+    this.description,
   });
 
   /// Crée une Absence depuis Firestore
@@ -24,6 +26,7 @@ class StudentAbsenceModel {
       startDate: DateTime.parse(data['startDate']),
       endDate: data['endDate'] != null ? DateTime.parse(data['endDate']) : null,
       cause: data['cause'] ?? '',
+      description: data['description'],
     );
   }
 
@@ -34,6 +37,7 @@ class StudentAbsenceModel {
       'startDate': startDate.toIso8601String(),
       'endDate': endDate?.toIso8601String(),
       'cause': cause,
+      'description': description,
     };
   }
 
@@ -66,6 +70,7 @@ class StudentAbsenceModel {
     DateTime? startDate,
     DateTime? endDate,
     String? cause,
+    String? description,
   }) {
     return StudentAbsenceModel(
       absenceId: absenceId ?? this.absenceId,
@@ -73,6 +78,7 @@ class StudentAbsenceModel {
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
       cause: cause ?? this.cause,
+      description: description ?? this.description,
     );
   }
 }

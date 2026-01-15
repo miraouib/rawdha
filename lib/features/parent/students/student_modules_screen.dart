@@ -31,8 +31,27 @@ class StudentModulesScreen extends StatelessWidget {
           final activeModule = allModules.where((m) => m.isCurrentlyActive).firstOrNull;
           
           return ListView(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
             children: [
+              // Bouton Signaler Absence - NOUVEAU
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    context.pushNamed('parent_report_absence', extra: student);
+                  },
+                  icon: const Icon(Icons.warning_amber_rounded, color: Colors.white),
+                  label: Text('absence.report_title'.tr(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    elevation: 4,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
               // Module Actuel
               if (activeModule != null) ...[
                 _buildSectionTitle('module.active_label'.tr(), Icons.star, Colors.orange),

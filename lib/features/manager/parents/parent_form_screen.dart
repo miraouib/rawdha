@@ -4,16 +4,19 @@ import '../../../core/theme/app_theme.dart';
 import '../../../models/parent_model.dart';
 import '../../../services/parent_service.dart';
 
-class ParentFormScreen extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
+class ParentFormScreen extends ConsumerStatefulWidget {
   final ParentModel? parent;
 
   const ParentFormScreen({super.key, this.parent});
 
   @override
-  State<ParentFormScreen> createState() => _ParentFormScreenState();
+  ConsumerState<ParentFormScreen> createState() => _ParentFormScreenState();
 }
 
-class _ParentFormScreenState extends State<ParentFormScreen> {
+class _ParentFormScreenState extends ConsumerState<ParentFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
@@ -73,10 +76,18 @@ class _ParentFormScreenState extends State<ParentFormScreen> {
   Future<void> _saveParent() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
+    final rawdhaId = ref.watch(currentRawdhaIdProvider);
+    if (rawdhaId == null) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur: ID Rawdha non trouvé')));
+      }
+      return;
+    }
 
     try {
       final parent = ParentModel(
+        rawdhaId: rawdhaId,
         id: widget.parent?.id ?? '',
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),

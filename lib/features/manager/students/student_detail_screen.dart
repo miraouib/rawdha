@@ -8,13 +8,17 @@ import '../../../models/student_model.dart';
 import '../../../models/parent_model.dart';
 import '../../../services/parent_service.dart';
 
-class StudentDetailScreen extends StatelessWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
+class StudentDetailScreen extends ConsumerWidget {
   final StudentModel student;
 
   const StudentDetailScreen({super.key, required this.student});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
@@ -47,7 +51,7 @@ class StudentDetailScreen extends StatelessWidget {
                     style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    LevelHelper.getLevelName(student.levelId),
+                    LevelHelper.getLevelName(student.levelId, context),
                     style: TextStyle(fontSize: 16, color: AppTheme.textGray),
                   ),
                 ],
@@ -65,7 +69,7 @@ class StudentDetailScreen extends StatelessWidget {
             _buildSectionTitle('Responsable'),
             if (student.parentIds.isNotEmpty)
               FutureBuilder<ParentModel?>(
-                future: ParentService().getParentById(student.parentIds.first),
+                future: ParentService().getParentById(rawdhaId, student.parentIds.first),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Padding(padding: EdgeInsets.all(16.0), child: CircularProgressIndicator());

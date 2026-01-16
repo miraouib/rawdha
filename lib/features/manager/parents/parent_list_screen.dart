@@ -12,14 +12,17 @@ import '../../../models/payment_model.dart';
 import '../../../services/payment_service.dart';
 import 'parent_form_screen.dart';
 
-class ParentListScreen extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
+class ParentListScreen extends ConsumerStatefulWidget {
   const ParentListScreen({super.key});
 
   @override
-  State<ParentListScreen> createState() => _ParentListScreenState();
+  ConsumerState<ParentListScreen> createState() => _ParentListScreenState();
 }
 
-class _ParentListScreenState extends State<ParentListScreen> {
+class _ParentListScreenState extends ConsumerState<ParentListScreen> {
   final ParentService _parentService = ParentService();
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
@@ -72,7 +75,7 @@ class _ParentListScreenState extends State<ParentListScreen> {
 
           Expanded(
             child: StreamBuilder<List<ParentModel>>(
-              stream: _parentService.getParents(),
+              stream: _parentService.getParents(ref.watch(currentRawdhaIdProvider) ?? ''),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -291,17 +294,18 @@ class _CodeBadge extends StatelessWidget {
   }
 }
 
-class _ParentChildrenList extends StatelessWidget {
+class _ParentChildrenList extends ConsumerWidget {
   final String parentId;
 
   const _ParentChildrenList({required this.parentId});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final studentService = StudentService();
+    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
 
     return StreamBuilder<List<StudentModel>>(
-      stream: studentService.getStudentsByParentId(parentId),
+      stream: studentService.getStudentsByParentId(rawdhaId, parentId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Padding(
@@ -331,7 +335,7 @@ class _ParentChildrenList extends StatelessWidget {
                 child: student.photoUrl == null ? Text(student.firstName[0], style: const TextStyle(fontSize: 10)) : null,
               ),
               title: Text('${student.firstName} ${student.lastName}'),
-              subtitle: Text(student.levelId.isNotEmpty ? LevelHelper.getLevelName(student.levelId) : 'Niveau ?'),
+              subtitle: Text(student.levelId.isNotEmpty ? LevelHelper.getLevelName(student.levelId, context) : 'Niveau ?'),
               trailing: const Icon(Icons.chevron_right, size: 16),
               onTap: () {
                 // Future: Navigate to student detail
@@ -344,19 +348,20 @@ class _ParentChildrenList extends StatelessWidget {
   }
 }
 
-class _ParentPaymentHistory extends StatelessWidget {
+class _ParentPaymentHistory extends ConsumerWidget {
   final String parentId;
 
   const _ParentPaymentHistory({required this.parentId});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final paymentService = PaymentService();
+    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
     // Assuming start of school year is September of current/previous year
     // For simplicity, just show all payments covering the logical school year or just list all sorted by date.
     
     return StreamBuilder<List<PaymentModel>>(
-      stream: paymentService.getPaymentsByParent(parentId), // Ensure this method exists
+      stream: paymentService.getPaymentsByParent(rawdhaId, parentId), // Ensure this method exists
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const SizedBox.shrink();
         final payments = snapshot.data!;

@@ -4,14 +4,17 @@ import '../../../core/theme/app_theme.dart';
 import '../../../models/announcement_model.dart';
 import '../../../services/announcement_service.dart';
 
-class AnnouncementFormScreen extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
+class AnnouncementFormScreen extends ConsumerStatefulWidget {
   const AnnouncementFormScreen({super.key});
 
   @override
-  State<AnnouncementFormScreen> createState() => _AnnouncementFormScreenState();
+  ConsumerState<AnnouncementFormScreen> createState() => _AnnouncementFormScreenState();
 }
 
-class _AnnouncementFormScreenState extends State<AnnouncementFormScreen> {
+class _AnnouncementFormScreenState extends ConsumerState<AnnouncementFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
@@ -72,10 +75,18 @@ class _AnnouncementFormScreenState extends State<AnnouncementFormScreen> {
       return;
     }
 
-    setState(() => _isLoading = true);
+    final rawdhaId = ref.watch(currentRawdhaIdProvider);
+    if (rawdhaId == null) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur: ID Rawdha non trouvé')));
+      }
+      return;
+    }
 
     try {
       final announcement = AnnouncementModel(
+        rawdhaId: rawdhaId,
         id: '',
         title: _titleController.text.trim(),
         tag: _selectedTag,
@@ -86,7 +97,7 @@ class _AnnouncementFormScreenState extends State<AnnouncementFormScreen> {
         createdBy: 'manager', // TODO: Use real user ID
       );
 
-      await AnnouncementService().createAnnouncement(announcement);
+      await AnnouncementService().createAnnouncement(rawdhaId, announcement);
 
       if (mounted) {
         Navigator.pop(context);
@@ -149,6 +160,7 @@ class _AnnouncementFormScreenState extends State<AnnouncementFormScreen> {
                     value: tag,
                     child: Text(
                       AnnouncementModel(
+                        rawdhaId: '',
                         id: '', title: '', tag: tag, content: '', 
                         startDate: DateTime.now(), endDate: DateTime.now(), 
                         createdAt: DateTime.now(), createdBy: ''

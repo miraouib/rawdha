@@ -7,9 +7,9 @@ class AnnouncementService {
   final String _collection = 'announcements';
 
   // Create Announcement with Overlap Check
-  Future<void> createAnnouncement(AnnouncementModel announcement) async {
+  Future<void> createAnnouncement(String rawdhaId, AnnouncementModel announcement) async {
     // 1. Validate Overlap
-    final hasOverlap = await _checkOverlap(announcement.startDate, announcement.endDate);
+    final hasOverlap = await _checkOverlap(announcement.rawdhaId, announcement.startDate, announcement.endDate);
     if (hasOverlap) {
       throw Exception('announcements.errors.overlap'); // Translatable key
     }
@@ -18,20 +18,12 @@ class AnnouncementService {
     await _firestore.collection(_collection).add(announcement.toFirestore());
   }
 
-  // Check if any existing announcement overlaps with the given range
-  Future<bool> _checkOverlap(DateTime start, DateTime end) async {
-    // We need to check if ANY announcement overlaps.
-    // Overlap logic: (StartA <= EndB) and (EndA >= StartB)
-    
-    // Firestore cannot do this optimally in one query without complex indexes or reading all active/future.
-    // Best approach: Read all announcements that end AFTER the new start date. 
-    // Since announcements are cleaned up or limited, this should be small.
-    // Or filter by "Active" or "Scheduled". 
-    
-    // Let's get all future or current announcements.
+  // Check if any existing announcement overlaps with the given range for a rawdha
+  Future<bool> _checkOverlap(String rawdhaId, DateTime start, DateTime end) async {
+    // ...
     final now = DateTime.now();
     final snapshot = await _firestore.collection(_collection)
-        .where('endDate', isGreaterThanOrEqualTo: Timestamp.fromDate(now))
+        .where('rawdhaId', isEqualTo: rawdhaId)
         .get();
 
     for (var doc in snapshot.docs) {
@@ -46,29 +38,39 @@ class AnnouncementService {
     return false;
   }
 
-  // Get Stream of Announcements (ordered by startDate descending)
-  Stream<List<AnnouncementModel>> getAnnouncements() {
+  // Get Stream of Announcements (ordered by startDate descending) pour une rawdha
+  Stream<List<AnnouncementModel>> getAnnouncements(String rawdhaId) {
     return _firestore.collection(_collection)
-        .orderBy('startDate', descending: true)
+        .where('rawdhaId', isEqualTo: rawdhaId)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => AnnouncementModel.fromFirestore(doc.data(), doc.id))
-            .toList());
+        .map((snapshot) {
+      final announcements = snapshot.docs.map((doc) {
+        return AnnouncementModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
+      }).toList();
+
+      // Sort in-memory to avoid Firestore composite index requirement
+      announcements.sort((a, b) => b.startDate.compareTo(a.startDate)); // Descending
+      return announcements;
+    });
   }
 
-  // Get Current Active Announcement (for Parent App)
-  Future<AnnouncementModel?> getCurrentActiveAnnouncement() async {
+  // Get Current Active Announcement (for Parent App) pour une rawdha
+  Future<AnnouncementModel?> getCurrentActiveAnnouncement(String rawdhaId) async {
     final now = DateTime.now();
     final snapshot = await _firestore.collection(_collection)
-        .where('startDate', isLessThanOrEqualTo: Timestamp.fromDate(now))
-        .where('endDate', isGreaterThanOrEqualTo: Timestamp.fromDate(now))
-        .limit(1)
+        .where('rawdhaId', isEqualTo: rawdhaId)
         .get();
         
-    if (snapshot.docs.isEmpty) return null;
+    final activeAnnouncements = snapshot.docs
+        .map((doc) => AnnouncementModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id))
+        .where((a) => a.isActiveNow())
+        .toList();
+
+    if (activeAnnouncements.isEmpty) return null;
     
-    // There should be only one if our logic works.
-    return AnnouncementModel.fromFirestore(snapshot.docs.first.data(), snapshot.docs.first.id);
+    // Sort to get the most relevant one if multiple (overlap check should prevent this anyway)
+    activeAnnouncements.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return activeAnnouncements.first;
   }
 
   Future<void> deleteAnnouncement(String id) async {

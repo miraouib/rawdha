@@ -8,6 +8,7 @@ enum PaymentStatus {
 
 class PaymentModel {
   final String id;
+  final String rawdhaId; // Lien vers la Rawdha
   final String parentId;
   final double amount;
   final double expectedAmount; // Le montant qui était dû ce mois-là (snapshot)
@@ -19,6 +20,7 @@ class PaymentModel {
 
   PaymentModel({
     required this.id,
+    required this.rawdhaId,
     required this.parentId,
     required this.amount,
     required this.expectedAmount,
@@ -40,6 +42,7 @@ class PaymentModel {
   factory PaymentModel.fromFirestore(Map<String, dynamic> data, String id) {
     return PaymentModel(
       id: id,
+      rawdhaId: data['rawdhaId'] ?? 'default',
       parentId: data['parentId'] ?? '',
       amount: (data['amount'] ?? 0).toDouble(),
       expectedAmount: (data['expectedAmount'] ?? 0).toDouble(),
@@ -53,6 +56,7 @@ class PaymentModel {
 
   Map<String, dynamic> toFirestore() {
     return {
+      'rawdhaId': rawdhaId,
       'parentId': parentId,
       'amount': amount,
       'expectedAmount': expectedAmount,

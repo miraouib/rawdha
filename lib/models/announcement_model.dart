@@ -10,6 +10,7 @@ enum AnnouncementTag {
 
 class AnnouncementModel {
   final String id;
+  final String rawdhaId; // Lien vers la Rawdha
   final String title;
   final AnnouncementTag tag;
   final String content;
@@ -20,6 +21,7 @@ class AnnouncementModel {
 
   AnnouncementModel({
     required this.id,
+    required this.rawdhaId,
     required this.title,
     required this.tag,
     required this.content,
@@ -37,6 +39,7 @@ class AnnouncementModel {
   factory AnnouncementModel.fromFirestore(Map<String, dynamic> data, String id) {
     return AnnouncementModel(
       id: id,
+      rawdhaId: data['rawdhaId'] ?? 'default',
       title: data['title'] ?? '',
       tag: _parseTag(data['tag']),
       content: data['content'] ?? '',
@@ -49,6 +52,7 @@ class AnnouncementModel {
 
   Map<String, dynamic> toFirestore() {
     return {
+      'rawdhaId': rawdhaId,
       'title': title,
       'tag': tag.name,
       'content': content,

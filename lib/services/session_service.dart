@@ -5,17 +5,19 @@ import '../../services/parent_service.dart';
 class SessionService {
   static const String _keyFamilyCode = 'parent_family_code';
   static const String _keyAccessCode = 'parent_access_code';
+  static const String _keyRawdhaId = 'parent_rawdha_id';
   static const String _keyIsLoggedIn = 'parent_is_logged_in';
 
   final ParentService _parentService = ParentService();
 
-  Future<void> saveSession(String familyCode, String accessCode) async {
+  Future<void> saveSession(String familyCode, String accessCode, String rawdhaId) async {
     final prefs = await SharedPreferences.getInstance();
     final upperFamilyCode = familyCode.toUpperCase();
     bool s1 = await prefs.setString(_keyFamilyCode, upperFamilyCode);
     bool s2 = await prefs.setString(_keyAccessCode, accessCode);
-    bool s3 = await prefs.setBool(_keyIsLoggedIn, true);
-    print('SessionService: Saved session ($upperFamilyCode, $accessCode) -> success: ${s1 && s2 && s3}');
+    bool s3 = await prefs.setString(_keyRawdhaId, rawdhaId);
+    bool s4 = await prefs.setBool(_keyIsLoggedIn, true);
+    print('SessionService: Saved session ($upperFamilyCode, $accessCode, $rawdhaId) -> success: ${s1 && s2 && s3 && s4}');
   }
 
   Future<void> clearSession() async {

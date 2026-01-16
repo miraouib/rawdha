@@ -4,14 +4,17 @@ import '../../../core/theme/app_theme.dart';
 import '../../../models/school_config_model.dart';
 import '../../../services/school_service.dart';
 
-class SchoolConfigScreen extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
+class SchoolConfigScreen extends ConsumerStatefulWidget {
   const SchoolConfigScreen({super.key});
 
   @override
-  State<SchoolConfigScreen> createState() => _SchoolConfigScreenState();
+  ConsumerState<SchoolConfigScreen> createState() => _SchoolConfigScreenState();
 }
 
-class _SchoolConfigScreenState extends State<SchoolConfigScreen> {
+class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
   final _formKey = GlobalKey<FormState>();
   final SchoolService _schoolService = SchoolService();
   
@@ -43,8 +46,9 @@ class _SchoolConfigScreenState extends State<SchoolConfigScreen> {
 
   Future<void> _loadConfig() async {
     try {
+      final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
       // Pour l'instant on utilise un stream mais on prend juste la première valeur pour le formulaire
-      final stream = _schoolService.getSchoolConfig();
+      final stream = _schoolService.getSchoolConfig(rawdhaId);
       final config = await stream.first;
       
       if (mounted) {
@@ -86,8 +90,11 @@ class _SchoolConfigScreenState extends State<SchoolConfigScreen> {
     
     setState(() => _isLoading = true);
     
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    
     try {
       final newConfig = SchoolConfigModel(
+        rawdhaId: rawdhaId,
         id: 'main', // Toujours main
         name: _nameController.text.trim(),
         address: _addressController.text.trim(),
@@ -97,7 +104,7 @@ class _SchoolConfigScreenState extends State<SchoolConfigScreen> {
         registrationNumber: _regNumberController.text.trim(),
       );
       
-      await _schoolService.saveSchoolConfig(newConfig);
+      await _schoolService.saveSchoolConfig(newConfig, rawdhaId);
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

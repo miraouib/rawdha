@@ -11,48 +11,54 @@ class StudentService {
   // Encryption service (placeholder if not fully implemented)
   // final _encryptionService = EncryptionService();
 
-  /// Récupérer tous les élèves
-  Stream<List<StudentModel>> getStudents() {
+  /// Récupérer tous les élèves d'une rawdha
+  Stream<List<StudentModel>> getStudents(String rawdhaId) {
     return _studentsCollection
-        .orderBy('firstName')
+        .where('rawdhaId', isEqualTo: rawdhaId)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
+      final students = snapshot.docs.map((doc) {
         return StudentModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
       }).toList();
+
+      // Sort in-memory to avoid Firestore composite index requirement
+      students.sort((a, b) => a.firstName.compareTo(b.firstName));
+      return students;
     });
   }
 
   // Method getStudentsByClass removed as class concept is deprecated
 
   
-  /// Récupérer les élèves d'un niveau
-  Stream<List<StudentModel>> getStudentsByLevel(String levelId) {
+  /// Récupérer les élèves d'un niveau dans une rawdha
+  Stream<List<StudentModel>> getStudentsByLevel(String rawdhaId, String levelId) {
     return _studentsCollection
-        .where('levelId', isEqualTo: levelId)
+        .where('rawdhaId', isEqualTo: rawdhaId)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return StudentModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
-      }).toList();
+      return snapshot.docs
+          .map((doc) => StudentModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id))
+          .where((s) => s.levelId == levelId)
+          .toList();
     });
   }
 
   /// Récupérer les élèves d'un parent
-  Stream<List<StudentModel>> getStudentsByParentId(String parentId) {
+  Stream<List<StudentModel>> getStudentsByParentId(String rawdhaId, String parentId) {
     return _studentsCollection
-        .where('parentIds', arrayContains: parentId)
+        .where('rawdhaId', isEqualTo: rawdhaId)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return StudentModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
-      }).toList();
+      return snapshot.docs
+          .map((doc) => StudentModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id))
+          .where((s) => s.parentIds.contains(parentId))
+          .toList();
     });
   }
 
   /// Ajouter un élève
   /// Met à jour la liste des étudiants chez le parent aussi si un parent est lié
-  Future<void> addStudent(StudentModel student) async {
+  Future<void> addStudent(String rawdhaId, StudentModel student) async {
     // 1. Add student
     final docRef = await _studentsCollection.add(student.toFirestore());
     final studentId = docRef.id;
@@ -68,7 +74,7 @@ class StudentService {
   }
 
   /// Mettre à jour un élève
-  Future<void> updateStudent(StudentModel student) async {
+  Future<void> updateStudent(String rawdhaId, StudentModel student) async {
     // Check if parent IDs changed? complex logic.
     // For MVP, assume parents list is correct in model.
     // If parents changed, we need to handle removing from old parents and adding to new.
@@ -79,7 +85,7 @@ class StudentService {
   }
 
   /// Supprimer un élève
-  Future<void> deleteStudent(String studentId, List<String> parentIds) async {
+  Future<void> deleteStudent(String rawdhaId, String studentId, List<String> parentIds) async {
     // 1. Remove from parents
     for (var parentId in parentIds) {
       await _parentsCollection.doc(parentId).update({
@@ -92,9 +98,11 @@ class StudentService {
   }
 
   /// Récupérer un élève par ID
-  Future<StudentModel?> getStudentById(String studentId) async {
+  Future<StudentModel?> getStudentById(String rawdhaId, String studentId) async {
     final doc = await _studentsCollection.doc(studentId).get();
     if (!doc.exists) return null;
-    return StudentModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
+    final data = doc.data() as Map<String, dynamic>;
+    if (data['rawdhaId'] != rawdhaId) return null;
+    return StudentModel.fromFirestore(data, doc.id);
   }
 }

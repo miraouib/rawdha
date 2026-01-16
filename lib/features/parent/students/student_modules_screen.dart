@@ -7,12 +7,16 @@ import '../../../models/module_model.dart';
 import '../../../services/module_service.dart';
 import '../widgets/module_card.dart';
 
-class StudentModulesScreen extends StatelessWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
+class StudentModulesScreen extends ConsumerWidget {
   final StudentModel student;
   const StudentModulesScreen({super.key, required this.student});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? student.rawdhaId;
     final moduleService = ModuleService();
 
     return Scaffold(
@@ -21,7 +25,7 @@ class StudentModulesScreen extends StatelessWidget {
         title: Text('${student.firstName} - ${'module.management_title'.tr()}'),
       ),
       body: StreamBuilder<List<ModuleModel>>(
-        stream: moduleService.getModulesForLevel(student.levelId),
+        stream: moduleService.getModulesForLevel(rawdhaId, student.levelId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

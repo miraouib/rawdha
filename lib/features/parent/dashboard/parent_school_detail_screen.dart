@@ -4,11 +4,15 @@ import '../../../core/theme/app_theme.dart';
 import '../../../models/school_config_model.dart';
 import '../../../services/school_service.dart';
 
-class ParentSchoolDetailScreen extends StatelessWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
+class ParentSchoolDetailScreen extends ConsumerWidget {
   const ParentSchoolDetailScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
     final schoolService = SchoolService();
 
     return Scaffold(
@@ -17,7 +21,7 @@ class ParentSchoolDetailScreen extends StatelessWidget {
         title: Text('parent.view_school_details'.tr()),
       ),
       body: StreamBuilder<SchoolConfigModel>(
-        stream: schoolService.getSchoolConfig(),
+        stream: schoolService.getSchoolConfig(rawdhaId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

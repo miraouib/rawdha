@@ -3,21 +3,26 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/encryption/encryption_service.dart';
 import '../../../models/employee_model.dart';
+import '../../../models/employee_absence_model.dart';
 import '../../../services/employee_service.dart';
 import 'employee_form_screen.dart';
 import 'employee_detail_screen.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rxdart/rxdart.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
 /// Écran de gestion RH
 /// 
 /// Liste des employés avec recherche et actions
-class HRManagementScreen extends StatefulWidget {
+class HRManagementScreen extends ConsumerStatefulWidget {
   const HRManagementScreen({super.key});
 
   @override
-  State<HRManagementScreen> createState() => _HRManagementScreenState();
+  ConsumerState<HRManagementScreen> createState() => _HRManagementScreenState();
 }
 
-class _HRManagementScreenState extends State<HRManagementScreen> {
+class _HRManagementScreenState extends ConsumerState<HRManagementScreen> {
   final _searchController = TextEditingController();
   final _employeeService = EmployeeService();
   
@@ -67,16 +72,27 @@ class _HRManagementScreenState extends State<HRManagementScreen> {
           ),
           
           // Statistiques rapides
-          FutureBuilder<List<int>>(
-            future: Future.wait([
-              _employeeService.getEmployees().first.then((list) => list.length),
-              _employeeService.countPresentEmployees(),
-              _employeeService.countAbsentEmployees(),
-            ]),
+          StreamBuilder<List<dynamic>>(
+            stream: Rx.combineLatest2(
+              _employeeService.getEmployees(ref.watch(currentRawdhaIdProvider) ?? ''),
+              _employeeService.getAllAbsencesStream(ref.watch(currentRawdhaIdProvider) ?? ''),
+              (List<EmployeeModel> employees, List<EmployeeAbsenceModel> absences) => [employees, absences],
+            ),
             builder: (context, snapshot) {
-              final total = snapshot.data?[0] ?? 0;
-              final present = snapshot.data?[1] ?? 0;
-              final absent = snapshot.data?[2] ?? 0;
+              if (!snapshot.hasData) {
+                return const SizedBox(height: 100, child: Center(child: CircularProgressIndicator()));
+              }
+
+              final employees = snapshot.data![0] as List<EmployeeModel>;
+              final absences = snapshot.data![1] as List<EmployeeAbsenceModel>;
+
+              final total = employees.length;
+              final absentCount = employees.where((e) {
+                // Check if this specific employee is currently absent
+                return absences.any((a) => a.employeeId == e.employeeId && a.isCurrentlyAbsent);
+              }).length;
+              
+              final present = total - absentCount;
 
               return Container(
                 padding: const EdgeInsets.all(16),
@@ -103,7 +119,7 @@ class _HRManagementScreenState extends State<HRManagementScreen> {
                     Expanded(
                       child: _StatCard(
                         title: 'Absents',
-                        value: absent.toString(),
+                        value: absentCount.toString(),
                         icon: Icons.cancel,
                         color: AppTheme.errorRed,
                       ),
@@ -131,7 +147,7 @@ class _HRManagementScreenState extends State<HRManagementScreen> {
 
   Widget _buildEmployeeList() {
     return StreamBuilder<List<EmployeeModel>>(
-      stream: _employeeService.getEmployees(),
+      stream: _employeeService.getEmployees(ref.watch(currentRawdhaIdProvider) ?? ''),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());

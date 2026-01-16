@@ -7,14 +7,17 @@ import '../../../models/parent_model.dart';
 import '../../../services/payment_service.dart';
 import '../../../services/parent_service.dart';
 
-class FinanceRevenueScreen extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
+class FinanceRevenueScreen extends ConsumerStatefulWidget {
   const FinanceRevenueScreen({super.key});
 
   @override
-  State<FinanceRevenueScreen> createState() => _FinanceRevenueScreenState();
+  ConsumerState<FinanceRevenueScreen> createState() => _FinanceRevenueScreenState();
 }
 
-class _FinanceRevenueScreenState extends State<FinanceRevenueScreen> {
+class _FinanceRevenueScreenState extends ConsumerState<FinanceRevenueScreen> {
   DateTime _currentMonth = DateTime.now();
   final PaymentService _paymentService = PaymentService();
   final ParentService _parentService = ParentService();
@@ -106,7 +109,7 @@ class _FinanceRevenueScreenState extends State<FinanceRevenueScreen> {
 
           Expanded(
             child: StreamBuilder<List<PaymentModel>>(
-              stream: _paymentService.getPaymentsByMonth(_currentMonth.month, _currentMonth.year),
+              stream: _paymentService.getPaymentsByMonth(ref.watch(currentRawdhaIdProvider) ?? '', _currentMonth.month, _currentMonth.year),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -119,7 +122,7 @@ class _FinanceRevenueScreenState extends State<FinanceRevenueScreen> {
                 final allPayments = snapshot.data ?? [];
                 
                 return StreamBuilder<List<ParentModel>>(
-                  stream: _parentService.getParents(),
+                  stream: _parentService.getParents(ref.watch(currentRawdhaIdProvider) ?? ''),
                   builder: (context, parentSnapshot) {
                     if (!parentSnapshot.hasData) {
                       return const Center(child: CircularProgressIndicator());

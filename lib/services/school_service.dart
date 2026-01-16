@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import '../../models/school_level_model.dart';
 import '../../models/school_config_model.dart';
+import '../../models/rawdha_model.dart';
 
 /// Service de gestion de l'école (Niveaux)
 class SchoolService {
@@ -11,13 +12,46 @@ class SchoolService {
 
   CollectionReference get _levelsCollection => _firestore.collection('school_levels');
   CollectionReference get _configCollection => _firestore.collection('school_config');
+  CollectionReference get _rawdhasCollection => _firestore.collection('rawdhas');
 
-  /// Initialiser les niveaux par défaut si inexistants
-  Future<void> initializeDefaultLevels() async {
+  /// Récupérer les infos d'une Rawdha par ID
+  Stream<RawdhaModel?> getRawdhaById(String id) {
+    return _rawdhasCollection.doc(id).snapshots().map((doc) {
+      if (!doc.exists) return null;
+      return RawdhaModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
+    });
+  }
+
+  /// Initialiser les niveaux par défaut si inexistants pour une rawdha
+  Future<void> initializeDefaultLevels(String rawdhaId) async {
     final levels = [
-      SchoolLevelModel(id: SchoolLevelModel.level3Id, name: '3 Ans (Petite)', order: 1, description: 'Petite section'),
-      SchoolLevelModel(id: SchoolLevelModel.level4Id, name: '4 Ans (Moyenne)', order: 2, description: 'Moyenne section'),
-      SchoolLevelModel(id: SchoolLevelModel.level5Id, name: '5 Ans (Grande)', order: 3, description: 'Grande section'),
+      SchoolLevelModel(
+        id: '${rawdhaId}_level_3', 
+        rawdhaId: rawdhaId, 
+        nameAr: 'تمهيدي 1 (3 سنوات)', 
+        nameFr: 'Petite Section (3 ans)',
+        order: 1, 
+        descriptionAr: 'أطفال 3 سنوات',
+        descriptionFr: 'Enfants de 3 ans',
+      ),
+      SchoolLevelModel(
+        id: '${rawdhaId}_level_4', 
+        rawdhaId: rawdhaId, 
+        nameAr: 'تمهيدي 2 (4 سنوات)', 
+        nameFr: 'Moyenne Section (4 ans)',
+        order: 2, 
+        descriptionAr: 'أطفال 4 سنوات',
+        descriptionFr: 'Enfants de 4 ans',
+      ),
+      SchoolLevelModel(
+        id: '${rawdhaId}_level_5', 
+        rawdhaId: rawdhaId, 
+        nameAr: 'تحضيري (5 سنوات)', 
+        nameFr: 'Grande Section (5 ans)',
+        order: 3, 
+        descriptionAr: 'أطفال 5 سنوات / تحضيري',
+        descriptionFr: 'Enfants de 5 ans / Préparatoire',
+      ),
     ];
 
     for (var level in levels) {
@@ -28,29 +62,47 @@ class SchoolService {
     }
   }
 
-  /// Récupérer tous les niveaux triés
-  Stream<List<SchoolLevelModel>> getLevels() {
-    return _levelsCollection.orderBy('order').snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) {
+  /// Récupérer tous les niveaux triés pour une rawdha
+  Stream<List<SchoolLevelModel>> getLevels(String rawdhaId) {
+    return _levelsCollection
+        .where('rawdhaId', isEqualTo: rawdhaId)
+        .snapshots()
+        .map((snapshot) {
+      final levels = snapshot.docs.map((doc) {
         return SchoolLevelModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
       }).toList();
+      
+      // Sort in-memory to avoid Firestore composite index requirement
+      levels.sort((a, b) => a.order.compareTo(b.order));
+      return levels;
     });
   }
 
 
-  /// Récupérer la configuration de l'école
-  Stream<SchoolConfigModel> getSchoolConfig() {
-    return _configCollection.doc('main').snapshots().map((doc) {
-      if (!doc.exists) {
-        return const SchoolConfigModel(name: 'Ma Maternelle'); // Default
+  /// Récupérer la configuration de l'école par rawdha
+  Stream<SchoolConfigModel> getSchoolConfig(String rawdhaId) {
+    return _configCollection
+        .where('rawdhaId', isEqualTo: rawdhaId)
+        .limit(1)
+        .snapshots()
+        .map((snapshot) {
+      if (snapshot.docs.isEmpty) {
+        return SchoolConfigModel(rawdhaId: rawdhaId, name: 'Ma Maternelle'); // Default
       }
+      final doc = snapshot.docs.first;
       return SchoolConfigModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
     });
   }
 
   /// Sauvegarder la configuration de l'école
-  Future<void> saveSchoolConfig(SchoolConfigModel config) async {
-    await _configCollection.doc('main').set(config.toFirestore());
+  Future<void> saveSchoolConfig(SchoolConfigModel config, String rawdhaId) async {
+    final docId = config.id == 'default' ? null : config.id;
+    if (docId == null) {
+      // Nouvelle config pour cette rawdha
+      await _configCollection.add(config.toFirestore());
+    } else {
+      await _configCollection.doc(docId).set(config.toFirestore());
+    }
   }
 
   /// Téléverser le logo de l'école

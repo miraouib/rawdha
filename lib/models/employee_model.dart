@@ -3,6 +3,7 @@
 /// Contient les informations d'un employé avec salaire chiffré
 class EmployeeModel {
   final String employeeId;
+  final String rawdhaId; // Lien vers la Rawdha
   final String firstName;
   final String lastName;
   final String encryptedPhone; // Téléphone chiffré
@@ -14,6 +15,7 @@ class EmployeeModel {
 
   EmployeeModel({
     required this.employeeId,
+    required this.rawdhaId,
     required this.firstName,
     required this.lastName,
     required this.encryptedPhone,
@@ -28,6 +30,7 @@ class EmployeeModel {
   factory EmployeeModel.fromFirestore(Map<String, dynamic> data, String id) {
     return EmployeeModel(
       employeeId: id,
+      rawdhaId: data['rawdhaId'] ?? 'default',
       firstName: data['firstName'] ?? '',
       lastName: data['lastName'] ?? '',
       encryptedPhone: data['encryptedPhone'] ?? '',
@@ -44,6 +47,7 @@ class EmployeeModel {
   /// Convertit en Map pour Firestore
   Map<String, dynamic> toFirestore() {
     return {
+      'rawdhaId': rawdhaId,
       'firstName': firstName,
       'lastName': lastName,
       'encryptedPhone': encryptedPhone,
@@ -61,6 +65,7 @@ class EmployeeModel {
   /// Copie avec modifications
   EmployeeModel copyWith({
     String? employeeId,
+    String? rawdhaId,
     String? firstName,
     String? lastName,
     String? encryptedPhone,
@@ -72,6 +77,7 @@ class EmployeeModel {
   }) {
     return EmployeeModel(
       employeeId: employeeId ?? this.employeeId,
+      rawdhaId: rawdhaId ?? this.rawdhaId,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
       encryptedPhone: encryptedPhone ?? this.encryptedPhone,

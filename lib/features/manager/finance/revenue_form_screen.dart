@@ -6,16 +6,19 @@ import '../../../models/payment_model.dart';
 import '../../../services/parent_service.dart';
 import '../../../services/payment_service.dart';
 
-class RevenueFormScreen extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
+class RevenueFormScreen extends ConsumerStatefulWidget {
   final String? parentId;
 
   const RevenueFormScreen({super.key, this.parentId});
 
   @override
-  State<RevenueFormScreen> createState() => _RevenueFormScreenState();
+  ConsumerState<RevenueFormScreen> createState() => _RevenueFormScreenState();
 }
 
-class _RevenueFormScreenState extends State<RevenueFormScreen> {
+class _RevenueFormScreenState extends ConsumerState<RevenueFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
@@ -49,7 +52,8 @@ class _RevenueFormScreenState extends State<RevenueFormScreen> {
 
   Future<void> _calculateExpected() async {
     if (_selectedParentId != null) {
-      final amount = await _paymentService.calculateExpectedAmount(_selectedParentId!);
+      final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
+      final amount = await _paymentService.calculateExpectedAmount(rawdhaId, _selectedParentId!);
       setState(() {
         _expectedAmount = amount;
         if (_amountController.text.isEmpty) {
@@ -138,10 +142,18 @@ class _RevenueFormScreenState extends State<RevenueFormScreen> {
       return;
     }
 
-    setState(() => _isLoading = true);
+    final rawdhaId = ref.watch(currentRawdhaIdProvider);
+    if (rawdhaId == null) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur: ID Rawdha non trouvé')));
+      }
+      return;
+    }
 
     try {
       final payment = PaymentModel(
+        rawdhaId: rawdhaId,
         id: '',
         parentId: _selectedParentId!,
         amount: double.parse(_amountController.text),
@@ -153,7 +165,7 @@ class _RevenueFormScreenState extends State<RevenueFormScreen> {
         createdAt: DateTime.now(),
       );
 
-      await _paymentService.addPayment(payment);
+      await _paymentService.addPayment(rawdhaId, payment);
 
       if (mounted) {
         Navigator.pop(context);
@@ -203,7 +215,7 @@ class _RevenueFormScreenState extends State<RevenueFormScreen> {
                       
                       // Parent Selector
                       StreamBuilder<List<ParentModel>>(
-                        stream: _parentService.getParents(),
+                        stream: _parentService.getParents(ref.watch(currentRawdhaIdProvider) ?? ''),
                         builder: (context, snapshot) {
                           if (!snapshot.hasData) return const CircularProgressIndicator();
                           

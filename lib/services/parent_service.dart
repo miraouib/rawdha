@@ -29,12 +29,19 @@ class ParentService {
     return result;
   }
 
-  Stream<List<ParentModel>> getParents() {
-    return _parentsCollection.orderBy('createdAt', descending: true).snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) {
+  Stream<List<ParentModel>> getParents(String rawdhaId) {
+    return _parentsCollection
+        .where('rawdhaId', isEqualTo: rawdhaId)
+        .snapshots()
+        .map((snapshot) {
+      final parents = snapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
         return ParentModel.fromFirestore(data, doc.id);
       }).toList();
+
+      // Sort in-memory to avoid Firestore composite index requirement
+      parents.sort((a, b) => b.createdAt.compareTo(a.createdAt)); // Descending
+      return parents;
     });
   }
 
@@ -43,13 +50,14 @@ class ParentService {
     try {
       final snapshot = await _parentsCollection
           .where('familyCode', isEqualTo: familyCode)
-          .where('accessCode', isEqualTo: accessCode)
-          .limit(1)
           .get();
 
       if (snapshot.docs.isNotEmpty) {
         final doc = snapshot.docs.first;
-        return ParentModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
+        final parent = ParentModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
+        if (parent.accessCode == accessCode) {
+          return parent;
+        }
       }
       return null;
     } catch (e) {
@@ -58,11 +66,14 @@ class ParentService {
   }
 
   /// Récupérer un parent par son ID
-  Future<ParentModel?> getParentById(String id) async {
+  Future<ParentModel?> getParentById(String rawdhaId, String id) async {
     try {
       final doc = await _parentsCollection.doc(id).get();
       if (doc.exists) {
-        return ParentModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
+        final data = doc.data() as Map<String, dynamic>;
+        if (data['rawdhaId'] == rawdhaId) {
+          return ParentModel.fromFirestore(data, doc.id);
+        }
       }
       return null;
     } catch (e) {

@@ -4,8 +4,11 @@ import '../../../core/theme/app_theme.dart';
 import '../../../models/employee_absence_model.dart';
 import '../../../services/employee_service.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
 /// Dialog pour ajouter une absence
-class AddAbsenceDialog extends StatefulWidget {
+class AddAbsenceDialog extends ConsumerStatefulWidget {
   final String employeeId;
   final EmployeeService employeeService;
 
@@ -16,10 +19,10 @@ class AddAbsenceDialog extends StatefulWidget {
   });
 
   @override
-  State<AddAbsenceDialog> createState() => _AddAbsenceDialogState();
+  ConsumerState<AddAbsenceDialog> createState() => _AddAbsenceDialogState();
 }
 
-class _AddAbsenceDialogState extends State<AddAbsenceDialog> {
+class _AddAbsenceDialogState extends ConsumerState<AddAbsenceDialog> {
   final _formKey = GlobalKey<FormState>();
   final _reasonController = TextEditingController();
   
@@ -47,8 +50,11 @@ class _AddAbsenceDialogState extends State<AddAbsenceDialog> {
     setState(() => _isLoading = true);
 
     try {
+      final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+      
       final absence = EmployeeAbsenceModel(
         absenceId: '',
+        rawdhaId: rawdhaId,
         employeeId: widget.employeeId,
         startDate: _startDate,
         endDate: _endDate,
@@ -56,7 +62,7 @@ class _AddAbsenceDialogState extends State<AddAbsenceDialog> {
         type: _type,
       );
 
-      await widget.employeeService.addAbsence(absence);
+      await widget.employeeService.addAbsence(rawdhaId, absence);
 
       if (mounted) {
         Navigator.pop(context);

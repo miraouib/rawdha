@@ -5,18 +5,22 @@ import '../../../models/announcement_model.dart';
 import '../../../services/announcement_service.dart';
 import '../../../core/helpers/date_helper.dart';
 
-class ParentAnnouncementScreen extends StatelessWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
+class ParentAnnouncementScreen extends ConsumerWidget {
   const ParentAnnouncementScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
         title: Text('announcements.title'.tr()),
       ),
       body: StreamBuilder<List<AnnouncementModel>>(
-        stream: AnnouncementService().getAnnouncements(),
+        stream: AnnouncementService().getAnnouncements(rawdhaId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

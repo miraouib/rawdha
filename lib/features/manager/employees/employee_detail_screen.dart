@@ -9,14 +9,18 @@ import '../../../services/employee_service.dart';
 import 'employee_form_screen.dart';
 import 'add_absence_dialog.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
 /// Page de détails d'un employé
-class EmployeeDetailScreen extends StatelessWidget {
+class EmployeeDetailScreen extends ConsumerWidget {
   final EmployeeModel employee;
 
   const EmployeeDetailScreen({super.key, required this.employee});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
     final encryption = EncryptionService();
     final employeeService = EmployeeService();
 
@@ -44,7 +48,7 @@ class EmployeeDetailScreen extends StatelessWidget {
           // Supprimer
           IconButton(
             icon: const Icon(Icons.delete),
-            onPressed: () => _showDeleteDialog(context, employeeService),
+            onPressed: () => _showDeleteDialog(context, employeeService, rawdhaId),
           ),
         ],
       ),
@@ -130,7 +134,7 @@ class EmployeeDetailScreen extends StatelessWidget {
             ),
             children: [
               StreamBuilder<List<EmployeeAbsenceModel>>(
-                stream: employeeService.getEmployeeAbsences(employee.employeeId),
+                stream: employeeService.getEmployeeAbsences(rawdhaId, employee.employeeId),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -232,7 +236,7 @@ class EmployeeDetailScreen extends StatelessWidget {
     );
   }
 
-  void _showDeleteDialog(BuildContext context, EmployeeService service) {
+  void _showDeleteDialog(BuildContext context, EmployeeService service, String rawdhaId) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -245,7 +249,7 @@ class EmployeeDetailScreen extends StatelessWidget {
           ),
           TextButton(
             onPressed: () async {
-              await service.deleteEmployee(employee.employeeId);
+              await service.deleteEmployee(rawdhaId, employee.employeeId);
               if (context.mounted) {
                 Navigator.pop(context); // Dialog
                 Navigator.pop(context); // Detail screen
@@ -327,13 +331,13 @@ class _InfoTile extends StatelessWidget {
 }
 
 /// Tuile d'absence
-class _AbsenceTile extends StatelessWidget {
+class _AbsenceTile extends ConsumerWidget {
   final EmployeeAbsenceModel absence;
 
   const _AbsenceTile({required this.absence});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // ... (précédent code setup variables)
     final isOngoing = absence.endDate == null;
     final isCurrent = absence.isCurrentlyAbsent;
@@ -376,11 +380,11 @@ class _AbsenceTile extends StatelessWidget {
               labelStyle: TextStyle(color: AppTheme.errorRed),
             )
           : null,
-      onLongPress: () => _showDeleteAbsenceDialog(context, absence),
+      onLongPress: () => _showDeleteAbsenceDialog(context, ref, absence),
     );
   }
 
-  void _showDeleteAbsenceDialog(BuildContext context, EmployeeAbsenceModel absence) {
+  void _showDeleteAbsenceDialog(BuildContext context, WidgetRef ref, EmployeeAbsenceModel absence) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -394,7 +398,7 @@ class _AbsenceTile extends StatelessWidget {
           TextButton(
             onPressed: () async {
               final employeeService = EmployeeService();
-              await employeeService.deleteAbsence(absence.absenceId);
+              await employeeService.deleteAbsence(ref.read(currentRawdhaIdProvider) ?? '', absence.absenceId);
               if (context.mounted) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(

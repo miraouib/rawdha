@@ -7,8 +7,9 @@ class ModuleService {
   CollectionReference get _modulesCollection => _firestore.collection('modules');
 
   /// Récupérer les modules d'un niveau, triés par date de début (plus récent en premier)
-  Stream<List<ModuleModel>> getModulesForLevel(String levelId) {
+  Stream<List<ModuleModel>> getModulesForLevel(String rawdhaId, String levelId) {
     return _modulesCollection
+        .where('rawdhaId', isEqualTo: rawdhaId)
         .where('levelId', isEqualTo: levelId)
         // .orderBy('startDate', descending: true) // Commenté pour éviter besoin d'index composé pour l'instant
         .snapshots()
@@ -24,8 +25,8 @@ class ModuleService {
   }
 
   /// Récupérer le module ACTIF pour un niveau (basé sur la date)
-  Stream<ModuleModel?> getActiveModule(String levelId) {
-    return getModulesForLevel(levelId).map((modules) {
+  Stream<ModuleModel?> getActiveModule(String rawdhaId, String levelId) {
+    return getModulesForLevel(rawdhaId, levelId).map((modules) {
       for (var module in modules) {
         if (module.isCurrentlyActive) {
           return module;
@@ -37,7 +38,7 @@ class ModuleService {
 
   /// Ajouter un module (avec vérification de chevauchement)
   Future<void> addModule(ModuleModel module) async {
-    final hasConflict = await _checkDateConflict(module.levelId, module.startDate, module.endDate);
+    final hasConflict = await _checkDateConflict(module.rawdhaId, module.levelId, module.startDate, module.endDate);
     if (hasConflict) {
       throw Exception('Il y a déjà un module actif sur cette période.');
     }
@@ -47,7 +48,7 @@ class ModuleService {
   /// Mettre à jour un module
   Future<void> updateModule(ModuleModel module) async {
     // Vérifier les conflits (en excluant le module lui-même)
-    final hasConflict = await _checkDateConflict(module.levelId, module.startDate, module.endDate, excludeModuleId: module.id);
+    final hasConflict = await _checkDateConflict(module.rawdhaId, module.levelId, module.startDate, module.endDate, excludeModuleId: module.id);
     if (hasConflict) {
       throw Exception('Il y a déjà un module actif sur cette période.');
     }
@@ -60,10 +61,10 @@ class ModuleService {
   }
 
   /// Vérifie s'il y a un chevauchement de dates pour un niveau donné
-  Future<bool> _checkDateConflict(String levelId, DateTime start, DateTime end, {String? excludeModuleId}) async {
+  Future<bool> _checkDateConflict(String rawdhaId, String levelId, DateTime start, DateTime end, {String? excludeModuleId}) async {
     // On récupère tous les modules du niveau
     // Optimisation possible : récupérer seulement ceux proches des dates concernées
-    final snapshot = await _modulesCollection.where('levelId', isEqualTo: levelId).get();
+    final snapshot = await _modulesCollection.where('rawdhaId', isEqualTo: rawdhaId).where('levelId', isEqualTo: levelId).get();
     
     for (var doc in snapshot.docs) {
       if (excludeModuleId != null && doc.id == excludeModuleId) continue;

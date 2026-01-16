@@ -12,12 +12,14 @@ import '../../../models/announcement_model.dart';
 import '../../../services/announcement_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class ParentDashboardScreen extends StatelessWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+class ParentDashboardScreen extends ConsumerWidget {
   final ParentModel parent;
   const ParentDashboardScreen({super.key, required this.parent});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final studentService = StudentService();
     final sessionService = SessionService();
     final announcementService = AnnouncementService();
@@ -117,7 +119,7 @@ class ParentDashboardScreen extends StatelessWidget {
 
             // Section Mes Enfants
             StreamBuilder<List<StudentModel>>(
-              stream: studentService.getStudentsByParentId(parent.id),
+              stream: studentService.getStudentsByParentId(parent.rawdhaId, parent.id),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Padding(
@@ -140,7 +142,7 @@ class ParentDashboardScreen extends StatelessWidget {
 
             // Section Annonces Actives (Directement après les enfants)
             StreamBuilder<List<AnnouncementModel>>(
-              stream: announcementService.getAnnouncements(),
+              stream: announcementService.getAnnouncements(parent.rawdhaId),
               builder: (context, snapshot) {
                 final allAnnouncements = snapshot.data ?? [];
                 final activeAnnouncements = allAnnouncements.where((a) => a.isActiveNow()).toList();
@@ -391,7 +393,7 @@ class _StudentCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
-                        LevelHelper.getLevelName(student.levelId),
+                        LevelHelper.getLevelName(student.levelId, context),
                         style: const TextStyle(color: AppTheme.accentPink, fontSize: 13, fontWeight: FontWeight.w600),
                       ),
                     ),

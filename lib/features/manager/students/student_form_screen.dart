@@ -8,16 +8,19 @@ import '../../../services/student_service.dart';
 import '../../../services/parent_service.dart';
 import '../../../services/school_service.dart';
 
-class StudentFormScreen extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
+class StudentFormScreen extends ConsumerStatefulWidget {
   final StudentModel? student;
 
   const StudentFormScreen({super.key, this.student});
 
   @override
-  State<StudentFormScreen> createState() => _StudentFormScreenState();
+  ConsumerState<StudentFormScreen> createState() => _StudentFormScreenState();
 }
 
-class _StudentFormScreenState extends State<StudentFormScreen> {
+class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
@@ -82,10 +85,18 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
       return;
     }
 
-    setState(() => _isLoading = true);
+    final rawdhaId = ref.watch(currentRawdhaIdProvider);
+    if (rawdhaId == null) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur: ID Rawdha non trouvé')));
+      }
+      return;
+    }
 
     try {
       final student = StudentModel(
+        rawdhaId: rawdhaId,
         studentId: widget.student?.studentId ?? '',
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
@@ -102,9 +113,9 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
 
 
       if (widget.student == null) {
-        await _studentService.addStudent(student);
+        await _studentService.addStudent(rawdhaId, student);
       } else {
-        await _studentService.updateStudent(student);
+        await _studentService.updateStudent(rawdhaId, student);
       }
 
       if (mounted) {
@@ -233,8 +244,9 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
   }
 
   Widget _buildLevelSelector() {
+    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
     return StreamBuilder<List<SchoolLevelModel>>(
-      stream: _schoolService.getLevels(),
+      stream: _schoolService.getLevels(rawdhaId),
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const CircularProgressIndicator();
         final levels = snapshot.data!;
@@ -249,7 +261,10 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
                 DropdownButtonFormField<String>(
                   value: _selectedLevelId,
                   decoration: const InputDecoration(labelText: 'Niveau', prefixIcon: Icon(Icons.school)),
-                  items: levels.map((l) => DropdownMenuItem(value: l.id, child: Text(l.name))).toList(),
+                  items: levels.map((l) => DropdownMenuItem(
+                    value: l.id, 
+                    child: Text(context.locale.languageCode == 'ar' ? l.nameAr : l.nameFr),
+                  )).toList(),
                   onChanged: (v) => setState(() => _selectedLevelId = v),
                   validator: (v) => v == null ? 'Requis' : null,
                 ),
@@ -262,8 +277,9 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
   }
 
   Widget _buildParentSelector() {
+    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
     return StreamBuilder<List<ParentModel>>(
-      stream: _parentService.getParents(),
+      stream: _parentService.getParents(rawdhaId),
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const CircularProgressIndicator();
         final parents = snapshot.data!;

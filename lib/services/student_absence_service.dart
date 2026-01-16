@@ -6,7 +6,7 @@ class StudentAbsenceService {
   final String _collection = 'student_absences';
 
   /// Ajouter une absence
-  Future<void> addAbsence(StudentAbsenceModel absence) async {
+  Future<void> addAbsence(String rawdhaId, StudentAbsenceModel absence) async {
     try {
       await _firestore.collection(_collection).add(absence.toFirestore());
     } catch (e) {
@@ -15,24 +15,37 @@ class StudentAbsenceService {
   }
 
   /// Récupérer les absences d'un élève
-  Stream<List<StudentAbsenceModel>> getAbsencesByStudent(String studentId) {
+  Stream<List<StudentAbsenceModel>> getAbsencesByStudent(String rawdhaId, String studentId) {
     return _firestore.collection(_collection)
+        .where('rawdhaId', isEqualTo: rawdhaId)
         .where('studentId', isEqualTo: studentId)
-        .orderBy('startDate', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => StudentAbsenceModel.fromFirestore(doc.data(), doc.id))
-            .toList());
+        .map((snapshot) {
+      final absences = snapshot.docs
+          .map((doc) => StudentAbsenceModel.fromFirestore(doc.data(), doc.id))
+          .toList();
+      
+      // Sort in-memory to avoid Firestore composite index requirement
+      absences.sort((a, b) => b.startDate.compareTo(a.startDate)); // Descending
+      return absences;
+    });
   }
 
-  /// Récupérer les 20 dernières absences signalées (pour le Manager)
-  Stream<List<StudentAbsenceModel>> getAllRecentAbsences({int limit = 20}) {
+  /// Récupérer les derniers signalements d'absence pour une rawdha
+  Stream<List<StudentAbsenceModel>> getAllRecentAbsences(String rawdhaId, {int limit = 20}) {
     return _firestore.collection(_collection)
-        .orderBy('startDate', descending: true)
-        .limit(limit)
+        .where('rawdhaId', isEqualTo: rawdhaId)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => StudentAbsenceModel.fromFirestore(doc.data(), doc.id))
-            .toList());
+        .map((snapshot) {
+      final absences = snapshot.docs
+          .map((doc) => StudentAbsenceModel.fromFirestore(doc.data(), doc.id))
+          .toList();
+
+      // Sort in-memory to avoid Firestore composite index requirement
+      absences.sort((a, b) => b.startDate.compareTo(a.startDate)); // Descending
+      
+      // Apply limit in-memory
+      return absences.take(limit).toList();
+    });
   }
 }

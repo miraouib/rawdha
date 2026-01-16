@@ -8,14 +8,17 @@ import '../../../models/parent_model.dart';
 import '../../../services/payment_service.dart';
 import '../../../services/parent_service.dart';
 
-class FinanceUnpaidScreen extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
+class FinanceUnpaidScreen extends ConsumerStatefulWidget {
   const FinanceUnpaidScreen({super.key});
 
   @override
-  State<FinanceUnpaidScreen> createState() => _FinanceUnpaidScreenState();
+  ConsumerState<FinanceUnpaidScreen> createState() => _FinanceUnpaidScreenState();
 }
 
-class _FinanceUnpaidScreenState extends State<FinanceUnpaidScreen> {
+class _FinanceUnpaidScreenState extends ConsumerState<FinanceUnpaidScreen> {
   DateTime _currentMonth = DateTime.now();
   final PaymentService _paymentService = PaymentService();
   final ParentService _parentService = ParentService();
@@ -68,13 +71,13 @@ class _FinanceUnpaidScreenState extends State<FinanceUnpaidScreen> {
           
           Expanded(
             child: StreamBuilder<List<ParentModel>>(
-              stream: _parentService.getParents(),
+              stream: _parentService.getParents(ref.watch(currentRawdhaIdProvider) ?? ''),
               builder: (context, parentSnapshot) {
                 if (!parentSnapshot.hasData) return const Center(child: CircularProgressIndicator());
                 final allParents = parentSnapshot.data!;
 
                 return StreamBuilder<List<PaymentModel>>(
-                  stream: _paymentService.getPaymentsByMonth(_currentMonth.month, _currentMonth.year),
+                  stream: _paymentService.getPaymentsByMonth(ref.watch(currentRawdhaIdProvider) ?? '', _currentMonth.month, _currentMonth.year),
                   builder: (context, paymentSnapshot) {
                     if (paymentSnapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());

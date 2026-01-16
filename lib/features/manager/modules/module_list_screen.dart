@@ -7,15 +7,18 @@ import '../../../services/module_service.dart';
 import '../../../services/school_service.dart';
 import 'module_form_screen.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
 /// Écran de gestion des modules (avec Tabs par niveau)
-class ModuleListScreen extends StatefulWidget {
+class ModuleListScreen extends ConsumerStatefulWidget {
   const ModuleListScreen({super.key});
 
   @override
-  State<ModuleListScreen> createState() => _ModuleListScreenState();
+  ConsumerState<ModuleListScreen> createState() => _ModuleListScreenState();
 }
 
-class _ModuleListScreenState extends State<ModuleListScreen> with SingleTickerProviderStateMixin {
+class _ModuleListScreenState extends ConsumerState<ModuleListScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final SchoolService _schoolService = SchoolService();
   final ModuleService _moduleService = ModuleService();
@@ -30,7 +33,12 @@ class _ModuleListScreenState extends State<ModuleListScreen> with SingleTickerPr
   @override
   void initState() {
     super.initState();
-    _schoolService.initializeDefaultLevels();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final rawdhaId = ref.read(currentRawdhaIdProvider);
+      if (rawdhaId != null) {
+        _schoolService.initializeDefaultLevels(rawdhaId);
+      }
+    });
     _tabController = TabController(length: 3, vsync: this);
   }
 
@@ -60,11 +68,16 @@ class _ModuleListScreenState extends State<ModuleListScreen> with SingleTickerPr
       ),
       body: TabBarView(
         controller: _tabController,
-        children: _levelIds.map((levelId) => _buildModuleView(levelId)).toList(),
+        children: [
+          _buildModuleView('${ref.watch(currentRawdhaIdProvider)}_level_3'),
+          _buildModuleView('${ref.watch(currentRawdhaIdProvider)}_level_4'),
+          _buildModuleView('${ref.watch(currentRawdhaIdProvider)}_level_5'),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          final levelId = _levelIds[_tabController.index];
+          final rawdhaId = ref.watch(currentRawdhaIdProvider);
+          final levelId = '${rawdhaId}_level_${_tabController.index + 3}';
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -81,8 +94,9 @@ class _ModuleListScreenState extends State<ModuleListScreen> with SingleTickerPr
 
   /// Vue par niveau : Affiche uniquement le module actif, avec option de voir l'historique
   Widget _buildModuleView(String levelId) {
+    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
     return StreamBuilder<List<ModuleModel>>(
-      stream: _moduleService.getModulesForLevel(levelId),
+      stream: _moduleService.getModulesForLevel(rawdhaId, levelId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());

@@ -6,7 +6,10 @@ import '../../../models/parent_model.dart';
 import '../../../models/payment_model.dart';
 import '../../../services/payment_service.dart';
 
-class ParentPaymentHistoryScreen extends StatelessWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
+class ParentPaymentHistoryScreen extends ConsumerWidget {
   final ParentModel parent;
 
   const ParentPaymentHistoryScreen({super.key, required this.parent});
@@ -40,7 +43,8 @@ class ParentPaymentHistoryScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
     final paymentService = PaymentService();
     final months = _generateSchoolYearMonths();
 
@@ -50,7 +54,7 @@ class ParentPaymentHistoryScreen extends StatelessWidget {
         title: Text('parent.view_payments'.tr() + ' - ${parent.firstName} ${parent.lastName}'),
       ),
       body: StreamBuilder<List<PaymentModel>>(
-        stream: paymentService.getPaymentsByParent(parent.id),
+        stream: paymentService.getPaymentsByParent(rawdhaId, parent.id),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -157,7 +161,7 @@ class ParentPaymentHistoryScreen extends StatelessWidget {
                       expectedAmount: parent.monthlyFee ?? 0.0,
                       onTap: () {
                         // TODO: Navigate to payment detail/edit
-                        _showPaymentDetails(context, month, payment);
+                        _showPaymentDetails(context, month, payment, rawdhaId);
                       },
                     );
                   },
@@ -180,7 +184,7 @@ class ParentPaymentHistoryScreen extends StatelessWidget {
     }
   }
 
-  void _showPaymentDetails(BuildContext context, DateTime month, PaymentModel? payment) {
+  void _showPaymentDetails(BuildContext context, DateTime month, PaymentModel? payment, String rawdhaId) {
     final monthName = DateFormat('MMMM yyyy', 'fr_FR').format(month);
     
     showDialog(
@@ -209,7 +213,10 @@ class ParentPaymentHistoryScreen extends StatelessWidget {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                context.pushNamed('revenue_add', extra: parent.id);
+                context.pushNamed('revenue_add', extra: {
+                  'parentId': parent.id,
+                  'rawdhaId': rawdhaId,
+                });
               },
               child: Text('parent.add_payment'.tr()),
             ),

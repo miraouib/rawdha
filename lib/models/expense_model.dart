@@ -12,6 +12,7 @@ enum ExpenseType {
 
 class ExpenseModel {
   final String id;
+  final String rawdhaId; // Lien vers la Rawdha
   final ExpenseType type;
   final double amount;
   final DateTime date;
@@ -20,6 +21,7 @@ class ExpenseModel {
 
   ExpenseModel({
     required this.id,
+    required this.rawdhaId,
     required this.type,
     required this.amount,
     required this.date,
@@ -41,6 +43,7 @@ class ExpenseModel {
   factory ExpenseModel.fromFirestore(Map<String, dynamic> data, String id) {
     return ExpenseModel(
       id: id,
+      rawdhaId: data['rawdhaId'] ?? 'default',
       type: _parseType(data['type']),
       amount: (data['amount'] ?? 0).toDouble(),
       date: (data['date'] as Timestamp).toDate(),
@@ -51,6 +54,7 @@ class ExpenseModel {
 
   Map<String, dynamic> toFirestore() {
     return {
+      'rawdhaId': rawdhaId,
       'type': type.name,
       'amount': amount,
       'date': Timestamp.fromDate(date),

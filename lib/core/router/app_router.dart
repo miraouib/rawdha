@@ -5,12 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/auth/screens/role_selection_screen.dart';
 import '../../features/auth/screens/manager_login_screen.dart';
 import '../../features/auth/screens/parent_login_screen.dart'; // Import this
+import '../../features/auth/screens/manager_registration_screen.dart';
 import '../../features/manager/dashboard/dashboard_screen.dart';
 import '../../features/manager/students/student_list_screen.dart';
 import '../../features/manager/students/manager_absence_list_screen.dart';
 import '../../features/manager/students/student_form_screen.dart'; // Import form
 import '../../features/manager/students/student_detail_screen.dart'; // Import detail
 import '../../features/manager/parents/parent_list_screen.dart';
+import '../guards/subscription_guard.dart';
 
 import '../../features/manager/parents/parent_form_screen.dart'; // Import form
 import '../../features/manager/finance/finance_dashboard_screen.dart';
@@ -51,6 +53,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/login/manager',
         name: 'manager_login',
         builder: (context, state) => const ManagerLoginScreen(),
+        routes: [
+          GoRoute(
+            path: 'register',
+            name: 'manager_registration',
+            builder: (context, state) => const ManagerRegistrationScreen(),
+          ),
+        ],
       ),
       
       // Parent Auth (Added)
@@ -64,7 +73,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/dashboard',
         name: 'manager_dashboard',
-        builder: (context, state) => const ManagerDashboardScreen(),
+        builder: (context, state) => const SubscriptionGuard(
+          isParent: false,
+          child: ManagerDashboardScreen(),
+        ),
         routes: [
           GoRoute(
             path: 'student-detail',
@@ -201,7 +213,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'parent_dashboard',
         builder: (context, state) {
           final parent = state.extra as ParentModel;
-          return ParentDashboardScreen(parent: parent);
+          return SubscriptionGuard(
+            isParent: true,
+            child: ParentDashboardScreen(parent: parent),
+          );
         },
         routes: [
            GoRoute(

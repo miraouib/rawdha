@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../../core/theme/app_theme.dart';
-import '../services/manager_auth_service.dart';
-import '../../manager/dashboard/dashboard_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/encryption/encryption_service.dart';
+import '../services/manager_auth_service.dart';
+import '../../../core/providers/rawdha_provider.dart';
+import '../../manager/dashboard/dashboard_screen.dart';
 
 /// Écran de connexion Manager
 /// 
 /// Authentification avec username + password + vérification de l'appareil
-class ManagerLoginScreen extends StatefulWidget {
+class ManagerLoginScreen extends ConsumerStatefulWidget {
   const ManagerLoginScreen({super.key});
 
   @override
-  State<ManagerLoginScreen> createState() => _ManagerLoginScreenState();
+  ConsumerState<ManagerLoginScreen> createState() => _ManagerLoginScreenState();
 }
 
-class _ManagerLoginScreenState extends State<ManagerLoginScreen> {
+class _ManagerLoginScreenState extends ConsumerState<ManagerLoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -84,7 +86,9 @@ class _ManagerLoginScreenState extends State<ManagerLoginScreen> {
           await prefs.remove('remember_password_enc');
         }
 
-        // Connexion réussie - naviguer vers le dashboard
+        // Set current rawdhaId for the session
+        ref.read(currentRawdhaIdProvider.notifier).state = manager.rawdhaId;
+
         // Connexion réussie - naviguer vers le dashboard
         context.goNamed('manager_dashboard');
       }
@@ -232,6 +236,11 @@ class _ManagerLoginScreenState extends State<ManagerLoginScreen> {
                                   )
                                 : Text('manager.login_button'.tr()),
                           ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: () => context.pushNamed('manager_registration'),
+                          child: const Text('Pas encore inscrit ? Créer un compte'),
                         ),
                       ],
                     ),

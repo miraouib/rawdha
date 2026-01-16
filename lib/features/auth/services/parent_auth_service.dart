@@ -40,6 +40,7 @@ class ParentAuthService {
 
   /// Créer un nouveau parent avec code généré
   Future<ParentModel> createParent({
+    required String rawdhaId,
     required String firstName,
     required String lastName,
     required String phone,
@@ -52,6 +53,7 @@ class ParentAuthService {
       final encryptedPhone = _encryption.encryptString(phone);
 
       final docRef = await _firestore.collection('parents').add({
+        'rawdhaId': rawdhaId,
         'firstName': firstName,
         'lastName': lastName,
         'encryptedPhone': encryptedPhone,
@@ -60,12 +62,15 @@ class ParentAuthService {
       });
 
       final parent = ParentModel(
-        parentId: docRef.id,
+        id: docRef.id,
+        rawdhaId: rawdhaId,
         firstName: firstName,
         lastName: lastName,
-        encryptedPhone: encryptedPhone,
-        codeEncrypted: encryptedCode,
+        phone: encryptedPhone, // Map consistent with model field name if needed
+        familyCode: '', // Should be generated if needed, but current model uses it
+        accessCode: '', 
         studentIds: studentIds,
+        createdAt: DateTime.now(),
       );
 
       return parent;

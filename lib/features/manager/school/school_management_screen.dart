@@ -5,22 +5,29 @@ import '../../../models/school_level_model.dart';
 import '../../../services/school_service.dart';
 import 'level_detail_screen.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
 /// Écran principal de gestion de l'école (Niveaux)
-class SchoolManagementScreen extends StatefulWidget {
+class SchoolManagementScreen extends ConsumerStatefulWidget {
   const SchoolManagementScreen({super.key});
 
   @override
-  State<SchoolManagementScreen> createState() => _SchoolManagementScreenState();
+  ConsumerState<SchoolManagementScreen> createState() => _SchoolManagementScreenState();
 }
 
-class _SchoolManagementScreenState extends State<SchoolManagementScreen> {
+class _SchoolManagementScreenState extends ConsumerState<SchoolManagementScreen> {
   final SchoolService _schoolService = SchoolService();
 
   @override
   void initState() {
     super.initState();
-    // S'assurer que les niveaux existent
-    _schoolService.initializeDefaultLevels();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final rawdhaId = ref.read(currentRawdhaIdProvider);
+      if (rawdhaId != null) {
+        _schoolService.initializeDefaultLevels(rawdhaId);
+      }
+    });
   }
 
   @override
@@ -31,7 +38,7 @@ class _SchoolManagementScreenState extends State<SchoolManagementScreen> {
         title: Text('school.levels_management'.tr()),
       ),
       body: StreamBuilder<List<SchoolLevelModel>>(
-        stream: _schoolService.getLevels(),
+        stream: _schoolService.getLevels(ref.watch(currentRawdhaIdProvider) ?? ''),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -65,22 +72,18 @@ class _LevelCard extends StatelessWidget {
     Color cardColor;
     IconData icon;
 
-    switch (level.id) {
-      case SchoolLevelModel.level3Id:
-        cardColor = AppTheme.primaryBlue;
-        icon = Icons.child_care;
-        break;
-      case SchoolLevelModel.level4Id:
-        cardColor = AppTheme.accentTeal;
-        icon = Icons.face;
-        break;
-      case SchoolLevelModel.level5Id:
-        cardColor = AppTheme.accentOrange;
-        icon = Icons.school;
-        break;
-      default:
-        cardColor = AppTheme.textGray;
-        icon = Icons.class_;
+    if (level.id.endsWith(SchoolLevelModel.level3Id)) {
+      cardColor = AppTheme.primaryBlue;
+      icon = Icons.child_care;
+    } else if (level.id.endsWith(SchoolLevelModel.level4Id)) {
+      cardColor = AppTheme.accentTeal;
+      icon = Icons.face;
+    } else if (level.id.endsWith(SchoolLevelModel.level5Id)) {
+      cardColor = AppTheme.accentOrange;
+      icon = Icons.school;
+    } else {
+      cardColor = AppTheme.textGray;
+      icon = Icons.class_;
     }
 
     return GestureDetector(
@@ -129,7 +132,7 @@ class _LevelCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'levels.${level.id}'.tr(),
+                    context.locale.languageCode == 'ar' ? level.nameAr : level.nameFr,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
@@ -138,7 +141,7 @@ class _LevelCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'levels.${level.id}_desc'.tr(),
+                    context.locale.languageCode == 'ar' ? level.descriptionAr : level.descriptionFr,
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.9),
                       fontSize: 16,

@@ -1,23 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/helpers/level_helper.dart';
 import '../../../models/student_model.dart';
-import '../../../models/student_model.dart';
 import '../../../models/school_level_model.dart';
+import '../../../models/parent_model.dart';
 import '../../../services/student_service.dart';
 import '../../../services/school_service.dart';
 import '../../../services/parent_service.dart';
 
 
-class StudentListScreen extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
+class StudentListScreen extends ConsumerStatefulWidget {
   const StudentListScreen({super.key});
 
   @override
-  State<StudentListScreen> createState() => _StudentListScreenState();
+  ConsumerState<StudentListScreen> createState() => _StudentListScreenState();
 }
 
-class _StudentListScreenState extends State<StudentListScreen> {
+class _StudentListScreenState extends ConsumerState<StudentListScreen> {
   final StudentService _studentService = StudentService();
   final SchoolService _schoolService = SchoolService();
   
@@ -63,7 +67,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
                 ),
                 const SizedBox(height: 12),
                 StreamBuilder<List<SchoolLevelModel>>(
-                  stream: _schoolService.getLevels(),
+                  stream: _schoolService.getLevels(ref.watch(currentRawdhaIdProvider) ?? ''),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) return const SizedBox.shrink();
                     final levels = snapshot.data!;
@@ -82,8 +86,10 @@ class _StudentListScreenState extends State<StudentListScreen> {
                             );
                           }
                           final level = levels[index - 1];
+                          final isArabic = context.locale.languageCode == 'ar';
+                          final levelName = isArabic ? level.nameAr : level.nameFr;
                           return FilterChip(
-                            label: Text(level.name.split(' ').first), // Short name
+                            label: Text(levelName.split(' ').first), // Short name
                             selected: _selectedLevelId == level.id,
                             onSelected: (v) => setState(() => _selectedLevelId = v ? level.id : null),
                           );
@@ -98,7 +104,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
           
           Expanded(
             child: StreamBuilder<List<StudentModel>>(
-        stream: _studentService.getStudents(),
+        stream: _studentService.getStudents(ref.watch(currentRawdhaIdProvider) ?? ''),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -161,13 +167,14 @@ class _StudentListScreenState extends State<StudentListScreen> {
   }
 }
 
-class _StudentCard extends StatelessWidget {
+class _StudentCard extends ConsumerWidget {
   final StudentModel student;
 
   const _StudentCard({required this.student});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -183,10 +190,10 @@ class _StudentCard extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(student.levelId.isEmpty ? 'Niveau non défini' : LevelHelper.getLevelName(student.levelId)),
+            Text(student.levelId.isEmpty ? 'Niveau non défini' : LevelHelper.getLevelName(student.levelId, context)),
             if (student.parentIds.isNotEmpty)
-              FutureBuilder(
-                future: ParentService().getParentById(student.parentIds.first),
+              FutureBuilder<ParentModel?>(
+                future: ParentService().getParentById(rawdhaId, student.parentIds.first),
                 builder: (context, snapshot) {
                   if (snapshot.hasData && snapshot.data != null) {
                     final parent = snapshot.data!;

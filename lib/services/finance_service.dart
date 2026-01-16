@@ -10,21 +10,25 @@ class FinanceService {
     await _expensesCollection.add(expense.toFirestore());
   }
 
-  /// Récupérer les dépenses pour un mois donné (et année)
-  Stream<List<ExpenseModel>> getExpensesByMonth(int month, int year) {
+  /// Récupérer les dépenses pour un mois donné (et année) dans une rawdha
+  Stream<List<ExpenseModel>> getExpensesByMonth(String rawdhaId, int month, int year) {
     // Calculer la date de début et de fin du mois
     final start = DateTime(year, month, 1);
     final end = DateTime(year, month + 1, 1).subtract(const Duration(milliseconds: 1));
 
     return _expensesCollection
+        .where('rawdhaId', isEqualTo: rawdhaId)
         .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
         .where('date', isLessThanOrEqualTo: Timestamp.fromDate(end))
-        .orderBy('date', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
+      final expenses = snapshot.docs.map((doc) {
         return ExpenseModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
       }).toList();
+
+      // Sort in-memory (note: range queries still require a composite index on [rawdhaId, date])
+      expenses.sort((a, b) => b.date.compareTo(a.date));
+      return expenses;
     });
   }
 

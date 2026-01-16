@@ -6,17 +6,20 @@ import '../../../core/theme/app_theme.dart';
 import '../../../services/parent_service.dart';
 import '../../../services/session_service.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
 /// Écran de connexion Parent
 /// 
 /// Authentification simple avec code unique (6 chiffres)
-class ParentLoginScreen extends StatefulWidget {
+class ParentLoginScreen extends ConsumerStatefulWidget {
   const ParentLoginScreen({super.key});
 
   @override
-  State<ParentLoginScreen> createState() => _ParentLoginScreenState();
+  ConsumerState<ParentLoginScreen> createState() => _ParentLoginScreenState();
 }
 
-class _ParentLoginScreenState extends State<ParentLoginScreen> {
+class _ParentLoginScreenState extends ConsumerState<ParentLoginScreen> {
   final _idController = TextEditingController();
   final _pinController = TextEditingController();
   final _parentService = ParentService();
@@ -46,6 +49,7 @@ class _ParentLoginScreenState extends State<ParentLoginScreen> {
     // 2. Try auto-login
     final parent = await _sessionService.tryAutoLogin();
     if (parent != null && mounted) {
+      ref.read(currentRawdhaIdProvider.notifier).state = parent.rawdhaId;
       context.goNamed('parent_dashboard', extra: parent);
     } else {
       if (mounted) setState(() => _isLoading = false);
@@ -84,12 +88,13 @@ class _ParentLoginScreenState extends State<ParentLoginScreen> {
         debugPrint('Login success for: ${parent.id}');
         if (_rememberMe) {
           debugPrint('Saving session for: $familyCode');
-          await _sessionService.saveSession(familyCode, accessCode);
+          await _sessionService.saveSession(familyCode, accessCode, parent.rawdhaId);
         } else {
           debugPrint('Not saving session (rememberMe=false)');
         }
         
         if (mounted) {
+           ref.read(currentRawdhaIdProvider.notifier).state = parent.rawdhaId;
            context.goNamed('parent_dashboard', extra: parent);
         }
       } else {

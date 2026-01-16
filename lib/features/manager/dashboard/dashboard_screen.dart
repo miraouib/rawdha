@@ -17,17 +17,20 @@ import '../../../core/helpers/date_helper.dart';
 import '../../../models/student_absence_model.dart';
 import '../../../models/student_model.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
 /// Dashboard Manager
 /// 
 /// Écran principal après connexion manager avec statistiques et accès rapides
-class ManagerDashboardScreen extends StatefulWidget {
+class ManagerDashboardScreen extends ConsumerStatefulWidget {
   const ManagerDashboardScreen({super.key});
 
   @override
-  State<ManagerDashboardScreen> createState() => _ManagerDashboardScreenState();
+  ConsumerState<ManagerDashboardScreen> createState() => _ManagerDashboardScreenState();
 }
 
-class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
+class _ManagerDashboardScreenState extends ConsumerState<ManagerDashboardScreen> {
   bool _isGridView = false;
 
   @override
@@ -419,20 +422,23 @@ class _LanguageButton extends StatelessWidget {
   }
 }
 
-class _LatestAbsenceAlert extends StatelessWidget {
+class _LatestAbsenceAlert extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final absenceService = StudentAbsenceService();
     final studentService = StudentService();
+    final rawdhaId = ref.watch(currentRawdhaIdProvider);
+
+    if (rawdhaId == null) return const SizedBox.shrink();
 
     return StreamBuilder<List<StudentAbsenceModel>>(
-      stream: absenceService.getAllRecentAbsences(limit: 1),
+      stream: absenceService.getAllRecentAbsences(rawdhaId, limit: 1),
       builder: (context, snapshot) {
         if (!snapshot.hasData || snapshot.data!.isEmpty) return const SizedBox.shrink();
 
         final absence = snapshot.data!.first;
         return FutureBuilder<StudentModel?>(
-          future: studentService.getStudentById(absence.studentId),
+          future: studentService.getStudentById(rawdhaId, absence.studentId),
           builder: (context, studentSnapshot) {
             final student = studentSnapshot.data;
             final studentName = student != null ? '${student.firstName} ${student.lastName}' : '...';

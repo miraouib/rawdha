@@ -1,17 +1,17 @@
+import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 /// Helper pour obtenir le nom traduit d'un niveau
 class LevelHelper {
-  static String getLevelName(String levelId) {
-    // Map level IDs to translation keys
-    final translationKey = 'levels.$levelId';
+  static String getLevelName(String levelId, BuildContext context) {
+    final languageCode = Localizations.localeOf(context).languageCode;
     
-    // Try to get the translation, fallback to levelId if not found
-    try {
-      return translationKey.tr();
-    } catch (e) {
-      // If translation not found, return the levelId as is
-      return levelId;
-    }
+    // Extract base level ID (e.g., 'level_3' from 'rawdhaId_level_3')
+    final baseId = levelId.split('_').last;
+    
+    // Map level IDs to translation keys in JSON files
+    final translationKey = 'levels.level_$baseId';
+    
+    return translationKey.tr();
   }
 }

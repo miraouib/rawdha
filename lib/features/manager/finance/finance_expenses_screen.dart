@@ -6,14 +6,17 @@ import '../../../core/theme/app_theme.dart';
 import '../../../models/expense_model.dart';
 import '../../../services/finance_service.dart';
 
-class FinanceExpensesScreen extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
+class FinanceExpensesScreen extends ConsumerStatefulWidget {
   const FinanceExpensesScreen({super.key});
 
   @override
-  State<FinanceExpensesScreen> createState() => _FinanceExpensesScreenState();
+  ConsumerState<FinanceExpensesScreen> createState() => _FinanceExpensesScreenState();
 }
 
-class _FinanceExpensesScreenState extends State<FinanceExpensesScreen> {
+class _FinanceExpensesScreenState extends ConsumerState<FinanceExpensesScreen> {
   DateTime _currentMonth = DateTime.now();
   final FinanceService _financeService = FinanceService();
 
@@ -51,7 +54,7 @@ class _FinanceExpensesScreenState extends State<FinanceExpensesScreen> {
           
           Expanded(
             child: StreamBuilder<List<ExpenseModel>>(
-              stream: _financeService.getExpensesByMonth(_currentMonth.month, _currentMonth.year),
+              stream: _financeService.getExpensesByMonth(ref.watch(currentRawdhaIdProvider) ?? '', _currentMonth.month, _currentMonth.year),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -149,7 +152,7 @@ class _FinanceExpensesScreenState extends State<FinanceExpensesScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: data.entries.map((entry) {
-            final typeLabel = ExpenseModel(id: '', type: entry.key, amount: 0, date: DateTime.now(), createdAt: DateTime.now()).typeLabel;
+            final typeLabel = ExpenseModel(rawdhaId: '', id: '', type: entry.key, amount: 0, date: DateTime.now(), createdAt: DateTime.now()).typeLabel;
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Row(

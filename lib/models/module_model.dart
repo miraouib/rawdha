@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Modèle pour un module pédagogique (thème de la semaine)
 class ModuleModel {
+  final String rawdhaId;
   final String id;
   final String title;
   final String description;
@@ -19,6 +20,7 @@ class ModuleModel {
   final String? song;
 
   ModuleModel({
+    required this.rawdhaId,
     required this.id,
     required this.title,
     required this.description,
@@ -46,6 +48,7 @@ class ModuleModel {
 
   Map<String, dynamic> toFirestore() {
     return {
+      'rawdhaId': rawdhaId,
       'title': title,
       'description': description,
       'levelId': levelId,
@@ -67,6 +70,7 @@ class ModuleModel {
     
     return ModuleModel(
       id: id,
+      rawdhaId: data['rawdhaId'] ?? '',
       title: data['title'] ?? '',
       description: data['description'] ?? '',
       levelId: data['levelId'] ?? '',

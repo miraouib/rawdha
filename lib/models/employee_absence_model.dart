@@ -3,6 +3,7 @@
 /// Gère les absences des employés avec dates et raison
 class EmployeeAbsenceModel {
   final String absenceId;
+  final String rawdhaId; // Lien vers la Rawdha
   final String employeeId;
   final DateTime startDate;
   final DateTime? endDate; // Null si l'absence est en cours
@@ -11,6 +12,7 @@ class EmployeeAbsenceModel {
 
   EmployeeAbsenceModel({
     required this.absenceId,
+    required this.rawdhaId,
     required this.employeeId,
     required this.startDate,
     this.endDate,
@@ -22,6 +24,7 @@ class EmployeeAbsenceModel {
   factory EmployeeAbsenceModel.fromFirestore(Map<String, dynamic> data, String id) {
     return EmployeeAbsenceModel(
       absenceId: id,
+      rawdhaId: data['rawdhaId'] ?? 'default',
       employeeId: data['employeeId'] ?? '',
       startDate: DateTime.parse(data['startDate']),
       endDate: data['endDate'] != null ? DateTime.parse(data['endDate']) : null,
@@ -33,6 +36,7 @@ class EmployeeAbsenceModel {
   /// Convertit en Map pour Firestore
   Map<String, dynamic> toFirestore() {
     return {
+      'rawdhaId': rawdhaId,
       'employeeId': employeeId,
       'startDate': startDate.toIso8601String(),
       'endDate': endDate?.toIso8601String(),
@@ -65,6 +69,7 @@ class EmployeeAbsenceModel {
   /// Copie avec modifications
   EmployeeAbsenceModel copyWith({
     String? absenceId,
+    String? rawdhaId,
     String? employeeId,
     DateTime? startDate,
     DateTime? endDate,
@@ -73,6 +78,7 @@ class EmployeeAbsenceModel {
   }) {
     return EmployeeAbsenceModel(
       absenceId: absenceId ?? this.absenceId,
+      rawdhaId: rawdhaId ?? this.rawdhaId,
       employeeId: employeeId ?? this.employeeId,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,

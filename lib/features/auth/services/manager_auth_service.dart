@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/encryption/encryption_service.dart';
 import '../../../core/utils/device_utils.dart';
 import '../../../models/manager_model.dart';
+import '../../../services/school_service.dart';
 
 /// Service d'authentification pour les Managers
 /// 
@@ -67,6 +68,7 @@ class ManagerAuthService {
   Future<ManagerModel> createManager({
     required String username,
     required String password,
+    required String rawdhaId,
   }) async {
     try {
       final passwordHash = _encryption.hashPassword(password);
@@ -74,11 +76,13 @@ class ManagerAuthService {
       final docRef = await _firestore.collection('managers').add({
         'username': username,
         'passwordHash': passwordHash,
+        'rawdhaId': rawdhaId,
         'authorizedDevices': [],
       });
 
       return ManagerModel(
         managerId: docRef.id,
+        rawdhaId: rawdhaId,
         username: username,
         passwordHash: passwordHash,
         authorizedDevices: [],
@@ -107,6 +111,60 @@ class ManagerAuthService {
       });
     } catch (e) {
       throw Exception('Erreur lors de la révocation de l\'appareil: $e');
+    }
+  }
+  /// Enregistrer une nouvelle Rawdha et son admin
+  Future<void> registerRawdha({
+    required String rawdhaName,
+    required String phoneNumber,
+    required String adminUsername,
+    required String adminPassword,
+  }) async {
+    try {
+      final deviceId = await DeviceUtils.getDeviceId();
+
+      // 1. Vérifier si le numéro de téléphone est déjà utilisé
+      final phoneQuery = await _firestore
+          .collection('rawdhas')
+          .where('phoneNumber', isEqualTo: phoneNumber)
+          .limit(1)
+          .get();
+      
+      if (phoneQuery.docs.isNotEmpty) {
+        throw Exception('Ce numéro de téléphone est déjà utilisé par un autre établissement.');
+      }
+
+      // 2. Vérifier si cet appareil a déjà une inscription
+      final deviceQuery = await _firestore
+          .collection('rawdhas')
+          .where('registeredDeviceId', isEqualTo: deviceId)
+          .limit(1)
+          .get();
+
+      if (deviceQuery.docs.isNotEmpty) {
+        throw Exception('Cet appareil est déjà associé à une inscription.');
+      }
+
+      // 3. Créer la Rawdha
+      final rawdhaDocRef = await _firestore.collection('rawdhas').add({
+        'name': rawdhaName,
+        'phoneNumber': phoneNumber,
+        'registeredDeviceId': deviceId,
+        'accepter': false, // Par défaut, nécessite validation
+        'dateValide': Timestamp.fromDate(DateTime.now().add(const Duration(days: 30))), // 30 jours d'essai
+      });
+
+      // 4. Créer l'admin associé
+      await createManager(
+        username: adminUsername,
+        password: adminPassword,
+        rawdhaId: rawdhaDocRef.id,
+      );
+
+      // 5. Initialiser les niveaux par défaut
+      await SchoolService().initializeDefaultLevels(rawdhaDocRef.id);
+    } catch (e) {
+      throw Exception('Erreur lors de l\'enregistrement: $e');
     }
   }
 }

@@ -4,14 +4,17 @@ import '../../../core/theme/app_theme.dart';
 import '../../../models/expense_model.dart';
 import '../../../services/finance_service.dart';
 
-class ExpenseFormScreen extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
+class ExpenseFormScreen extends ConsumerStatefulWidget {
   const ExpenseFormScreen({super.key});
 
   @override
-  State<ExpenseFormScreen> createState() => _ExpenseFormScreenState();
+  ConsumerState<ExpenseFormScreen> createState() => _ExpenseFormScreenState();
 }
 
-class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
+class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -46,10 +49,18 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
   Future<void> _saveExpense() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
+    final rawdhaId = ref.watch(currentRawdhaIdProvider);
+    if (rawdhaId == null) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur: ID Rawdha non trouvé')));
+      }
+      return;
+    }
 
     try {
       final expense = ExpenseModel(
+        rawdhaId: rawdhaId,
         id: '',
         type: _selectedType,
         amount: double.parse(_amountController.text.replaceAll(',', '.')),
@@ -100,6 +111,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                             value: type,
                             child: Text(
                               ExpenseModel(
+                                rawdhaId: '',
                                 id: '', 
                                 type: type, 
                                 amount: 0, 

@@ -3,20 +3,24 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../models/school_level_model.dart';
 import '../../../models/student_model.dart';
+import '../../../models/parent_model.dart';
 import '../../../services/student_service.dart';
 import '../../../services/parent_service.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
 /// Détails d'un niveau : Liste des élèves
-class LevelDetailScreen extends StatefulWidget {
+class LevelDetailScreen extends ConsumerStatefulWidget {
   final SchoolLevelModel level;
 
   const LevelDetailScreen({super.key, required this.level});
 
   @override
-  State<LevelDetailScreen> createState() => _LevelDetailScreenState();
+  ConsumerState<LevelDetailScreen> createState() => _LevelDetailScreenState();
 }
 
-class _LevelDetailScreenState extends State<LevelDetailScreen> {
+class _LevelDetailScreenState extends ConsumerState<LevelDetailScreen> {
   final StudentService _studentService = StudentService();
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
@@ -32,7 +36,7 @@ class _LevelDetailScreenState extends State<LevelDetailScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: Text('${widget.level.name} - Élèves'),
+        title: Text('${Localizations.localeOf(context).languageCode == 'ar' ? widget.level.nameAr : widget.level.nameFr} - Élèves'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -65,7 +69,7 @@ class _LevelDetailScreenState extends State<LevelDetailScreen> {
           ),
           Expanded(
             child: StreamBuilder<List<StudentModel>>(
-              stream: _studentService.getStudentsByLevel(widget.level.id),
+              stream: _studentService.getStudentsByLevel(ref.watch(currentRawdhaIdProvider) ?? '', widget.level.id),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -131,13 +135,14 @@ class _LevelDetailScreenState extends State<LevelDetailScreen> {
   }
 }
 
-class _StudentCard extends StatelessWidget {
+class _StudentCard extends ConsumerWidget {
   final StudentModel student;
 
   const _StudentCard({required this.student});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -154,8 +159,8 @@ class _StudentCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (student.parentIds.isNotEmpty)
-              FutureBuilder(
-                future: ParentService().getParentById(student.parentIds.first),
+              FutureBuilder<ParentModel?>(
+                future: ParentService().getParentById(rawdhaId, student.parentIds.first),
                 builder: (context, snapshot) {
                   if (snapshot.hasData && snapshot.data != null) {
                     final parent = snapshot.data!;

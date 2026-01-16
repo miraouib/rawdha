@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ParentModel {
   final String id;
+  final String rawdhaId; // Lien vers la Rawdha
   final String firstName;
   final String lastName;
   final String phone; // Will be stored encrypted
@@ -15,6 +16,7 @@ class ParentModel {
 
   ParentModel({
     required this.id,
+    required this.rawdhaId,
     required this.firstName,
     required this.lastName,
     required this.phone,
@@ -30,6 +32,7 @@ class ParentModel {
   factory ParentModel.fromFirestore(Map<String, dynamic> data, String id) {
     return ParentModel(
       id: id,
+      rawdhaId: data['rawdhaId'] ?? 'default',
       firstName: data['firstName'] ?? '',
       lastName: data['lastName'] ?? '',
       phone: data['phone'] ?? '',
@@ -45,6 +48,7 @@ class ParentModel {
 
   Map<String, dynamic> toMap() {
     return {
+      'rawdhaId': rawdhaId,
       'firstName': firstName,
       'lastName': lastName,
       'phone': phone,

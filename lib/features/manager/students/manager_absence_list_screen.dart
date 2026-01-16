@@ -7,11 +7,20 @@ import '../../../services/student_absence_service.dart';
 import '../../../services/student_service.dart';
 import '../../../core/helpers/date_helper.dart';
 
-class ManagerAbsenceListScreen extends StatelessWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
+class ManagerAbsenceListScreen extends ConsumerStatefulWidget {
   const ManagerAbsenceListScreen({super.key});
 
   @override
+  ConsumerState<ManagerAbsenceListScreen> createState() => _ManagerAbsenceListScreenState();
+}
+
+class _ManagerAbsenceListScreenState extends ConsumerState<ManagerAbsenceListScreen> {
+  @override
   Widget build(BuildContext context) {
+    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
     final absenceService = StudentAbsenceService();
     final studentService = StudentService();
 
@@ -21,7 +30,7 @@ class ManagerAbsenceListScreen extends StatelessWidget {
         title: Text('absence.manager_title'.tr()),
       ),
       body: StreamBuilder<List<StudentAbsenceModel>>(
-        stream: absenceService.getAllRecentAbsences(limit: 50),
+        stream: absenceService.getAllRecentAbsences(rawdhaId, limit: 50),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -55,16 +64,17 @@ class ManagerAbsenceListScreen extends StatelessWidget {
   }
 }
 
-class _AbsenceListItem extends StatelessWidget {
+class _AbsenceListItem extends ConsumerWidget {
   final StudentAbsenceModel absence;
   final StudentService studentService;
 
   const _AbsenceListItem({required this.absence, required this.studentService});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
     return FutureBuilder<StudentModel?>(
-      future: studentService.getStudentById(absence.studentId),
+      future: studentService.getStudentById(rawdhaId, absence.studentId),
       builder: (context, snapshot) {
         final student = snapshot.data;
         final studentName = student != null ? '${student.firstName} ${student.lastName}' : 'Élève inconnu';

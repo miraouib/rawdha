@@ -43,6 +43,7 @@ class _ParentAbsenceFormScreenState extends State<ParentAbsenceFormScreen> {
 
     try {
       final absence = StudentAbsenceModel(
+        rawdhaId: widget.student.rawdhaId,
         absenceId: '',
         studentId: widget.student.studentId,
         startDate: _selectedDate,
@@ -50,7 +51,7 @@ class _ParentAbsenceFormScreenState extends State<ParentAbsenceFormScreen> {
         description: _descriptionController.text.trim(),
       );
 
-      await StudentAbsenceService().addAbsence(absence);
+      await StudentAbsenceService().addAbsence(widget.student.rawdhaId, absence);
 
       if (mounted) {
         Navigator.pop(context);

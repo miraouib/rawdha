@@ -5,17 +5,20 @@ import '../../../core/encryption/encryption_service.dart';
 import '../../../models/employee_model.dart';
 import '../../../services/employee_service.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
 /// Formulaire d'ajout/modification d'employé
-class EmployeeFormScreen extends StatefulWidget {
+class EmployeeFormScreen extends ConsumerStatefulWidget {
   final EmployeeModel? employee; // Null = ajout, non-null = modification
 
   const EmployeeFormScreen({super.key, this.employee});
 
   @override
-  State<EmployeeFormScreen> createState() => _EmployeeFormScreenState();
+  ConsumerState<EmployeeFormScreen> createState() => _EmployeeFormScreenState();
 }
 
-class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
+class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
@@ -66,10 +69,20 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
 
     setState(() => _isLoading = true);
 
+    final rawdhaId = ref.watch(currentRawdhaIdProvider);
+    if (rawdhaId == null) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur: ID Rawdha non trouvé')));
+      }
+      return;
+    }
+
     try {
       final encryption = EncryptionService();
       
       final employee = EmployeeModel(
+        rawdhaId: rawdhaId,
         employeeId: widget.employee?.employeeId ?? '',
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
@@ -84,9 +97,9 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
       final employeeService = EmployeeService();
       
       if (_isEditing) {
-        await employeeService.updateEmployee(employee);
+        await employeeService.updateEmployee(employee, rawdhaId);
       } else {
-        await employeeService.createEmployee(employee);
+        await employeeService.createEmployee(employee, rawdhaId);
       }
       
       if (mounted) {

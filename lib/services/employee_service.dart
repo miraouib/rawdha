@@ -14,43 +14,49 @@ class EmployeeService {
   CollectionReference get _absencesCollection =>
       _firestore.collection('employee_absences');
 
-  /// Récupérer tous les employés
-  Stream<List<EmployeeModel>> getEmployees() {
-    return _employeesCollection.snapshots().map((snapshot) {
+  /// Récupérer tous les employés d'une rawdha
+  Stream<List<EmployeeModel>> getEmployees(String rawdhaId) {
+    return _employeesCollection
+        .snapshots() // Fetch all to catch legacy data
+        .map((snapshot) {
       return snapshot.docs
           .map((doc) => EmployeeModel.fromFirestore(
                 doc.data() as Map<String, dynamic>,
                 doc.id,
               ))
+          // Filter by rawdha (including 'default' legacy)
+          .where((e) => e.rawdhaId == rawdhaId || e.rawdhaId == 'default')
           .toList();
     });
   }
 
   /// Récupérer un employé par ID
-  Future<EmployeeModel?> getEmployee(String employeeId) async {
+  Future<EmployeeModel?> getEmployee(String rawdhaId, String employeeId) async {
     final doc = await _employeesCollection.doc(employeeId).get();
     if (!doc.exists) return null;
+    final data = doc.data() as Map<String, dynamic>;
+    if (data['rawdhaId'] != rawdhaId) return null;
     return EmployeeModel.fromFirestore(
-      doc.data() as Map<String, dynamic>,
+      data,
       doc.id,
     );
   }
 
   /// Créer un employé
-  Future<String> createEmployee(EmployeeModel employee) async {
+  Future<String> createEmployee(EmployeeModel employee, String rawdhaId) async {
     final docRef = await _employeesCollection.add(employee.toFirestore());
     return docRef.id;
   }
 
   /// Mettre à jour un employé
-  Future<void> updateEmployee(EmployeeModel employee) async {
+  Future<void> updateEmployee(EmployeeModel employee, String rawdhaId) async {
     await _employeesCollection
         .doc(employee.employeeId)
         .update(employee.toFirestore());
   }
 
   /// Supprimer un employé
-  Future<void> deleteEmployee(String employeeId) async {
+  Future<void> deleteEmployee(String rawdhaId, String employeeId) async {
     // Supprimer l'employé
     await _employeesCollection.doc(employeeId).delete();
     
@@ -65,16 +71,17 @@ class EmployeeService {
   }
 
   /// Récupérer les absences d'un employé
-  Stream<List<EmployeeAbsenceModel>> getEmployeeAbsences(String employeeId) {
+  Stream<List<EmployeeAbsenceModel>> getEmployeeAbsences(String rawdhaId, String employeeId) {
     return _absencesCollection
-        .where('employeeId', isEqualTo: employeeId)
-        .snapshots()
+        .snapshots() // Fetch all to catch legacy data without rawdhaId
         .map((snapshot) {
       final absences = snapshot.docs
           .map((doc) => EmployeeAbsenceModel.fromFirestore(
                 doc.data() as Map<String, dynamic>,
                 doc.id,
               ))
+          // Filter by rawdha (including 'default' legacy) and employeeId
+          .where((a) => (a.rawdhaId == rawdhaId || a.rawdhaId == 'default') && a.employeeId == employeeId)
           .toList();
       
       // Tri en mémoire (plus simple que de gérer les index Firestore)
@@ -84,8 +91,23 @@ class EmployeeService {
     });
   }
 
+  /// Récupérer TOUTES les absences d'une rawdha (Stream)
+  Stream<List<EmployeeAbsenceModel>> getAllAbsencesStream(String rawdhaId) {
+    return _absencesCollection
+        .snapshots() // Fetch all to catch legacy data without rawdhaId
+        .map((snapshot) {
+      return snapshot.docs
+          .map((doc) => EmployeeAbsenceModel.fromFirestore(
+                doc.data() as Map<String, dynamic>,
+                doc.id,
+              ))
+          .where((a) => a.rawdhaId == rawdhaId || a.rawdhaId == 'default')
+          .toList();
+    });
+  }
+
   /// Ajouter une absence
-  Future<String> addAbsence(EmployeeAbsenceModel absence) async {
+  Future<String> addAbsence(String rawdhaId, EmployeeAbsenceModel absence) async {
     final docRef = await _absencesCollection.add(absence.toFirestore());
     return docRef.id;
   }
@@ -98,30 +120,31 @@ class EmployeeService {
   }
 
   /// Supprimer une absence
-  Future<void> deleteAbsence(String absenceId) async {
+  Future<void> deleteAbsence(String rawdhaId, String absenceId) async {
     await _absencesCollection.doc(absenceId).delete();
   }
 
-  /// Compter les employés présents aujourd'hui
-  Future<int> countPresentEmployees() async {
-    final allEmployees = await _employeesCollection.get();
+  /// Compter les employés présents aujourd'hui pour une rawdha
+  Future<int> countPresentEmployees(String rawdhaId) async {
+    final allEmployees = await _employeesCollection
+        .where('rawdhaId', isEqualTo: rawdhaId)
+        .get();
     final totalCount = allEmployees.docs.length;
     
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     
-    // Récupérer les absences en cours
-    final absences = await _absencesCollection
-        .where('startDate', isLessThanOrEqualTo: today.toIso8601String())
-        .get();
+    // Récupérer toutes les absences (car les legacy n'ont pas de rawdhaId)
+    final absencesDocs = await _absencesCollection.get();
     
     int absentCount = 0;
-    for (var doc in absences.docs) {
+    for (var doc in absencesDocs.docs) {
       final absence = EmployeeAbsenceModel.fromFirestore(
         doc.data() as Map<String, dynamic>,
         doc.id,
       );
-      if (absence.isCurrentlyAbsent) {
+      // Filter in-memory: match rawdha (or default) and currently absent
+      if ((absence.rawdhaId == rawdhaId || absence.rawdhaId == 'default') && absence.isCurrentlyAbsent) {
         absentCount++;
       }
     }
@@ -129,22 +152,18 @@ class EmployeeService {
     return totalCount - absentCount;
   }
 
-  /// Compter les employés absents aujourd'hui
-  Future<int> countAbsentEmployees() async {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    
-    final absences = await _absencesCollection
-        .where('startDate', isLessThanOrEqualTo: today.toIso8601String())
-        .get();
+  /// Compter les employés absents aujourd'hui pour une rawdha
+  Future<int> countAbsentEmployees(String rawdhaId) async {
+    final absencesDocs = await _absencesCollection.get();
     
     int absentCount = 0;
-    for (var doc in absences.docs) {
+    for (var doc in absencesDocs.docs) {
       final absence = EmployeeAbsenceModel.fromFirestore(
         doc.data() as Map<String, dynamic>,
         doc.id,
       );
-      if (absence.isCurrentlyAbsent) {
+      // Filter in-memory: match rawdha (or default) and currently absent
+      if ((absence.rawdhaId == rawdhaId || absence.rawdhaId == 'default') && absence.isCurrentlyAbsent) {
         absentCount++;
       }
     }

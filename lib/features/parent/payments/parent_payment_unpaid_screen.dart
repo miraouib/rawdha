@@ -6,7 +6,10 @@ import '../../../models/payment_model.dart';
 import '../../../services/payment_service.dart';
 import '../../../core/helpers/date_helper.dart';
 
-class ParentPaymentUnpaidScreen extends StatelessWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
+class ParentPaymentUnpaidScreen extends ConsumerWidget {
   final ParentModel parent;
 
   const ParentPaymentUnpaidScreen({super.key, required this.parent});
@@ -38,7 +41,8 @@ class ParentPaymentUnpaidScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
     final paymentService = PaymentService();
     final allRelevantMonths = _generatePastUnpaidMonths();
 
@@ -48,12 +52,12 @@ class ParentPaymentUnpaidScreen extends StatelessWidget {
         title: Text('parent.unpaid_months'.tr()),
       ),
       body: FutureBuilder<double>(
-        future: paymentService.calculateExpectedAmount(parent.id),
+        future: paymentService.calculateExpectedAmount(rawdhaId, parent.id),
         builder: (context, expectedSnapshot) {
           final expectedMonthlyAmount = expectedSnapshot.data ?? parent.monthlyFee ?? 0.0;
 
           return StreamBuilder<List<PaymentModel>>(
-            stream: paymentService.getPaymentsByParent(parent.id),
+            stream: paymentService.getPaymentsByParent(rawdhaId, parent.id),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());

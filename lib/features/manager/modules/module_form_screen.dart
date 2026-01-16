@@ -5,17 +5,20 @@ import '../../../models/module_model.dart';
 import '../../../models/school_level_model.dart';
 import '../../../services/module_service.dart';
 
-class ModuleFormScreen extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
+
+class ModuleFormScreen extends ConsumerStatefulWidget {
   final ModuleModel? module;
   final String levelId;
 
   const ModuleFormScreen({super.key, this.module, required this.levelId});
 
   @override
-  State<ModuleFormScreen> createState() => _ModuleFormScreenState();
+  ConsumerState<ModuleFormScreen> createState() => _ModuleFormScreenState();
 }
 
-class _ModuleFormScreenState extends State<ModuleFormScreen> {
+class _ModuleFormScreenState extends ConsumerState<ModuleFormScreen> {
   final _formKey = GlobalKey<FormState>();
   
   // Champs principaux
@@ -76,10 +79,20 @@ class _ModuleFormScreenState extends State<ModuleFormScreen> {
       return;
     }
 
+    final rawdhaId = ref.watch(currentRawdhaIdProvider);
+    if (rawdhaId == null) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur: ID Rawdha non trouvé')));
+      }
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
       final module = ModuleModel(
+        rawdhaId: rawdhaId,
         id: widget.module?.id ?? '',
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),

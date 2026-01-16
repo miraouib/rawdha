@@ -3,6 +3,7 @@
 /// Gère les absences des élèves avec dates et cause
 class StudentAbsenceModel {
   final String absenceId;
+  final String rawdhaId;
   final String studentId;
   final DateTime startDate;
   final DateTime? endDate; // Null si l'absence est en cours
@@ -11,6 +12,7 @@ class StudentAbsenceModel {
 
   StudentAbsenceModel({
     required this.absenceId,
+    required this.rawdhaId,
     required this.studentId,
     required this.startDate,
     this.endDate,
@@ -22,6 +24,7 @@ class StudentAbsenceModel {
   factory StudentAbsenceModel.fromFirestore(Map<String, dynamic> data, String id) {
     return StudentAbsenceModel(
       absenceId: id,
+      rawdhaId: data['rawdhaId'] ?? '',
       studentId: data['studentId'] ?? '',
       startDate: DateTime.parse(data['startDate']),
       endDate: data['endDate'] != null ? DateTime.parse(data['endDate']) : null,
@@ -33,6 +36,7 @@ class StudentAbsenceModel {
   /// Convertit en Map pour Firestore
   Map<String, dynamic> toFirestore() {
     return {
+      'rawdhaId': rawdhaId,
       'studentId': studentId,
       'startDate': startDate.toIso8601String(),
       'endDate': endDate?.toIso8601String(),
@@ -66,6 +70,7 @@ class StudentAbsenceModel {
   /// Copie avec modifications
   StudentAbsenceModel copyWith({
     String? absenceId,
+    String? rawdhaId,
     String? studentId,
     DateTime? startDate,
     DateTime? endDate,
@@ -74,6 +79,7 @@ class StudentAbsenceModel {
   }) {
     return StudentAbsenceModel(
       absenceId: absenceId ?? this.absenceId,
+      rawdhaId: rawdhaId ?? this.rawdhaId,
       studentId: studentId ?? this.studentId,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,

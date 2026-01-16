@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// Contient toutes les informations d'un élève
 class StudentModel {
   final String studentId;
+  final String rawdhaId; // Lien vers la Rawdha
   final String firstName;
   final String lastName;
   final String gender; // 'boy' ou 'girl'
@@ -19,6 +20,7 @@ class StudentModel {
 
   StudentModel({
     required this.studentId,
+    required this.rawdhaId,
     required this.firstName,
     required this.lastName,
     required this.gender,
@@ -36,6 +38,7 @@ class StudentModel {
   factory StudentModel.fromFirestore(Map<String, dynamic> data, String id) {
     return StudentModel(
       studentId: id,
+      rawdhaId: data['rawdhaId'] ?? 'default',
       firstName: data['firstName'] ?? '',
       lastName: data['lastName'] ?? '',
       gender: data['gender'] ?? 'boy',
@@ -53,6 +56,7 @@ class StudentModel {
   /// Convertit en Map pour Firestore
   Map<String, dynamic> toFirestore() {
     return {
+      'rawdhaId': rawdhaId,
       'firstName': firstName,
       'lastName': lastName,
       'gender': gender,
@@ -78,6 +82,7 @@ class StudentModel {
   /// Copie avec modifications
   StudentModel copyWith({
     String? studentId,
+    String? rawdhaId,
     String? firstName,
     String? lastName,
     String? gender,
@@ -92,6 +97,7 @@ class StudentModel {
   }) {
     return StudentModel(
       studentId: studentId ?? this.studentId,
+      rawdhaId: rawdhaId ?? this.rawdhaId,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
       gender: gender ?? this.gender,

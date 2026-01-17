@@ -3,6 +3,8 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../models/announcement_model.dart';
 import '../../../services/announcement_service.dart';
+import '../../../models/school_level_model.dart';
+import '../../../services/school_service.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
@@ -21,6 +23,8 @@ class _AnnouncementFormScreenState extends ConsumerState<AnnouncementFormScreen>
   
   AnnouncementTag _selectedTag = AnnouncementTag.info;
   DateTimeRange? _selectedDateRange;
+  String? _selectedLevelId; // null = All levels
+
   
   bool _isLoading = false;
   
@@ -95,6 +99,7 @@ class _AnnouncementFormScreenState extends ConsumerState<AnnouncementFormScreen>
         endDate: _selectedDateRange!.end.add(const Duration(hours: 23, minutes: 59)), // End of day
         createdAt: DateTime.now(),
         createdBy: 'manager', // TODO: Use real user ID
+        targetLevelId: _selectedLevelId,
       );
 
       await AnnouncementService().createAnnouncement(rawdhaId, announcement);
@@ -146,6 +151,37 @@ class _AnnouncementFormScreenState extends ConsumerState<AnnouncementFormScreen>
                 validator: (v) => v?.isNotEmpty == true ? null : 'common.error'.tr(),
               ),
               const SizedBox(height: 16),
+
+              // Level Target Selector
+              StreamBuilder<List<SchoolLevelModel>>(
+                stream: SchoolService().getLevels(ref.read(currentRawdhaIdProvider) ?? ''),
+                builder: (context, snapshot) {
+                  final levels = snapshot.data ?? [];
+                  return DropdownButtonFormField<String?>(
+                    value: _selectedLevelId,
+                    decoration: InputDecoration(
+                      labelText: 'announcements.target_level'.tr(),
+                      prefixIcon: const Icon(Icons.people),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    items: [
+                      DropdownMenuItem<String?>(
+                        value: null,
+                        child: Text('announcements.all_levels'.tr()),
+                      ),
+                      ...levels.map((level) {
+                        return DropdownMenuItem<String?>(
+                          value: level.id,
+                          child: Text(Localizations.localeOf(context).languageCode == 'ar' ? level.nameAr : level.nameFr),
+                        );
+                      }),
+                    ],
+                    onChanged: (v) => setState(() => _selectedLevelId = v),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+
               
               // Tag Selector
               DropdownButtonFormField<AnnouncementTag>(
@@ -163,7 +199,8 @@ class _AnnouncementFormScreenState extends ConsumerState<AnnouncementFormScreen>
                         rawdhaId: '',
                         id: '', title: '', tag: tag, content: '', 
                         startDate: DateTime.now(), endDate: DateTime.now(), 
-                        createdAt: DateTime.now(), createdBy: ''
+                        createdAt: DateTime.now(), createdBy: '',
+                        targetLevelId: null,
                       ).tagLabel
                     ),
                   );

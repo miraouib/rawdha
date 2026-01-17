@@ -7,6 +7,19 @@ class PaymentService {
   CollectionReference get _paymentsCollection => _firestore.collection('payments');
   CollectionReference get _studentsCollection => _firestore.collection('students');
 
+  /// Vérifier si un paiement existe déjà pour ce parent, ce mois et cette année
+  Future<bool> checkPaymentExists(String rawdhaId, String parentId, int month, int year) async {
+    final snapshot = await _paymentsCollection
+        .where('rawdhaId', isEqualTo: rawdhaId)
+        .where('parentId', isEqualTo: parentId)
+        .where('month', isEqualTo: month)
+        .where('year', isEqualTo: year)
+        .limit(1)
+        .get();
+        
+    return snapshot.docs.isNotEmpty;
+  }
+
   /// Ajouter un paiement
   Future<void> addPayment(String rawdhaId, PaymentModel payment) async {
     // Vérifier s'il existe déjà un paiement pour ce parent/mois/année et mettre à jour ou ajouter ?
@@ -49,8 +62,9 @@ class PaymentService {
     final parentDoc = await _firestore.collection('parents').doc(parentId).get();
     if (parentDoc.exists) {
        final pData = parentDoc.data();
-       if (pData != null && pData['monthlyFee'] != null && (pData['monthlyFee'] as num) > 0) {
-         return (pData['monthlyFee'] as num).toDouble();
+       if (pData != null && pData['monthlyFee'] != null) {
+          final fee = (num.tryParse(pData['monthlyFee'].toString()) ?? 0).toDouble();
+          if (fee > 0) return fee;
        }
     }
 
@@ -64,7 +78,7 @@ class PaymentService {
     double total = 0;
     for (var doc in snapshot.docs) {
       final data = doc.data() as Map<String, dynamic>;
-      total += (data['monthlyFee'] ?? 0).toDouble();
+      total += (num.tryParse(data['monthlyFee']?.toString() ?? '0') ?? 0).toDouble();
     }
     return total;
   }

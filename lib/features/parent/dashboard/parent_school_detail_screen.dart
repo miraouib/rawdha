@@ -87,14 +87,7 @@ class ParentSchoolDetailScreen extends ConsumerWidget {
                   ),
                 ),
                 
-                if (config.registrationNumber != null && config.registrationNumber!.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      '${'school.fields.reg_number'.tr()}: ${config.registrationNumber}',
-                      style: const TextStyle(color: AppTheme.textLight, fontSize: 14),
-                    ),
-                  ),
+
 
                 const SizedBox(height: 40),
 
@@ -102,7 +95,7 @@ class ParentSchoolDetailScreen extends ConsumerWidget {
                 _buildInfoCard(
                   context,
                   title: 'school.fields.address'.tr(),
-                  content: config.address ?? 'Non renseignée',
+                  content: config.address ?? 'common.not_defined'.tr(),
                   icon: Icons.location_on,
                   color: AppTheme.primaryPurple,
                 ),
@@ -112,7 +105,7 @@ class ParentSchoolDetailScreen extends ConsumerWidget {
                 _buildInfoCard(
                   context,
                   title: 'school.fields.phone'.tr(),
-                  content: config.phone ?? 'Non renseigné',
+                  content: config.phone ?? 'common.not_defined'.tr(),
                   icon: Icons.phone,
                   color: AppTheme.primaryBlue,
                 ),
@@ -122,7 +115,7 @@ class ParentSchoolDetailScreen extends ConsumerWidget {
                 _buildInfoCard(
                   context,
                   title: 'school.fields.email'.tr(),
-                  content: config.email ?? 'Non renseigné',
+                  content: config.email ?? 'common.not_defined'.tr(),
                   icon: Icons.email,
                   color: AppTheme.accentPink,
                 ),

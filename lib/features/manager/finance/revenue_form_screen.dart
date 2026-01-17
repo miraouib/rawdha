@@ -30,6 +30,8 @@ class _RevenueFormScreenState extends ConsumerState<RevenueFormScreen> {
   int _selectedYear = DateTime.now().year;
   bool _isLoading = false;
   String _parentSearchQuery = '';
+  String _paymentType = 'full'; // 'full' (Total) or 'partial' (Partiel)
+
   
   final PaymentService _paymentService = PaymentService();
   final ParentService _parentService = ParentService();
@@ -55,9 +57,9 @@ class _RevenueFormScreenState extends ConsumerState<RevenueFormScreen> {
       final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
       final amount = await _paymentService.calculateExpectedAmount(rawdhaId, _selectedParentId!);
       setState(() {
-        _expectedAmount = amount;
-        if (_amountController.text.isEmpty) {
-           _amountController.text = amount.toStringAsFixed(0);
+        _expectedAmount = amount > 0 ? amount : 120.0; // Fallback to 120 if 0
+        if (_amountController.text.isEmpty || _amountController.text == '0') {
+           _amountController.text = _expectedAmount.toStringAsFixed(0);
         }
       });
     }
@@ -143,10 +145,19 @@ class _RevenueFormScreenState extends ConsumerState<RevenueFormScreen> {
     }
 
     final rawdhaId = ref.watch(currentRawdhaIdProvider);
-    if (rawdhaId == null) {
+    if (rawdhaId == null) return;
+
+    setState(() => _isLoading = true);
+
+    // 1. Check Duplicate
+    final exists = await _paymentService.checkPaymentExists(rawdhaId, _selectedParentId!, _selectedMonth, _selectedYear);
+    if (exists) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur: ID Rawdha non trouvé')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('finance.error_payment_exists'.tr()),
+          backgroundColor: Colors.red,
+        ));
       }
       return;
     }
@@ -271,17 +282,59 @@ class _RevenueFormScreenState extends ConsumerState<RevenueFormScreen> {
                       ),
                       const SizedBox(height: 16),
 
+                      // Payment Type Selection (Radio Buttons)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: RadioListTile<String>(
+                              title: Text('finance.payment_type_full'.tr(), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+                              value: 'full',
+                              groupValue: _paymentType,
+                              onChanged: (value) {
+                                setState(() {
+                                  _paymentType = value!;
+                                  _amountController.text = _expectedAmount.toStringAsFixed(0);
+                                });
+                              },
+                              activeColor: Colors.green,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                          ),
+                          Expanded(
+                            child: RadioListTile<String>(
+                              title: Text('finance.payment_type_partial'.tr(), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange)),
+                              value: 'partial',
+                              groupValue: _paymentType,
+                              onChanged: (value) {
+                                setState(() {
+                                  _paymentType = value!;
+                                  _amountController.clear();
+                                });
+                              },
+                              activeColor: Colors.orange,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+
                       // Amount Input
                       TextFormField(
                         controller: _amountController,
                         keyboardType: TextInputType.number,
+                        enabled: _paymentType == 'partial', // Disable if 'full' to prevent editing? Or allow adjustment? Usually 'full' implies fixed. Let's allow edit if needed but default is set. Valid requirement: "Total sets amount", "Partial allows entry".
+                        // Logic Update based on user request "make 2 radio green and orange (delete red)". 
+                        // If 'full', we enforce expectedAmount or just pre-fill?
+                        // "Total" usually means the full amount. Partial means less.
+                        // Let's keep it enabled but pre-filled for better UX.
                         decoration: InputDecoration(
                           labelText: '${"finance.amount_paid".tr()} (${"finance.currency".tr()})',
                           prefixIcon: const Icon(Icons.attach_money),
-                          enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: statusColor)),
-                          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: statusColor, width: 2)),
+                          enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: _paymentType == 'full' ? Colors.green : Colors.orange)),
+                          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: _paymentType == 'full' ? Colors.green : Colors.orange, width: 2)),
                         ),
-                        onChanged: (_) => setState(() {}),
+                        // onChanged: (_) => setState(() {}), // No longer needed for color status update
                         validator: (v) {
                           if (v == null || v.isEmpty) return 'finance.required'.tr();
                           if (double.tryParse(v) == null) return 'finance.invalid'.tr();
@@ -290,14 +343,8 @@ class _RevenueFormScreenState extends ConsumerState<RevenueFormScreen> {
                       ),
                       const SizedBox(height: 8),
                       
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(
-                           statusColor == Colors.green ? 'finance.status_paid'.tr() : 
-                           statusColor == Colors.orange ? 'finance.status_partial'.tr() : 'finance.status_unpaid'.tr(),
-                           style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 12),
-                        ),
-                      ),
+                      const SizedBox(height: 8),
+                      // Removed dynamic status text as requested (replaced by radio selection visual).
                       
                       const SizedBox(height: 16),
 

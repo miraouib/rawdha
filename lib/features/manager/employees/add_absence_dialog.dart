@@ -32,10 +32,10 @@ class _AddAbsenceDialogState extends ConsumerState<AddAbsenceDialog> {
   bool _isLoading = false;
 
   final List<Map<String, dynamic>> _absenceTypes = [
-    {'value': 'sick', 'label': 'Maladie', 'icon': Icons.local_hospital},
-    {'value': 'vacation', 'label': 'Congé', 'icon': Icons.beach_access},
-    {'value': 'personal', 'label': 'Personnel', 'icon': Icons.person},
-    {'value': 'other', 'label': 'Autre', 'icon': Icons.info},
+    {'value': 'sick', 'label': 'absence.causes.sick'.tr(), 'icon': Icons.local_hospital},
+    {'value': 'vacation', 'label': 'absence.causes.travel'.tr(), 'icon': Icons.beach_access},
+    {'value': 'personal', 'label': 'absence.causes.medical'.tr(), 'icon': Icons.person},
+    {'value': 'other', 'label': 'absence.causes.other'.tr(), 'icon': Icons.info},
   ];
 
   @override
@@ -68,7 +68,7 @@ class _AddAbsenceDialogState extends ConsumerState<AddAbsenceDialog> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('absence.add_absence'.tr() + ' réussie'),
+            content: Text('common.success'.tr()),
             backgroundColor: AppTheme.successGreen,
           ),
         );
@@ -78,7 +78,7 @@ class _AddAbsenceDialogState extends ConsumerState<AddAbsenceDialog> {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur: $e'),
+            content: Text('${'common.error'.tr()}: $e'),
             backgroundColor: AppTheme.errorRed,
           ),
         );
@@ -99,9 +99,9 @@ class _AddAbsenceDialogState extends ConsumerState<AddAbsenceDialog> {
               // Type d'absence
               DropdownButtonFormField<String>(
                 value: _type,
-                decoration: const InputDecoration(
-                  labelText: 'Type d\'absence',
-                  prefixIcon: Icon(Icons.category),
+                decoration: InputDecoration(
+                  labelText: 'absence.type'.tr(),
+                  prefixIcon: const Icon(Icons.category),
                 ),
                 items: _absenceTypes.map<DropdownMenuItem<String>>((type) {
                   return DropdownMenuItem<String>(
@@ -125,7 +125,7 @@ class _AddAbsenceDialogState extends ConsumerState<AddAbsenceDialog> {
               TextFormField(
                 controller: _reasonController,
                 decoration: InputDecoration(
-                  labelText: '${'absence.cause'.tr()} (Optionnel)',
+                  labelText: 'absence.cause'.tr(),
                   prefixIcon: const Icon(Icons.notes),
                 ),
                 maxLines: 2,
@@ -159,7 +159,7 @@ class _AddAbsenceDialogState extends ConsumerState<AddAbsenceDialog> {
                 subtitle: Text(
                   _endDate != null
                       ? DateFormat('dd/MM/yyyy').format(_endDate!)
-                      : 'En cours',
+                      : 'absence.ongoing'.tr(),
                 ),
                 trailing: _endDate != null
                     ? IconButton(

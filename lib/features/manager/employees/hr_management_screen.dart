@@ -100,7 +100,7 @@ class _HRManagementScreenState extends ConsumerState<HRManagementScreen> {
                   children: [
                     Expanded(
                       child: _StatCard(
-                        title: 'Total',
+                        title: 'employee.stats.total'.tr(),
                         value: total.toString(),
                         icon: Icons.people,
                         color: AppTheme.primaryBlue,
@@ -109,7 +109,7 @@ class _HRManagementScreenState extends ConsumerState<HRManagementScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _StatCard(
-                        title: 'Présents',
+                        title: 'employee.stats.present'.tr(),
                         value: present.toString(),
                         icon: Icons.check_circle,
                         color: AppTheme.successGreen,
@@ -118,7 +118,7 @@ class _HRManagementScreenState extends ConsumerState<HRManagementScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _StatCard(
-                        title: 'Absents',
+                        title: 'employee.stats.absent'.tr(),
                         value: absentCount.toString(),
                         icon: Icons.cancel,
                         color: AppTheme.errorRed,
@@ -165,7 +165,7 @@ class _HRManagementScreenState extends ConsumerState<HRManagementScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Aucun employé',
+                  'employee.no_employee'.tr(),
                   style: TextStyle(
                     fontSize: 18,
                     color: AppTheme.textGray,
@@ -173,7 +173,7 @@ class _HRManagementScreenState extends ConsumerState<HRManagementScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Ajoutez votre premier employé',
+                  'employee.add_first'.tr(),
                   style: TextStyle(
                     fontSize: 14,
                     color: AppTheme.textLight,
@@ -195,7 +195,7 @@ class _HRManagementScreenState extends ConsumerState<HRManagementScreen> {
         if (employees.isEmpty) {
           return Center(
             child: Text(
-              'Aucun résultat',
+              'common.no_results'.tr(),
               style: TextStyle(color: AppTheme.textGray),
             ),
           );

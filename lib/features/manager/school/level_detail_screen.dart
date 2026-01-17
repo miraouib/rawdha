@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../models/school_level_model.dart';
 import '../../../models/student_model.dart';
@@ -36,7 +37,7 @@ class _LevelDetailScreenState extends ConsumerState<LevelDetailScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: Text('${Localizations.localeOf(context).languageCode == 'ar' ? widget.level.nameAr : widget.level.nameFr} - Élèves'),
+        title: Text('${Localizations.localeOf(context).languageCode == 'ar' ? widget.level.nameAr : widget.level.nameFr} - ${'student.students'.tr()}'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -53,7 +54,7 @@ class _LevelDetailScreenState extends ConsumerState<LevelDetailScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Rechercher un élève',
+                hintText: 'student.search_student'.tr(),
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(icon: const Icon(Icons.clear), onPressed: () {
@@ -89,7 +90,7 @@ class _LevelDetailScreenState extends ConsumerState<LevelDetailScreen> {
                 }).toList();
 
                 if (students.isEmpty) {
-                   return const Center(child: Text('Aucun résultat trouvé'));
+                   return Center(child: Text('common.no_results'.tr()));
                 }
 
                 return ListView.separated(
@@ -116,8 +117,8 @@ class _LevelDetailScreenState extends ConsumerState<LevelDetailScreen> {
         children: [
           Icon(Icons.school_outlined, size: 80, color: AppTheme.textLight),
           const SizedBox(height: 16),
-          const Text(
-            'Aucun élève dans ce niveau',
+          Text(
+            'school.no_classes'.tr(),
             style: TextStyle(fontSize: 18, color: AppTheme.textGray),
           ),
           const SizedBox(height: 16),
@@ -126,7 +127,7 @@ class _LevelDetailScreenState extends ConsumerState<LevelDetailScreen> {
                context.pushNamed('student_add');
             },
             icon: const Icon(Icons.add),
-            label: const Text('Ajouter un élève'),
+            label: Text('student.add_student'.tr()),
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryBlue, foregroundColor: Colors.white),
           ),
         ],

@@ -73,7 +73,7 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
     if (rawdhaId == null) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur: ID Rawdha non trouvé')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('common.error'.tr())));
       }
       return;
     }
@@ -106,7 +106,7 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
         Navigator.pop(context, employee);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_isEditing ? 'Employé modifié' : 'Employé ajouté'),
+            content: Text(_isEditing ? 'employee.edit_success'.tr() : 'employee.add_success'.tr()),
             backgroundColor: AppTheme.successGreen,
           ),
         );
@@ -129,7 +129,7 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: Text(_isEditing ? 'Modifier employé' : 'employee.add_employee'.tr()),
+        title: Text(_isEditing ? 'employee.edit_employee'.tr() : 'employee.add_employee'.tr()),
       ),
       body: Form(
         key: _formKey,
@@ -145,7 +145,7 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Champ requis';
+                  return 'finance.required'.tr();
                 }
                 return null;
               },
@@ -161,7 +161,7 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Champ requis';
+                  return 'finance.required'.tr();
                 }
                 return null;
               },
@@ -178,7 +178,7 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
               keyboardType: TextInputType.phone,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Champ requis';
+                  return 'finance.required'.tr();
                 }
                 return null;
               },
@@ -188,13 +188,13 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
             // Poste
             TextFormField(
               controller: _roleController,
-              decoration: const InputDecoration(
-                labelText: 'Poste',
-                prefixIcon: Icon(Icons.work),
+              decoration: InputDecoration(
+                labelText: 'employee.role'.tr(),
+                prefixIcon: const Icon(Icons.work),
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Champ requis';
+                  return 'finance.required'.tr();
                 }
                 return null;
               },
@@ -212,10 +212,10 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
               keyboardType: TextInputType.number,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Champ requis';
+                  return 'finance.required'.tr();
                 }
                 if (double.tryParse(value) == null) {
-                  return 'Montant invalide';
+                  return 'finance.invalid'.tr();
                 }
                 return null;
               },
@@ -229,7 +229,7 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
               subtitle: Text(
                 _birthdate != null
                     ? DateFormat('dd/MM/yyyy').format(_birthdate!)
-                    : 'Non définie',
+                    : 'common.not_defined'.tr(),
               ),
               trailing: const Icon(Icons.calendar_today),
               onTap: () async {
@@ -249,7 +249,7 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
             // Date d'embauche
             ListTile(
               leading: const Icon(Icons.work_history),
-              title: const Text('Date d\'embauche'),
+              title: Text('employee.hire_date'.tr()),
               subtitle: Text(DateFormat('dd/MM/yyyy').format(_hireDate)),
               trailing: const Icon(Icons.calendar_today),
               onTap: () async {

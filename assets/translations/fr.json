@@ -45,6 +45,8 @@
         "title": "Annonces",
         "new_announcement": "Nouvelle Annonce",
         "form_title": "Créer une Annonce",
+        "target_level": "Cible",
+        "all_levels": "Tous les niveaux",
         "field_title": "Titre",
         "field_content": "Contenu",
         "field_tag": "Type",
@@ -198,6 +200,15 @@
             "medical": "Rendez-vous médical",
             "family": "Événement familial",
             "other": "Autre"
+        },
+        "type": "Type d'absence",
+        "ongoing": "En cours",
+        "total_days": "Total des absences",
+        "no_absence": "Aucune absence enregistrée",
+        "confirm_delete": "Voulez-vous vraiment supprimer cette absence ?",
+        "days_count": {
+            "one": "Nombre de jours: {}",
+            "other": "Nombre de jours: {}"
         }
     },
     "payment": {
@@ -220,6 +231,7 @@
         "parent": "Parent",
         "results": "résultats",
         "expected_amount": "Montant Dû",
+        "amount": "Montant",
         "amount_paid": "Montant Payé",
         "payment_date": "Date de paiement",
         "note": "Note",
@@ -231,6 +243,11 @@
         "status_paid": "Payé (Vert)",
         "status_partial": "Partiel (Orange)",
         "status_unpaid": "Non Payé (Rouge)",
+        "payment_type_full": "Total (Payé)",
+        "payment_type_partial": "Partiel",
+        "error_payment_exists": "Un paiement existe déjà pour ce parent ce mois-ci.",
+        "confirm_delete_payment": "Voulez-vous vraiment supprimer ce paiement ?",
+        "payment_deleted": "Paiement supprimé avec succès",
         "total_expenses": "Total Charges",
         "total_revenue": "Total Revenus",
         "no_expenses": "Aucune dépense ce mois-ci",
@@ -249,9 +266,24 @@
     "employee": {
         "employees": "Employés",
         "add_employee": "Ajouter un employé",
+        "edit_employee": "Modifier un employé",
         "salary": "Salaire",
         "phone": "Téléphone",
-        "birthdate": "Date de naissance"
+        "birthdate": "Date de naissance",
+        "hire_date": "Date d'embauche",
+        "role": "Poste",
+        "personal_info": "Informations personnelles",
+        "no_employee": "Aucun employé",
+        "add_first": "Ajoutez votre premier employé",
+        "confirm_delete": "Voulez-vous vraiment supprimer cet employé ?",
+        "delete_success": "Employé supprimé avec succès",
+        "add_success": "Employé ajouté avec succès",
+        "edit_success": "Employé modifié avec succès",
+        "stats": {
+            "total": "Total",
+            "present": "Présents",
+            "absent": "Absents"
+        }
     },
     "school": {
         "levels_management": "Gestion des Niveaux",
@@ -267,13 +299,16 @@
         "add_first_class": "Ajouter une classe",
         "configuration": "Configuration de l'école",
         "config_desc": "Nom, adresse, contact, logo",
+        "info_general": "Informations Générales",
+        "contact": "Contact",
+        "branding": "Image de marque",
+        "logo_hint": "Lien vers une image en ligne (URL)",
         "fields": {
             "name": "Nom de l'école",
             "address": "Adresse",
             "phone": "Téléphone",
             "email": "Email",
-            "logo_url": "URL du Logo",
-            "reg_number": "Matricule Fiscale"
+            "logo_url": "URL du Logo"
         }
     },
     "common": {
@@ -286,6 +321,8 @@
         "loading": "Chargement...",
         "error": "Erreur",
         "success": "Succès",
-        "total": "Total"
+        "total": "Total",
+        "no_results": "Aucun résultat",
+        "not_defined": "Non défini"
     }
 }

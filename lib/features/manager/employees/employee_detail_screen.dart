@@ -95,7 +95,7 @@ class EmployeeDetailScreen extends ConsumerWidget {
           // Informations personnelles
           _buildSection(
             context,
-            title: 'Informations personnelles',
+            title: 'employee.personal_info'.tr(),
             children: [
               _InfoTile(
                 icon: Icons.phone,
@@ -108,17 +108,17 @@ class EmployeeDetailScreen extends ConsumerWidget {
                 label: 'employee.birthdate'.tr(),
                 value: employee.birthdate != null
                     ? DateFormat('dd/MM/yyyy').format(employee.birthdate!)
-                    : 'Non définie',
+                    : 'common.not_defined'.tr(),
               ),
               _InfoTile(
                 icon: Icons.work_history,
-                label: 'Date d\'embauche',
+                label: 'employee.hire_date'.tr(),
                 value: DateFormat('dd/MM/yyyy').format(employee.hireDate),
               ),
               _InfoTile(
                 icon: Icons.attach_money,
                 label: 'employee.salary'.tr(),
-                value: '${encryption.decryptNumber(employee.encryptedSalary).toStringAsFixed(2)} DTN',
+                value: '${encryption.decryptNumber(employee.encryptedSalary).toStringAsFixed(2)} ${'finance.currency'.tr()}',
                 isConfidential: true,
               ),
             ],
@@ -127,7 +127,7 @@ class EmployeeDetailScreen extends ConsumerWidget {
           // Liste des absences
           _buildSection(
             context,
-            title: 'Absences',
+            title: 'absence.absence'.tr(),
             trailing: IconButton(
               icon: const Icon(Icons.add),
               onPressed: () => _showAddAbsenceDialog(context, employeeService),
@@ -144,7 +144,7 @@ class EmployeeDetailScreen extends ConsumerWidget {
                     return Padding(
                       padding: const EdgeInsets.all(16),
                       child: Text(
-                        'Aucune absence enregistrée',
+                        'absence.no_absence'.tr(),
                         style: TextStyle(color: AppTheme.textGray),
                         textAlign: TextAlign.center,
                       ),
@@ -164,7 +164,7 @@ class EmployeeDetailScreen extends ConsumerWidget {
                             Icon(Icons.summarize, color: AppTheme.textGray, size: 20),
                             const SizedBox(width: 8),
                             Text(
-                              'Total des absences :',
+                              'absence.total_days'.tr() + ' :',
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
                                 color: AppTheme.textDark,
@@ -178,7 +178,7 @@ class EmployeeDetailScreen extends ConsumerWidget {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
-                                '$totalDays jour${totalDays > 1 ? 's' : ''}',
+                                plural('absence.days_count', totalDays),
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: AppTheme.errorRed,
@@ -240,8 +240,8 @@ class EmployeeDetailScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Supprimer l\'employé'),
-        content: Text('Voulez-vous vraiment supprimer ${employee.fullName}?'),
+        title: Text('common.delete'.tr()),
+        content: Text('employee.confirm_delete'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -254,7 +254,7 @@ class EmployeeDetailScreen extends ConsumerWidget {
                 Navigator.pop(context); // Dialog
                 Navigator.pop(context); // Detail screen
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Employé supprimé')),
+                  SnackBar(content: Text('employee.delete_success'.tr())),
                 );
               }
             },
@@ -367,15 +367,15 @@ class _AbsenceTile extends ConsumerWidget {
         backgroundColor: typeColor.withOpacity(0.1),
         child: Icon(typeIcon, color: typeColor, size: 20),
       ),
-      title: Text(absence.reason.isEmpty ? 'Absence' : absence.reason),
+      title: Text(absence.reason.isEmpty ? 'absence.absence'.tr() : absence.reason),
       subtitle: Text(
         '${DateFormat('dd/MM/yyyy').format(absence.startDate)} - '
-        '${isOngoing ? 'En cours' : DateFormat('dd/MM/yyyy').format(absence.endDate!)} '
-        '(${absence.durationInDays} jour${absence.durationInDays > 1 ? 's' : ''})',
+        '${isOngoing ? 'absence.ongoing'.tr() : DateFormat('dd/MM/yyyy').format(absence.endDate!)} '
+        '(${plural('absence.days_count', absence.durationInDays)})',
       ),
       trailing: isCurrent
           ? Chip(
-              label: const Text('En cours', style: TextStyle(fontSize: 11)),
+              label: Text('absence.ongoing'.tr(), style: const TextStyle(fontSize: 11)),
               backgroundColor: AppTheme.errorRed.withOpacity(0.1),
               labelStyle: TextStyle(color: AppTheme.errorRed),
             )
@@ -388,8 +388,8 @@ class _AbsenceTile extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Supprimer l\'absence'),
-        content: const Text('Voulez-vous vraiment supprimer cette absence ?'),
+        title: Text('common.delete'.tr()),
+        content: Text('absence.confirm_delete'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -402,7 +402,7 @@ class _AbsenceTile extends ConsumerWidget {
               if (context.mounted) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Absence supprimée')),
+                  SnackBar(content: Text('common.success'.tr())),
                 );
               }
             },

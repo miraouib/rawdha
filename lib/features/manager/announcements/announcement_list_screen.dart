@@ -4,6 +4,9 @@ import '../../../core/theme/app_theme.dart';
 import '../../../models/announcement_model.dart';
 import '../../../services/announcement_service.dart';
 import 'announcement_form_screen.dart';
+import 'package:rxdart/rxdart.dart';
+import '../../../models/school_level_model.dart';
+import '../../../services/school_service.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
@@ -30,8 +33,14 @@ class AnnouncementListScreen extends ConsumerWidget {
         icon: const Icon(Icons.add),
         backgroundColor: AppTheme.primaryBlue,
       ),
-      body: StreamBuilder<List<AnnouncementModel>>(
-        stream: AnnouncementService().getAnnouncements(rawdhaId),
+      body: StreamBuilder<List<dynamic>>(
+        stream: Rx.combineLatest2(
+          AnnouncementService().getAnnouncements(rawdhaId),
+          SchoolService().getLevels(rawdhaId),
+          (List<AnnouncementModel> announcements, List<SchoolLevelModel> levels) {
+            return [announcements, levels];
+          },
+        ),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -41,7 +50,11 @@ class AnnouncementListScreen extends ConsumerWidget {
             return Center(child: Text('${"common.error".tr()}: ${snapshot.error}'));
           }
 
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          final announcements = (snapshot.data?[0] as List<AnnouncementModel>?) ?? [];
+          final levels = (snapshot.data?[1] as List<SchoolLevelModel>?) ?? [];
+          final levelMap = {for (var l in levels) l.id: l};
+
+          if (announcements.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -49,15 +62,13 @@ class AnnouncementListScreen extends ConsumerWidget {
                   const Icon(Icons.notifications_off_outlined, size: 80, color: Colors.grey),
                   const SizedBox(height: 16),
                   Text(
-                    'announcements.title'.tr(), // Just a placeholder if empty
+                    'announcements.title'.tr(), 
                     style: const TextStyle(fontSize: 18, color: Colors.grey),
                   ),
                 ],
               ),
             );
           }
-
-          final announcements = snapshot.data!;
           
           return ListView.separated(
             padding: const EdgeInsets.all(16),
@@ -74,6 +85,17 @@ class AnnouncementListScreen extends ConsumerWidget {
                       : 'announcements.status.scheduled'.tr();
               
               Color statusColor = isActive ? Colors.green : (isPast ? Colors.grey : Colors.orange);
+              
+              // Target Display
+              String targetLabel = 'announcements.all_levels'.tr();
+              if (announcement.targetLevelId != null) {
+                 final level = levelMap[announcement.targetLevelId];
+                 if (level != null) {
+                    targetLabel = Localizations.localeOf(context).languageCode == 'ar' ? level.nameAr : level.nameFr;
+                 } else {
+                    targetLabel = 'Unknown';
+                 }
+              }
 
               return Card(
                 elevation: 2,
@@ -83,39 +105,67 @@ class AnnouncementListScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Wrap(
-                        alignment: WrapAlignment.spaceBetween,
-                        spacing: 8.0,
-                        runSpacing: 4.0,
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: announcement.color.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
+                          Expanded(
+                            child: Wrap(
+                              spacing: 8.0,
+                              runSpacing: 4.0,
                               children: [
-                                Icon(announcement.icon, size: 16, color: announcement.color),
-                                const SizedBox(width: 4),
-                                Text(
-                                  announcement.tagLabel,
-                                  style: TextStyle(color: announcement.color, fontWeight: FontWeight.bold, fontSize: 12),
+                                // Tag Badge
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: announcement.color.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(announcement.icon, size: 16, color: announcement.color),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        announcement.tagLabel,
+                                        style: TextStyle(color: announcement.color, fontWeight: FontWeight.bold, fontSize: 12),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Target Badge
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blueGrey.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: Colors.blueGrey.withOpacity(0.3)),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.people, size: 16, color: Colors.blueGrey),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        targetLabel,
+                                        style: const TextStyle(color: Colors.blueGrey, fontWeight: FontWeight.bold, fontSize: 12),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Status Badge
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: statusColor.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: statusColor.withOpacity(0.5)),
+                                  ),
+                                  child: Text(
+                                    statusLabel,
+                                    style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 12),
+                                  ),
                                 ),
                               ],
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: statusColor.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: statusColor.withOpacity(0.5)),
-                            ),
-                            child: Text(
-                              statusLabel,
-                              style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 12),
                             ),
                           ),
                         ],

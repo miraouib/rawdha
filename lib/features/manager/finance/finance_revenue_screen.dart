@@ -22,7 +22,7 @@ class _FinanceRevenueScreenState extends ConsumerState<FinanceRevenueScreen> {
   final PaymentService _paymentService = PaymentService();
   final ParentService _parentService = ParentService();
   
-  bool _filterRed = true;
+
   bool _filterOrange = true;
   bool _filterGreen = true;
   String _revenueSearchQuery = '';
@@ -95,14 +95,7 @@ class _FinanceRevenueScreenState extends ConsumerState<FinanceRevenueScreen> {
                   selectedColor: Colors.orange.withOpacity(0.2),
                   backgroundColor: Colors.grey.shade100,
                 ),
-                FilterChip(
-                  avatar: Icon(Icons.error, color: _filterRed ? Colors.red : Colors.grey, size: 20),
-                  label: const Text(''),
-                  selected: _filterRed,
-                  onSelected: (v) => setState(() => _filterRed = v),
-                  selectedColor: Colors.red.withOpacity(0.2),
-                  backgroundColor: Colors.grey.shade100,
-                ),
+
               ],
             ),
           ),
@@ -134,7 +127,7 @@ class _FinanceRevenueScreenState extends ConsumerState<FinanceRevenueScreen> {
                     final filteredPayments = allPayments.where((p) {
                       if (p.status == PaymentStatus.paid && !_filterGreen) return false;
                       if (p.status == PaymentStatus.partial && !_filterOrange) return false;
-                      if (p.status == PaymentStatus.unpaid && !_filterRed) return false;
+                      if (p.status == PaymentStatus.unpaid) return false;
                       
                       if (_revenueSearchQuery.isNotEmpty) {
                         final parent = parentMap[p.parentId];
@@ -158,7 +151,13 @@ class _FinanceRevenueScreenState extends ConsumerState<FinanceRevenueScreen> {
                         children: [
                           _buildTotalCardInternal(totalRevenue, 'finance.revenue'.tr(), AppTheme.primaryBlue, AppTheme.accentTeal),
                           const SizedBox(height: 24),
-                           ...filteredPayments.map((p) => _PaymentItem(payment: p, parentMap: parentMap)),
+                           const SizedBox(height: 24),
+                           ...filteredPayments.map((p) => _PaymentItem(
+                             payment: p, 
+                             parentMap: parentMap,
+                             onDelete: () => _confirmDeletePayment(context, p),
+                           )),
+                           const SizedBox(height: 80),
                            const SizedBox(height: 80),
                         ],
                       ),
@@ -223,13 +222,43 @@ class _FinanceRevenueScreenState extends ConsumerState<FinanceRevenueScreen> {
       ),
     );
   }
+
+  Future<void> _confirmDeletePayment(BuildContext context, PaymentModel payment) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('common.delete'.tr()),
+        content: Text('finance.confirm_delete_payment'.tr()),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text('common.cancel'.tr())),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: Text('common.delete'.tr()),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      if (!context.mounted) return;
+      final rawdhaId = ref.read(currentRawdhaIdProvider);
+      if (rawdhaId != null) {
+        await _paymentService.deletePayment(rawdhaId, payment.id);
+        if (context.mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('finance.payment_deleted'.tr())));
+        }
+      }
+    }
+  }
 }
 
 class _PaymentItem extends StatelessWidget {
   final PaymentModel payment;
   final Map<String, ParentModel> parentMap;
+  final VoidCallback onDelete;
 
-  const _PaymentItem({required this.payment, required this.parentMap});
+  const _PaymentItem({required this.payment, required this.parentMap, required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
@@ -264,9 +293,19 @@ class _PaymentItem extends StatelessWidget {
         leading: Icon(icon, color: color),
         title: Text(parentName, style: const TextStyle(fontWeight: FontWeight.bold)), 
         subtitle: Text('${"finance.expected_amount".tr()}: ${payment.expectedAmount.toStringAsFixed(0)} ${"finance.currency".tr()}'),
-        trailing: Text(
-          '+${payment.amount.toStringAsFixed(0)}',
-          style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '+${payment.amount.toStringAsFixed(0)}',
+              style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.grey, size: 20),
+              onPressed: onDelete,
+            ),
+          ],
         ),
       ),
     );

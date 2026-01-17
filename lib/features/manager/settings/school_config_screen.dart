@@ -23,7 +23,6 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
   late TextEditingController _phoneController;
   late TextEditingController _emailController;
   late TextEditingController _logoUrlController; 
-  late TextEditingController _regNumberController;
 
   bool _isLoading = true;
   SchoolConfigModel? _currentConfig;
@@ -41,7 +40,6 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
     _phoneController = TextEditingController();
     _emailController = TextEditingController();
     _logoUrlController = TextEditingController();
-    _regNumberController = TextEditingController();
   }
 
   Future<void> _loadConfig() async {
@@ -56,11 +54,9 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
           _currentConfig = config;
           _nameController.text = config.name;
           _addressController.text = config.address ?? '';
-          _addressController.text = config.address ?? '';
           _phoneController.text = config.phone ?? '';
           _emailController.text = config.email ?? '';
           _logoUrlController.text = config.logoUrl ?? '';
-          _regNumberController.text = config.registrationNumber ?? '';
           _isLoading = false;
         });
       }
@@ -81,7 +77,6 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
     _phoneController.dispose();
     _emailController.dispose();
     _logoUrlController.dispose();
-    _regNumberController.dispose();
     super.dispose();
   }
 
@@ -101,7 +96,6 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
         phone: _phoneController.text.trim(),
         email: _emailController.text.trim(),
         logoUrl: _logoUrlController.text.trim(),
-        registrationNumber: _regNumberController.text.trim(),
       );
       
       await _schoolService.saveSchoolConfig(newConfig, rawdhaId);
@@ -147,7 +141,7 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSectionHeader('Informations Générales'),
+                    _buildSectionHeader('school.info_general'.tr()),
                     const SizedBox(height: 16),
                     
                     TextFormField(
@@ -161,17 +155,10 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
                     ),
                     const SizedBox(height: 16),
                     
-                    TextFormField(
-                      controller: _regNumberController,
-                      decoration: InputDecoration(
-                        labelText: 'school.fields.reg_number'.tr(),
-                        prefixIcon: const Icon(Icons.confirmation_number),
-                        border: const OutlineInputBorder(),
-                      ),
-                    ),
+                    const SizedBox(height: 16),
                     const SizedBox(height: 24),
                     
-                    _buildSectionHeader('Contact'),
+                    _buildSectionHeader('school.contact'.tr()),
                     const SizedBox(height: 16),
                     
                     TextFormField(
@@ -207,7 +194,7 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
                     ),
                     const SizedBox(height: 24),
                     
-                    _buildSectionHeader('Branding'),
+                    _buildSectionHeader('school.branding'.tr()),
                     const SizedBox(height: 16),
                     
                     TextFormField(
@@ -216,7 +203,7 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
                         labelText: 'school.fields.logo_url'.tr(),
                         prefixIcon: const Icon(Icons.image),
                         border: const OutlineInputBorder(),
-                        helperText: 'Lien vers une image en ligne',
+                        helperText: 'school.logo_hint'.tr(),
                       ),
                     ),
                     

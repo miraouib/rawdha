@@ -8,7 +8,6 @@ class SchoolConfigModel {
   final String? phone;
   final String? email;
   final String? logoUrl;
-  final String? registrationNumber;
   final Map<String, dynamic>? socialLinks;
   final DateTime? updatedAt;
 
@@ -20,7 +19,6 @@ class SchoolConfigModel {
     this.phone,
     this.email,
     this.logoUrl,
-    this.registrationNumber,
     this.socialLinks,
     this.updatedAt,
   });
@@ -35,7 +33,6 @@ class SchoolConfigModel {
       phone: data['phone'],
       email: data['email'],
       logoUrl: data['logoUrl'],
-      registrationNumber: data['registrationNumber'],
       socialLinks: data['socialLinks'] as Map<String, dynamic>?,
       updatedAt: data['updatedAt'] != null 
           ? (data['updatedAt'] as Timestamp).toDate() 
@@ -52,7 +49,6 @@ class SchoolConfigModel {
       'phone': phone,
       'email': email,
       'logoUrl': logoUrl,
-      'registrationNumber': registrationNumber,
       'socialLinks': socialLinks,
       'updatedAt': FieldValue.serverTimestamp(),
     };
@@ -65,7 +61,6 @@ class SchoolConfigModel {
     String? phone,
     String? email,
     String? logoUrl,
-    String? registrationNumber,
     Map<String, dynamic>? socialLinks,
     String? rawdhaId,
   }) {
@@ -77,7 +72,6 @@ class SchoolConfigModel {
       phone: phone ?? this.phone,
       email: email ?? this.email,
       logoUrl: logoUrl ?? this.logoUrl,
-      registrationNumber: registrationNumber ?? this.registrationNumber,
       socialLinks: socialLinks ?? this.socialLinks,
       updatedAt: updatedAt,
     );

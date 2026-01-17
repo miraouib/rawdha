@@ -45,6 +45,8 @@
         "title": "الإعلانات",
         "new_announcement": "إعلان جديد",
         "form_title": "إنشاء إعلان",
+        "target_level": "الفئة المستهدفة",
+        "all_levels": "كل المستويات",
         "field_title": "العنوان",
         "field_content": "المحتوى",
         "field_tag": "النوع",
@@ -198,6 +200,15 @@
             "medical": "موعد طبي",
             "family": "مناسبة عائلية",
             "other": "أخرى"
+        },
+        "type": "نوع الغياب",
+        "ongoing": "قيد التنفيذ",
+        "total_days": "إجمالي الغيابات",
+        "no_absence": "لا يوجد غيابات مسجلة",
+        "confirm_delete": "هل أنت متأكد أنك تريد حذف هذا الغياب؟",
+        "days_count": {
+            "one": "عدد الأيام: {}",
+            "other": "عدد الأيام: {}"
         }
     },
     "payment": {
@@ -220,6 +231,7 @@
         "parent": "ولي الأمر",
         "results": "نتائج",
         "expected_amount": "المبلغ المستحق",
+        "amount": "المبلغ",
         "amount_paid": "المبلغ المدفوع",
         "payment_date": "تاريخ الدفع",
         "note": "ملاحظة",
@@ -231,6 +243,11 @@
         "status_paid": "مدفوع (أخضر)",
         "status_partial": "جزئي (برتقالي)",
         "status_unpaid": "غير مدفوع (أحمر)",
+        "payment_type_full": "دفع كامل (خالص)",
+        "payment_type_partial": "دفع جزئي",
+        "error_payment_exists": "يوجد دفع مسجل لهذا الولي في هذا الشهر.",
+        "confirm_delete_payment": "هل أنت متأكد أنك تريد حذف هذا الدفع؟",
+        "payment_deleted": "تم حذف الدفع بنجاح",
         "total_expenses": "إجمالي النفقات",
         "total_revenue": "إجمالي الإيرادات",
         "no_expenses": "لا توجد نفقات هذا الشهر",
@@ -249,9 +266,24 @@
     "employee": {
         "employees": "الموظفون",
         "add_employee": "إضافة موظف",
+        "edit_employee": "تعديل موظف",
         "salary": "الراتب",
         "phone": "الهاتف",
-        "birthdate": "تاريخ الميلاد"
+        "birthdate": "تاريخ الميلاد",
+        "hire_date": "تاريخ التوظيف",
+        "role": "المنصب",
+        "personal_info": "المعلومات الشخصية",
+        "no_employee": "لا يوجد موظفون",
+        "add_first": "أضف موظفك الأول",
+        "confirm_delete": "هل أنت متأكد أنك تريد حذف هذا الموظف؟",
+        "delete_success": "تم حذف الموظف بنجاح",
+        "add_success": "تم إضافة الموظف بنجاح",
+        "edit_success": "تم تعديل الموظف بنجاح",
+        "stats": {
+            "total": "المجموع",
+            "present": "حاضر",
+            "absent": "غائب"
+        }
     },
     "school": {
         "levels_management": "إدارة المستويات",
@@ -267,13 +299,16 @@
         "add_first_class": "إضافة قسم",
         "configuration": "إعدادات المدرسة",
         "config_desc": "الاسم، العنوان، الهاتف، الشعار",
+        "info_general": "معلومات عامة",
+        "contact": "الاتصال",
+        "branding": "الهوية البصرية",
+        "logo_hint": "رابط الصورة (URL)",
         "fields": {
             "name": "اسم المدرسة",
             "address": "العنوان",
             "phone": "الهاتف",
             "email": "البريد الإلكتروني",
-            "logo_url": "رابط الشعار",
-            "reg_number": "المعرف الجبائي"
+            "logo_url": "رابط الشعار"
         }
     },
     "common": {
@@ -286,6 +321,8 @@
         "loading": "جاري التحميل...",
         "error": "خطأ",
         "success": "نجاح",
-        "total": "المجموع"
+        "total": "المجموع",
+        "no_results": "لم يتم العثور على نتائج",
+        "not_defined": "غير محدد"
     }
 }

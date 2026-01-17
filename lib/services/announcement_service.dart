@@ -9,7 +9,12 @@ class AnnouncementService {
   // Create Announcement with Overlap Check
   Future<void> createAnnouncement(String rawdhaId, AnnouncementModel announcement) async {
     // 1. Validate Overlap
-    final hasOverlap = await _checkOverlap(announcement.rawdhaId, announcement.startDate, announcement.endDate);
+    final hasOverlap = await _checkOverlap(
+      announcement.rawdhaId, 
+      announcement.startDate, 
+      announcement.endDate,
+      announcement.targetLevelId
+    );
     if (hasOverlap) {
       throw Exception('announcements.errors.overlap'); // Translatable key
     }
@@ -18,10 +23,8 @@ class AnnouncementService {
     await _firestore.collection(_collection).add(announcement.toFirestore());
   }
 
-  // Check if any existing announcement overlaps with the given range for a rawdha
-  Future<bool> _checkOverlap(String rawdhaId, DateTime start, DateTime end) async {
-    // ...
-    final now = DateTime.now();
+  // Check if any existing announcement overlaps with the given range related to the target level
+  Future<bool> _checkOverlap(String rawdhaId, DateTime start, DateTime end, String? newLevelId) async {
     final snapshot = await _firestore.collection(_collection)
         .where('rawdhaId', isEqualTo: rawdhaId)
         .get();
@@ -29,9 +32,22 @@ class AnnouncementService {
     for (var doc in snapshot.docs) {
       final existingStart = (doc['startDate'] as Timestamp).toDate();
       final existingEnd = (doc['endDate'] as Timestamp).toDate();
+      final String? existingLevelId = doc.data().containsKey('targetLevelId') ? doc['targetLevelId'] : null;
       
-      // Check overlap
-      if (start.isBefore(existingEnd) && end.isAfter(existingStart)) {
+      // 1. Check Date Overlap
+      bool dateOverlap = start.isBefore(existingEnd) && end.isAfter(existingStart);
+      if (!dateOverlap) continue;
+
+      // 2. Check Level Overlap
+      // Conflict if:
+      // - Dates overlap AND
+      // - (Existing is Global OR New is Global OR Same specific level)
+      bool levelOverlap = 
+          existingLevelId == null || // Existing is ALL -> Conflict with everything
+          newLevelId == null ||      // New is ALL -> Conflict with everything
+          existingLevelId == newLevelId; // Same specific level
+
+      if (levelOverlap) {
         return true;
       }
     }

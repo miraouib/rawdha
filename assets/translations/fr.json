@@ -261,7 +261,14 @@
             "rent": "Loyer",
             "utilities": "Services publics",
             "other": "Autre"
-        }
+        },
+        "unpaid_title": "Non Payés",
+        "unpaid_subtitle": "Parents n'ayant pas encore réglé",
+        "revenue_subtitle": "Revenus et paiements des parents",
+        "expenses_subtitle": "Gestion des charges et dépenses",
+        "all_paid": "Tout le monde a payé ! 🎉",
+        "pay_button": "Payer",
+        "expected_amount_short_label": "Montant attendu"
     },
     "employee": {
         "employees": "Employés",

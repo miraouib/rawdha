@@ -54,14 +54,20 @@ class _RevenueFormScreenState extends ConsumerState<RevenueFormScreen> {
 
   Future<void> _calculateExpected() async {
     if (_selectedParentId != null) {
-      final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
+      final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+      if (rawdhaId.isEmpty) return; // Prevention
+      
       final amount = await _paymentService.calculateExpectedAmount(rawdhaId, _selectedParentId!);
-      setState(() {
-        _expectedAmount = amount > 0 ? amount : 120.0; // Fallback to 120 if 0
-        if (_amountController.text.isEmpty || _amountController.text == '0') {
-           _amountController.text = _expectedAmount.toStringAsFixed(0);
-        }
-      });
+      
+      if (mounted) {
+        setState(() {
+          _expectedAmount = amount > 0 ? amount : 0.0; // Fallback
+          // Pre-fill only if empty or default 0
+          if (_amountController.text.isEmpty || _amountController.text == '0') {
+             _amountController.text = _expectedAmount.toStringAsFixed(0);
+          }
+        });
+      }
     }
   }
 
@@ -232,6 +238,9 @@ class _RevenueFormScreenState extends ConsumerState<RevenueFormScreen> {
                           
                           final allParents = snapshot.data!;
                           final filteredParents = allParents.where((p) {
+                            // Important: Always include the selected parent in the list to avoid Dropdown error
+                            if (_selectedParentId != null && p.id == _selectedParentId) return true;
+
                             if (_parentSearchQuery.isEmpty) return true;
                             final fullName = '${p.firstName} ${p.lastName}'.toLowerCase();
                             return fullName.contains(_parentSearchQuery) || 

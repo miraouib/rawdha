@@ -35,11 +35,11 @@ class _FinanceUnpaidScreenState extends ConsumerState<FinanceUnpaidScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: const Text('Non Payés'),
+        title: Text('finance.unpaid_title'.tr()),
       ),
       body: Column(
         children: [
-          // Month Selector
+          // Month Selector (Already localized to French)
           Container(
             padding: const EdgeInsets.symmetric(vertical: 16),
             color: Colors.white,
@@ -60,7 +60,7 @@ class _FinanceUnpaidScreenState extends ConsumerState<FinanceUnpaidScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: TextField(
               decoration: InputDecoration(
-                hintText: 'Rechercher un parent',
+                hintText: 'finance.search_parent'.tr(),
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
@@ -96,7 +96,7 @@ class _FinanceUnpaidScreenState extends ConsumerState<FinanceUnpaidScreen> {
                     }).toList();
 
                     if (unpaidParents.isEmpty) {
-                      return const Center(child: Text('Tout le monde a payé ! 🎉', style: TextStyle(fontSize: 18, color: Colors.grey)));
+                      return Center(child: Text('finance.all_paid'.tr(), style: const TextStyle(fontSize: 18, color: Colors.grey)));
                     }
 
                     return ListView.builder(
@@ -114,9 +114,9 @@ class _FinanceUnpaidScreenState extends ConsumerState<FinanceUnpaidScreen> {
                               child: const Icon(Icons.warning, color: Colors.red),
                             ),
                             title: Text('${parent.firstName} ${parent.lastName}'),
-                            subtitle: Text('Montant attendu: ${monthlyFee > 0 ? monthlyFee : "??"} TND'),
+                            subtitle: Text('${"finance.expected_amount_short_label".tr()}: ${monthlyFee > 0 ? monthlyFee : "??"} ${"finance.currency".tr()}'),
                             trailing: ElevatedButton(
-                              child: const Text('Payer'),
+                              child: Text('finance.pay_button'.tr()),
                               onPressed: () {
                                 context.pushNamed('revenue_add', extra: parent.id);
                               },

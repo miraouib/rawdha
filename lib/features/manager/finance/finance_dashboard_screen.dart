@@ -19,7 +19,7 @@ class FinanceDashboardScreen extends StatelessWidget {
           children: [
             _FinanceMenuTile(
               title: 'finance.revenue'.tr(),
-              subtitle: 'Revenus et paiements des parents',
+              subtitle: 'finance.revenue_subtitle'.tr(),
               icon: Icons.trending_up,
               color: AppTheme.primaryBlue,
               onTap: () => context.pushNamed('finance_revenue'),
@@ -27,15 +27,15 @@ class FinanceDashboardScreen extends StatelessWidget {
             const SizedBox(height: 20),
             _FinanceMenuTile(
               title: 'finance.expenses'.tr(),
-              subtitle: 'Gestion des charges et dépenses',
+              subtitle: 'finance.expenses_subtitle'.tr(),
               icon: Icons.trending_down,
               color: AppTheme.accentOrange,
               onTap: () => context.pushNamed('finance_expenses'),
             ),
             const SizedBox(height: 20),
             _FinanceMenuTile(
-              title: 'Non Payés',
-              subtitle: 'Parents n\'ayant pas encore réglé',
+              title: 'finance.unpaid_title'.tr(),
+              subtitle: 'finance.unpaid_subtitle'.tr(),
               icon: Icons.warning_amber_rounded,
               color: Colors.red,
               onTap: () => context.pushNamed('finance_unpaid'),

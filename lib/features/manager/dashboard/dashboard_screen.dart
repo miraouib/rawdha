@@ -13,6 +13,7 @@ import '../announcements/announcement_list_screen.dart';
 import '../settings/school_config_screen.dart';
 import '../../../services/student_absence_service.dart';
 import '../../../services/student_service.dart';
+import '../../../core/widgets/manager_footer.dart';
 import '../../../core/helpers/date_helper.dart';
 import '../../../models/student_absence_model.dart';
 import '../../../models/student_model.dart';
@@ -118,6 +119,7 @@ class _ManagerDashboardScreenState extends ConsumerState<ManagerDashboardScreen>
           ],
         ),
       ),
+      bottomNavigationBar: const ManagerFooter(),
     );
   }
 

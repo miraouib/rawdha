@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/manager_footer.dart';
 
 class FinanceDashboardScreen extends StatelessWidget {
   const FinanceDashboardScreen({super.key});
@@ -43,6 +44,7 @@ class FinanceDashboardScreen extends StatelessWidget {
           ],
         ),
       ),
+      bottomNavigationBar: const ManagerFooter(),
     );
   }
 }

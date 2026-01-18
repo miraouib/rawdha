@@ -11,6 +11,7 @@ import '../../../services/storage_service.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
+import '../../../core/widgets/manager_footer.dart';
 
 class SchoolConfigScreen extends ConsumerStatefulWidget {
   const SchoolConfigScreen({super.key});
@@ -494,6 +495,7 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
                 ),
               ),
             ),
+      bottomNavigationBar: const ManagerFooter(),
     );
   }
 

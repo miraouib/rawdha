@@ -16,6 +16,7 @@ import 'parent_form_screen.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
+import '../../../core/widgets/manager_footer.dart';
 
 class ParentListScreen extends ConsumerStatefulWidget {
   const ParentListScreen({super.key});
@@ -136,6 +137,7 @@ class _ParentListScreenState extends ConsumerState<ParentListScreen> {
         icon: const Icon(Icons.add),
         backgroundColor: AppTheme.primaryBlue,
       ),
+      bottomNavigationBar: const ManagerFooter(),
     );
   }
 

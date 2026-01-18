@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/manager_footer.dart';
 import '../../../models/school_level_model.dart';
 import '../../../services/school_service.dart';
 import 'level_detail_screen.dart';
@@ -58,6 +59,7 @@ class _SchoolManagementScreenState extends ConsumerState<SchoolManagementScreen>
           );
         },
       ),
+      bottomNavigationBar: const ManagerFooter(),
     );
   }
 }

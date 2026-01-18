@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/manager_footer.dart';
 import '../../../models/announcement_model.dart';
 import '../../../services/announcement_service.dart';
 import 'announcement_form_screen.dart';
@@ -208,6 +209,7 @@ class AnnouncementListScreen extends ConsumerWidget {
           );
         },
       ),
+      bottomNavigationBar: const ManagerFooter(),
     );
   }
 

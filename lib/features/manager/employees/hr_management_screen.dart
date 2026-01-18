@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/manager_footer.dart';
 import '../../../core/encryption/encryption_service.dart';
 import '../../../models/employee_model.dart';
 import '../../../models/employee_absence_model.dart';
@@ -142,6 +143,7 @@ class _HRManagementScreenState extends ConsumerState<HRManagementScreen> {
         label: Text('employee.add_employee'.tr()),
         backgroundColor: AppTheme.primaryBlue,
       ),
+      bottomNavigationBar: const ManagerFooter(),
     );
   }
 

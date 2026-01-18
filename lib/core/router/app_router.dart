@@ -27,6 +27,7 @@ import '../../features/manager/announcements/announcement_list_screen.dart';
 import '../../features/manager/school/school_management_screen.dart';
 import '../../features/manager/settings/school_config_screen.dart';
 import '../../features/manager/settings/restore_data_screen.dart'; // Import
+import '../../features/manager/settings/contact_developer_screen.dart'; // Import
 import '../../features/manager/employees/hr_management_screen.dart';
 import '../../features/parent/dashboard/parent_dashboard_screen.dart';
 import '../../features/parent/students/student_modules_screen.dart';
@@ -213,6 +214,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const ManagerAbsenceListScreen(),
           ),
         ],
+      ),
+
+      GoRoute(
+        path: '/contact-developer',
+        name: 'contact_developer',
+        builder: (context, state) => const ContactDeveloperScreen(),
       ),
 
       // Parent Dashboard & Features

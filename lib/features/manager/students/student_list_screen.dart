@@ -9,6 +9,7 @@ import '../../../models/parent_model.dart';
 import '../../../services/student_service.dart';
 import '../../../services/school_service.dart';
 import '../../../services/parent_service.dart';
+import '../../../core/widgets/manager_footer.dart';
 
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -147,6 +148,7 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
         icon: const Icon(Icons.add),
         backgroundColor: AppTheme.primaryBlue,
       ),
+      bottomNavigationBar: const ManagerFooter(),
     );
   }
 

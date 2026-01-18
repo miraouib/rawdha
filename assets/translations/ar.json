@@ -336,7 +336,7 @@
         "configuration": "إعدادات المدرسة",
         "config_desc": "الاسم، العنوان، الهاتف، الشعار",
         "info_general": "معلومات عامة",
-        "contact": "الاتصال",
+        "contact_info": "الاتصال",
         "payment_config": "إعدادات الدفع",
         "payment_start_month": "شهر بداية السنة الدراسية",
         "payment_start_month_hint": "سيتم حساب المدفوعات والديون بداية من هذا الشهر",
@@ -350,7 +350,20 @@
             "logo_url": "رابط الشعار"
         },
         "restrict_devices": "تقييد الدخول لهذا الجهاز فقط",
-        "restrict_devices_hint": "في حال التفعيل، سيتم رفض الدخول من أي جهاز جديد غير مصرح به."
+        "restrict_devices_hint": "في حال التفعيل، سيتم رفض الدخول من أي جهاز جديد غير مصرح به.",
+        "developer": {
+            "title": " الاتصال",
+            "contact_dev": "الاتصال بالدعم",
+            "desc": "الوصف",
+            "job": "مطور تطبيقات الموبايل",
+            "call": "اتصال",
+            "email": "بريد إلكتروني",
+            "whatsapp": "واتساب",
+            "social": {
+                "facebook": "فيسبوك",
+                "linkedin": "لينكد إن"
+            }
+        }
     },
     "common": {
         "save": "حفظ",

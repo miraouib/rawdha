@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/manager_footer.dart';
 import '../../../models/school_level_model.dart';
 import '../../../models/module_model.dart';
 import '../../../services/module_service.dart';
@@ -89,6 +90,7 @@ class _ModuleListScreenState extends ConsumerState<ModuleListScreen> with Single
         icon: const Icon(Icons.add),
         backgroundColor: AppTheme.accentTeal,
       ),
+      bottomNavigationBar: const ManagerFooter(),
     );
   }
 

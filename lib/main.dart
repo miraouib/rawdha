@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'core/theme/app_theme.dart';
-import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 
 void main() async {
@@ -38,6 +37,7 @@ class RawdhaApp extends ConsumerWidget {
     final goRouter = ref.watch(appRouterProvider);
 
     return MaterialApp.router(
+      key: ValueKey(context.locale.toString()),
       title: 'app_name'.tr(),
       debugShowCheckedModeBanner: false,
       routerConfig: goRouter,

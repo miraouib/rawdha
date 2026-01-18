@@ -362,7 +362,7 @@ class _RevenueFormScreenState extends ConsumerState<RevenueFormScreen> {
                           onTap: () => _showMonthPicker(context),
                           child: InputDecorator(
                             decoration: InputDecoration(labelText: 'Mois Concerné', prefixIcon: const Icon(Icons.calendar_month)),
-                            child: Text(DateFormat('MM-yyyy').format(_selectedDate), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            child: Text(DateFormat('MM-yyyy', 'fr').format(_selectedDate), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                           ),
                         ),
                       const SizedBox(height: 16),

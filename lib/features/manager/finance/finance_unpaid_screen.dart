@@ -25,8 +25,24 @@ class _FinanceUnpaidScreenState extends ConsumerState<FinanceUnpaidScreen> {
   String _revenueSearchQuery = '';
 
   void _changeMonth(int increment) {
+    final config = ref.read(schoolConfigProvider).value;
+    final startMonth = config?.paymentStartMonth ?? 9;
+    
+    final now = DateTime.now();
+    final startYear = now.month >= startMonth ? now.year : now.year - 1;
+    final startDate = DateTime(startYear, startMonth, 1);
+
+    final newMonth = DateTime(_currentMonth.year, _currentMonth.month + increment);
+    
+    if (increment < 0 && newMonth.isBefore(startDate)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Limite de l\'année scolaire atteinte')),
+      );
+      return;
+    }
+
     setState(() {
-      _currentMonth = DateTime(_currentMonth.year, _currentMonth.month + increment);
+      _currentMonth = newMonth;
     });
   }
 
@@ -48,7 +64,7 @@ class _FinanceUnpaidScreenState extends ConsumerState<FinanceUnpaidScreen> {
               children: [
                 IconButton(onPressed: () => _changeMonth(-1), icon: const Icon(Icons.chevron_left)),
                 Text(
-                  DateFormat('MMMM yyyy', 'fr_FR').format(_currentMonth).toUpperCase(),
+                  DateFormat('MMMM yyyy', 'fr').format(_currentMonth).toUpperCase(),
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 IconButton(onPressed: () => _changeMonth(1), icon: const Icon(Icons.chevron_right)),

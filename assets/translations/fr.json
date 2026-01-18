@@ -319,7 +319,9 @@
         "configuration": "Configuration de l'école",
         "config_desc": "Nom, adresse, contact, logo",
         "info_general": "Informations Générales",
-        "contact": "Contact",
+        "payment_config": "Calcul des Paiements",
+        "payment_start_month": "Mois de départ (Historique & Impayés)",
+        "payment_start_month_hint": "Les impayés et l'historique commenceront à partir de ce mois.",
         "branding": "Image de marque",
         "logo_hint": "Lien vers une image en ligne (URL)",
         "fields": {

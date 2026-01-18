@@ -61,6 +61,8 @@ class _ManagerDashboardScreenState extends ConsumerState<ManagerDashboardScreen>
 
   @override
   Widget build(BuildContext context) {
+    final username = ref.watch(currentManagerUsernameProvider) ?? 'Admin';
+
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
@@ -78,7 +80,10 @@ class _ManagerDashboardScreenState extends ConsumerState<ManagerDashboardScreen>
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
-              // TODO: Implémenter logout
+              // Clear session and go back
+              ref.read(currentRawdhaIdProvider.notifier).state = null;
+              ref.read(currentManagerIdProvider.notifier).state = null;
+              ref.read(currentManagerUsernameProvider.notifier).state = null;
               context.go('/'); // Go back to Role Selection (or Login)
             },
           ),
@@ -91,7 +96,7 @@ class _ManagerDashboardScreenState extends ConsumerState<ManagerDashboardScreen>
           children: [
             // En-tête de bienvenue
             Text(
-              '${'manager.welcome'.tr()}, Admin',
+              '${'manager.welcome'.tr()}, $username',
               style: Theme.of(context).textTheme.displaySmall,
             ),
            

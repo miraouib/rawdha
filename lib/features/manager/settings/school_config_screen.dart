@@ -18,7 +18,6 @@ class SchoolConfigScreen extends ConsumerStatefulWidget {
 
 class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
   final _formKey = GlobalKey<FormState>();
-  final SchoolService _schoolService = SchoolService();
   
   late TextEditingController _nameController;
   late TextEditingController _addressController;
@@ -27,23 +26,57 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
   late TextEditingController _logoUrlController; 
   late TextEditingController _schoolCodeController;
 
+  final SchoolService _schoolService = SchoolService();
   bool _isLoading = true;
   SchoolConfigModel? _currentConfig;
-
+  int _selectedStartMonth = 9;
+  
   @override
   void initState() {
     super.initState();
-    _initializeControllers();
-    _loadConfig();
-  }
-
-  void _initializeControllers() {
     _nameController = TextEditingController();
     _addressController = TextEditingController();
     _phoneController = TextEditingController();
     _emailController = TextEditingController();
     _logoUrlController = TextEditingController();
     _schoolCodeController = TextEditingController();
+    
+    // Add listener for auto-generation
+    _nameController.addListener(_onNameChanged);
+    
+    _loadConfig();
+  }
+
+  void _onNameChanged() {
+    final name = _nameController.text.trim();
+    final currentCode = _schoolCodeController.text.trim();
+    
+    // Auto-generate if code is empty (User hasn't manually edited the code).
+    if (name.isNotEmpty && currentCode.isEmpty) {
+      final generated = _generateCodeFromName(name);
+      _schoolCodeController.text = generated;
+    }
+  }
+
+  String _generateCodeFromName(String name) {
+    if (name.isEmpty) return '';
+    
+    // Normalize spaces
+    final words = name.trim().split(RegExp(r'\s+'));
+    String code = '';
+
+    if (words.length == 1) {
+      // 1 Word: Take the whole word
+      code = words[0]; 
+    } else if (words.length == 2) {
+      // 2 Words: 3 first chars of each
+      code = words.map((w) => w.length >= 3 ? w.substring(0, 3) : w).join();
+    } else {
+      // > 2 Words: 2 first chars of each
+      code = words.map((w) => w.length >= 2 ? w.substring(0, 2) : w).join();
+    }
+
+    return code.toUpperCase();
   }
 
   Future<void> _loadConfig() async {
@@ -62,6 +95,7 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
           _emailController.text = config.email ?? '';
           _logoUrlController.text = config.logoUrl ?? '';
           _schoolCodeController.text = config.schoolCode ?? '';
+          _selectedStartMonth = config.paymentStartMonth;
           _isLoading = false;
         });
       }
@@ -103,6 +137,7 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
         email: _emailController.text.trim(),
         logoUrl: _logoUrlController.text.trim(),
         schoolCode: _schoolCodeController.text.trim().toUpperCase(),
+        paymentStartMonth: _selectedStartMonth,
       );
       
       await _schoolService.saveSchoolConfig(newConfig, rawdhaId);
@@ -176,6 +211,27 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
                         if (v == null || v.isEmpty) return 'Code requis';
                         if (v.length < 3) return '3 caractères min.';
                         return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    _buildSectionHeader('school.payment_config'.tr()),
+                    const SizedBox(height: 16),
+                    
+                    DropdownButtonFormField<int>(
+                      value: _selectedStartMonth,
+                      decoration: InputDecoration(
+                        labelText: 'school.payment_start_month'.tr(),
+                        prefixIcon: const Icon(Icons.calendar_month),
+                        border: const OutlineInputBorder(),
+                        helperText: 'school.payment_start_month_hint'.tr(),
+                      ),
+                      items: List.generate(12, (i) => i + 1).map((m) => DropdownMenuItem(
+                        value: m,
+                        child: Text(DateFormat('MMMM', 'fr').format(DateTime(2022, m))),
+                      )).toList(),
+                      onChanged: (v) {
+                        if (v != null) setState(() => _selectedStartMonth = v);
                       },
                     ),
                     const SizedBox(height: 16),

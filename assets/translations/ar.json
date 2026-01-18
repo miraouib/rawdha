@@ -320,6 +320,9 @@
         "config_desc": "الاسم، العنوان، الهاتف، الشعار",
         "info_general": "معلومات عامة",
         "contact": "الاتصال",
+        "payment_config": "إعدادات الدفع",
+        "payment_start_month": "شهر بداية السنة الدراسية",
+        "payment_start_month_hint": "سيتم حساب المدفوعات والديون بداية من هذا الشهر",
         "branding": "الهوية البصرية",
         "logo_hint": "رابط الصورة (URL)",
         "fields": {

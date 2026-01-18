@@ -190,12 +190,12 @@ class _ParentCard extends StatelessWidget {
           children: [
             InkWell(
               onTap: () => _copyToClipboard(context, parent.phone),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+              child: Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   const Icon(Icons.phone, size: 14, color: AppTheme.textGray),
                   const SizedBox(width: 4),
-                  Text(parent.phone, style: const TextStyle(decoration: TextDecoration.underline)),
+                  Text(parent.phone, style: const TextStyle(decoration: TextDecoration.underline), overflow: TextOverflow.ellipsis),
                   const SizedBox(width: 4),
                   const Icon(Icons.copy, size: 12, color: AppTheme.primaryBlue),
                 ],
@@ -256,8 +256,9 @@ class _ParentCard extends StatelessWidget {
           _ParentPaymentHistory(parentId: parent.id),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            child: Wrap(
+              alignment: WrapAlignment.end,
+              spacing: 8,
               children: [
                 TextButton.icon(
                   icon: const Icon(Icons.account_balance_wallet, size: 18),
@@ -385,8 +386,29 @@ class _ParentPaymentHistory extends ConsumerWidget {
         final payments = snapshot.data!;
         if (payments.isEmpty) return const SizedBox.shrink();
 
+        final config = ref.watch(schoolConfigProvider).value;
+        final startMonth = config?.paymentStartMonth ?? 9;
+        
+        // Calculate Start Date logic (same as other screens)
+        final now = DateTime.now();
+        final startYear = now.month >= startMonth ? now.year : now.year - 1;
+        final startDate = DateTime(startYear, startMonth, 1);
+
+        // Filter payments to hide those before start date
+        final filteredPayments = payments.where((p) {
+           // We compare year/month. 
+           // If p.year < startYear, remove.
+           // If p.year == startYear and p.month < startMonth, remove.
+           // Or just compare dates. PaymentModel usually has a full date or month/year.
+           // Let's use the date if available or construct it.
+           final pDate = DateTime(p.year, p.month, 1);
+           return !pDate.isBefore(startDate);
+        }).toList();
+
+        if (filteredPayments.isEmpty) return const SizedBox.shrink();
+
         // Sort by Date Descending
-        payments.sort((a, b) => b.date.compareTo(a.date));
+        filteredPayments.sort((a, b) => b.date.compareTo(a.date));
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -401,10 +423,10 @@ class _ParentPaymentHistory extends ConsumerWidget {
               child: ListView.separated(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 scrollDirection: Axis.horizontal,
-                itemCount: payments.length,
+                itemCount: filteredPayments.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 8),
                 itemBuilder: (context, index) {
-                  final p = payments[index];
+                  final p = filteredPayments[index];
                   Color color = Colors.grey;
                   if (p.status == PaymentStatus.paid) color = Colors.green;
                   else if (p.status == PaymentStatus.partial) color = Colors.orange;
@@ -420,7 +442,7 @@ class _ParentPaymentHistory extends ConsumerWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(DateFormat('MMM', context.locale.languageCode).format(p.date).toUpperCase(), style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: color)),
+                        Text(DateFormat('MMM', 'fr').format(p.date).toUpperCase(), style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: color)),
                         Text('${p.amount.toInt()}', style: const TextStyle(fontSize: 10)),
                       ],
                     ),

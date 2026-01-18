@@ -10,6 +10,8 @@ class SchoolConfigModel {
   final String? logoUrl;
   final Map<String, dynamic>? socialLinks;
   final String? schoolCode; // Unique School Code (e.g. ISRAA)
+  final int paymentStartMonth; // Mois de début des calculs (1-12, default 9)
+  final int? paymentStartYear; // Année de début (optionnel)
   final DateTime? updatedAt;
 
   const SchoolConfigModel({
@@ -22,6 +24,8 @@ class SchoolConfigModel {
     this.logoUrl,
     this.socialLinks,
     this.schoolCode,
+    this.paymentStartMonth = 9,
+    this.paymentStartYear,
     this.updatedAt,
   });
 
@@ -37,6 +41,8 @@ class SchoolConfigModel {
       logoUrl: data['logoUrl'],
       socialLinks: data['socialLinks'] as Map<String, dynamic>?,
       schoolCode: data['schoolCode'],
+      paymentStartMonth: data['paymentStartMonth'] ?? 9,
+      paymentStartYear: data['paymentStartYear'],
       updatedAt: data['updatedAt'] != null 
           ? (data['updatedAt'] as Timestamp).toDate() 
           : null,
@@ -54,6 +60,8 @@ class SchoolConfigModel {
       'logoUrl': logoUrl,
       'socialLinks': socialLinks,
       'schoolCode': schoolCode,
+      'paymentStartMonth': paymentStartMonth,
+      'paymentStartYear': paymentStartYear,
       'updatedAt': FieldValue.serverTimestamp(),
     };
   }
@@ -68,6 +76,8 @@ class SchoolConfigModel {
     Map<String, dynamic>? socialLinks,
     String? rawdhaId,
     String? schoolCode,
+    int? paymentStartMonth,
+    int? paymentStartYear,
   }) {
     return SchoolConfigModel(
       id: id,
@@ -79,6 +89,8 @@ class SchoolConfigModel {
       logoUrl: logoUrl ?? this.logoUrl,
       socialLinks: socialLinks ?? this.socialLinks,
       schoolCode: schoolCode ?? this.schoolCode,
+      paymentStartMonth: paymentStartMonth ?? this.paymentStartMonth,
+      paymentStartYear: paymentStartYear ?? this.paymentStartYear,
       updatedAt: updatedAt,
     );
   }

@@ -89,6 +89,7 @@ class _ManagerLoginScreenState extends ConsumerState<ManagerLoginScreen> {
         // Set current rawdhaId and managerId for the session
         ref.read(currentRawdhaIdProvider.notifier).state = manager.rawdhaId;
         ref.read(currentManagerIdProvider.notifier).state = manager.managerId;
+        ref.read(currentManagerUsernameProvider.notifier).state = manager.username;
 
         // Connexion réussie - naviguer vers le dashboard
         context.goNamed('manager_dashboard');

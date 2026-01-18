@@ -14,20 +14,19 @@ class ParentPaymentUnpaidScreen extends ConsumerWidget {
 
   const ParentPaymentUnpaidScreen({super.key, required this.parent});
 
-  List<DateTime> _generatePastUnpaidMonths() {
+  List<DateTime> _generatePastUnpaidMonths(int startMonth) {
     final now = DateTime.now();
     final currentYear = now.year;
     final currentMonth = now.month;
     
-    // School year starts in September
-    final startYear = currentMonth >= 9 ? currentYear : currentYear - 1;
-    final startDate = DateTime(startYear, 9, 1);
+    // School year starts in startMonth
+    final startYear = currentMonth >= startMonth ? currentYear : currentYear - 1;
+    final startDate = DateTime(startYear, startMonth, 1);
     
     List<DateTime> months = [];
     DateTime current = startDate;
     
-    // We stop at current month (inclusive or exclusive? usually the current month is also due)
-    // The user said "passed month", so we stop at now.
+    // We stop at current month (inclusive)
     while (current.isBefore(now) || (current.year == now.year && current.month == now.month)) {
       months.add(current);
       if (current.month == 12) {
@@ -44,7 +43,9 @@ class ParentPaymentUnpaidScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
     final paymentService = PaymentService();
-    final allRelevantMonths = _generatePastUnpaidMonths();
+    final config = ref.watch(schoolConfigProvider).value;
+    final startMonth = config?.paymentStartMonth ?? 9;
+    final allRelevantMonths = _generatePastUnpaidMonths(startMonth);
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,

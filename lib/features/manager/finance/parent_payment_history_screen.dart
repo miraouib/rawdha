@@ -14,16 +14,17 @@ class ParentPaymentHistoryScreen extends ConsumerWidget {
 
   const ParentPaymentHistoryScreen({super.key, required this.parent});
 
-  /// Generate list of months from September to current month
-  List<DateTime> _generateSchoolYearMonths() {
+  /// Generate list of months from startMonth to current month
+  List<DateTime> _generateSchoolYearMonths(int startMonth) {
     final now = DateTime.now();
     final currentYear = now.year;
     final currentMonth = now.month;
     
-    // School year starts in September
-    // If we're before September, use previous year's September
-    final startYear = currentMonth >= 9 ? currentYear : currentYear - 1;
-    final startDate = DateTime(startYear, 9, 1);
+    // Logic: If startMonth is 9 (Sep) and currentMonth is 3 (Mar) 2026 -> startYear is 2025.
+    // If startMonth is 1 (Jan) and currentMonth is 3 (Mar) 2026 -> startYear is 2026.
+    
+    final startYear = currentMonth >= startMonth ? currentYear : currentYear - 1;
+    final startDate = DateTime(startYear, startMonth, 1);
     
     List<DateTime> months = [];
     DateTime current = startDate;
@@ -46,7 +47,9 @@ class ParentPaymentHistoryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
     final paymentService = PaymentService();
-    final months = _generateSchoolYearMonths();
+    final config = ref.watch(schoolConfigProvider).value;
+    final startMonth = config?.paymentStartMonth ?? 9;
+    final months = _generateSchoolYearMonths(startMonth);
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
@@ -185,7 +188,7 @@ class ParentPaymentHistoryScreen extends ConsumerWidget {
   }
 
   void _showPaymentDetails(BuildContext context, DateTime month, PaymentModel? payment, String rawdhaId) {
-    final monthName = DateFormat('MMMM yyyy', 'fr_FR').format(month);
+    final monthName = DateFormat('MMMM yyyy', 'fr').format(month);
     
     showDialog(
       context: context,
@@ -266,7 +269,7 @@ class _MonthCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _getStatusColor();
-    final monthName = DateFormat('MMM', 'fr_FR').format(month).toUpperCase();
+    final monthName = DateFormat('MMM', 'fr').format(month).toUpperCase();
     final year = month.year.toString().substring(2);
 
     return InkWell(

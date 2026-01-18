@@ -324,6 +324,21 @@ class _AnnouncementHighlightCard extends StatelessWidget {
                 announcement.tagLabel,
                 style: TextStyle(color: announcement.color, fontWeight: FontWeight.bold),
               ),
+              if (announcement.targetLevelId != null) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey.withOpacity(0.5)),
+                  ),
+                  child: Text(
+                    LevelHelper.getLevelName(announcement.targetLevelId!, context),
+                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppTheme.textGray),
+                  ),
+                ),
+              ],
               const Spacer(),
               Text(
                 DateHelper.formatDateShort(context, announcement.startDate),

@@ -45,8 +45,8 @@ class _ManagerRegistrationScreenState extends State<ManagerRegistrationScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Inscription réussie ! Veuillez vous connecter.'),
+          SnackBar(
+            content: Text('manager.auth.success_msg'.tr()),
             backgroundColor: Colors.green,
           ),
         );
@@ -70,7 +70,7 @@ class _ManagerRegistrationScreenState extends State<ManagerRegistrationScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: const Text('Nouvelle Inscription'),
+        title: Text('manager.auth.registration_title'.tr()),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -83,7 +83,7 @@ class _ManagerRegistrationScreenState extends State<ManagerRegistrationScreen> {
               child: Column(
                 children: [
                   Text(
-                    'Inscrivez votre établissement',
+                    'manager.auth.register_cta'.tr(),
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   const SizedBox(height: 32),
@@ -98,48 +98,48 @@ class _ManagerRegistrationScreenState extends State<ManagerRegistrationScreen> {
                       children: [
                         TextFormField(
                           controller: _rawdhaNameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Nom de la Rawdha',
-                            prefixIcon: Icon(Icons.school),
+                          decoration: InputDecoration(
+                            labelText: 'manager.auth.rawdha_name'.tr(),
+                            prefixIcon: const Icon(Icons.school),
                           ),
-                          validator: (value) => value?.isEmpty ?? true ? 'Champ requis' : null,
+                          validator: (value) => value?.isEmpty ?? true ? 'common.required'.tr() : null,
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _phoneController,
                           keyboardType: TextInputType.phone,
-                          decoration: const InputDecoration(
-                            labelText: 'Numéro de téléphone',
-                            prefixIcon: Icon(Icons.phone),
+                          decoration: InputDecoration(
+                            labelText: 'manager.auth.phone_number'.tr(),
+                            prefixIcon: const Icon(Icons.phone),
                           ),
                           validator: (value) {
-                            if (value == null || value.isEmpty) return 'Champ requis';
-                            if (value.length < 8) return 'Numéro invalide';
+                            if (value == null || value.isEmpty) return 'common.required'.tr();
+                            if (value.length < 8) return 'manager.auth.phone_invalid'.tr();
                             return null;
                           },
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _usernameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Nom d\'utilisateur Admin',
-                            prefixIcon: Icon(Icons.person),
+                          decoration: InputDecoration(
+                            labelText: 'manager.auth.admin_username'.tr(),
+                            prefixIcon: const Icon(Icons.person),
                           ),
-                          validator: (value) => value?.isEmpty ?? true ? 'Champ requis' : null,
+                          validator: (value) => value?.isEmpty ?? true ? 'common.required'.tr() : null,
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
                           decoration: InputDecoration(
-                            labelText: 'Mot de passe Admin',
+                            labelText: 'manager.auth.admin_password'.tr(),
                             prefixIcon: const Icon(Icons.lock),
                             suffixIcon: IconButton(
                               icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
                               onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                             ),
                           ),
-                          validator: (value) => value?.isEmpty ?? true ? 'Champ requis' : null,
+                          validator: (value) => value?.isEmpty ?? true ? 'common.required'.tr() : null,
                         ),
                         const SizedBox(height: 32),
                         SizedBox(
@@ -148,7 +148,7 @@ class _ManagerRegistrationScreenState extends State<ManagerRegistrationScreen> {
                             onPressed: _isLoading ? null : _handleRegistration,
                             child: _isLoading
                                 ? const CircularProgressIndicator(color: Colors.white)
-                                : const Text('S\'inscrire'),
+                                : Text('manager.auth.register_btn'.tr()),
                           ),
                         ),
                       ],

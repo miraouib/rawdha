@@ -4,6 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../models/announcement_model.dart';
 import '../../../services/announcement_service.dart';
 import '../../../core/helpers/date_helper.dart';
+import '../../../core/helpers/level_helper.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
@@ -85,6 +86,21 @@ class ParentAnnouncementScreen extends ConsumerWidget {
                               ],
                             ),
                           ),
+                          if (announcement.targetLevelId != null) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                              ),
+                              child: Text(
+                                LevelHelper.getLevelName(announcement.targetLevelId!, context),
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textGray),
+                              ),
+                            ),
+                          ],
                           const Spacer(),
                           Text(
                             DateHelper.formatDateShort(context, announcement.startDate),

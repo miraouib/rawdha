@@ -187,11 +187,39 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
     setState(() => _isLoading = true);
     
     final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    final code = _schoolCodeController.text.trim().toUpperCase();
+    
+    // Check if code is unique
+    try {
+      final exists = await _schoolService.checkSchoolCodeExists(code, rawdhaId);
+      if (exists) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+             SnackBar(content: Text('Erreur: Le code école "$code" est déjà utilisé.')),
+          );
+        }
+        return;
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur vérification code: $e')),
+        );
+      }
+      return;
+    }
     
     try {
+      // Use existing ID if available to avoid duplicates (older docs might have auto-generated IDs)
+      final docId = (_currentConfig?.id != null && _currentConfig!.id != 'default') 
+          ? _currentConfig!.id 
+          : rawdhaId;
+
       final newConfig = SchoolConfigModel(
         rawdhaId: rawdhaId,
-        id: 'main', // Toujours main
+        id: docId,
         name: _nameController.text.trim(),
         address: _addressController.text.trim(),
         phone: _phoneController.text.trim(),
@@ -465,23 +493,25 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Attention ! ⚠️'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Cette action va archiver TOUS les parents et élèves actuels pour commencer une nouvelle année.\n\n'
-              'Veuillez entrer votre mot de passe pour confirmer.'
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Mot de passe Manager',
-                border: OutlineInputBorder(),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Cette action va archiver TOUS les parents et élèves actuels pour commencer une nouvelle année.\n\n'
+                'Veuillez entrer votre mot de passe pour confirmer.'
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Mot de passe Manager',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(

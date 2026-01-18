@@ -11,6 +11,21 @@
         "password": "Mot de passe",
         "login_button": "Se connecter",
         "remember_me": "Se souvenir de moi",
+        "auth": {
+            "enter_username": "Veuillez entrer votre nom d'utilisateur",
+            "enter_password": "Veuillez entrer votre mot de passe",
+            "no_account": "Pas encore inscrit ? Créer un compte",
+            "device_info": "Premier appareil autorisé automatiquement",
+            "registration_title": "Nouvelle Inscription",
+            "register_cta": "Inscrivez votre établissement",
+            "rawdha_name": "Nom de la Rawdha",
+            "phone_number": "Numéro de téléphone",
+            "admin_username": "Nom d'utilisateur Admin",
+            "admin_password": "Mot de passe Admin",
+            "register_btn": "S'inscrire",
+            "success_msg": "Inscription réussie ! Veuillez vous connecter.",
+            "phone_invalid": "Numéro invalide"
+        },
         "device_not_authorized": "Appareil non autorisé",
         "dashboard": "Tableau de bord",
         "welcome": "Bienvenue",
@@ -331,7 +346,9 @@
             "phone": "Téléphone",
             "email": "Email",
             "logo_url": "URL du Logo"
-        }
+        },
+        "restrict_devices": "Restreindre à cet appareil uniquement",
+        "restrict_devices_hint": "Si activé, la connexion sera refusée sur tout nouvel appareil non autorisé."
     },
     "common": {
         "save": "Enregistrer",

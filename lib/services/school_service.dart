@@ -178,4 +178,20 @@ class SchoolService {
     final url = await uploadTask.ref.getDownloadURL();
     return url;
   }
+
+  /// Vérifier si un code école existe déjà (pour une autre rawdha)
+  Future<bool> checkSchoolCodeExists(String code, String currentRawdhaId) async {
+    final query = await _configCollection
+        .where('schoolCode', isEqualTo: code)
+        .get();
+
+    for (var doc in query.docs) {
+      final config = SchoolConfigModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
+      // Si le code existe mais appartient à une AUTRE rawdha, alors il est pris
+      if (config.rawdhaId != currentRawdhaId) {
+        return true;
+      }
+    }
+    return false;
+  }
 }

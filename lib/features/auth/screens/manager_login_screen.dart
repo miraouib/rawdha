@@ -169,7 +169,7 @@ class _ManagerLoginScreenState extends ConsumerState<ManagerLoginScreen> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Veuillez entrer votre nom d\'utilisateur';
+                              return 'manager.auth.enter_username'.tr();
                             }
                             return null;
                           },
@@ -198,7 +198,7 @@ class _ManagerLoginScreenState extends ConsumerState<ManagerLoginScreen> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Veuillez entrer votre mot de passe';
+                              return 'manager.auth.enter_password'.tr();
                             }
                             return null;
                           },
@@ -242,7 +242,7 @@ class _ManagerLoginScreenState extends ConsumerState<ManagerLoginScreen> {
                         const SizedBox(height: 16),
                         TextButton(
                           onPressed: () => context.pushNamed('manager_registration'),
-                          child: const Text('Pas encore inscrit ? Créer un compte'),
+                          child: Text('manager.auth.no_account'.tr()),
                         ),
                       ],
                     ),
@@ -270,7 +270,7 @@ class _ManagerLoginScreenState extends ConsumerState<ManagerLoginScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'Premier appareil autorisé automatiquement',
+                            'manager.auth.device_info'.tr(),
                             style: TextStyle(
                               fontSize: 12,
                               color: AppTheme.infoBlue,

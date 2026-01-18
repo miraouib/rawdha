@@ -24,7 +24,8 @@
             "admin_password": "Mot de passe Admin",
             "register_btn": "S'inscrire",
             "success_msg": "Inscription réussie ! Veuillez vous connecter.",
-            "phone_invalid": "Numéro invalide"
+            "phone_invalid": "Numéro invalide",
+            "device_restricted": "Cet appareil n'est pas autorisé. Contactez l'administrateur."
         },
         "device_not_authorized": "Appareil non autorisé",
         "dashboard": "Tableau de bord",

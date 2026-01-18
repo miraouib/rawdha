@@ -12,6 +12,7 @@ class SchoolConfigModel {
   final String? schoolCode; // Unique School Code (e.g. ISRAA)
   final int paymentStartMonth; // Mois de début des calculs (1-12, default 9)
   final int? paymentStartYear; // Année de début (optionnel)
+  final bool restrictDevices; // Restriction par appareil
   final DateTime? updatedAt;
 
   const SchoolConfigModel({
@@ -26,6 +27,7 @@ class SchoolConfigModel {
     this.schoolCode,
     this.paymentStartMonth = 9,
     this.paymentStartYear,
+    this.restrictDevices = false,
     this.updatedAt,
   });
 
@@ -43,6 +45,7 @@ class SchoolConfigModel {
       schoolCode: data['schoolCode'],
       paymentStartMonth: data['paymentStartMonth'] ?? 9,
       paymentStartYear: data['paymentStartYear'],
+      restrictDevices: data['restrictDevices'] ?? false,
       updatedAt: data['updatedAt'] != null 
           ? (data['updatedAt'] as Timestamp).toDate() 
           : null,
@@ -62,6 +65,7 @@ class SchoolConfigModel {
       'schoolCode': schoolCode,
       'paymentStartMonth': paymentStartMonth,
       'paymentStartYear': paymentStartYear,
+      'restrictDevices': restrictDevices,
       'updatedAt': FieldValue.serverTimestamp(),
     };
   }
@@ -78,6 +82,7 @@ class SchoolConfigModel {
     String? schoolCode,
     int? paymentStartMonth,
     int? paymentStartYear,
+    bool? restrictDevices,
   }) {
     return SchoolConfigModel(
       id: id,
@@ -91,6 +96,7 @@ class SchoolConfigModel {
       schoolCode: schoolCode ?? this.schoolCode,
       paymentStartMonth: paymentStartMonth ?? this.paymentStartMonth,
       paymentStartYear: paymentStartYear ?? this.paymentStartYear,
+      restrictDevices: restrictDevices ?? this.restrictDevices,
       updatedAt: updatedAt,
     );
   }

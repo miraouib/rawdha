@@ -33,6 +33,7 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
   bool _isLoading = true;
   SchoolConfigModel? _currentConfig;
   int _selectedStartMonth = 9;
+  bool _restrictDevices = false;
   
   @override
   void initState() {
@@ -157,6 +158,7 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
           _logoUrlController.text = config.logoUrl ?? '';
           _schoolCodeController.text = config.schoolCode ?? '';
           _selectedStartMonth = config.paymentStartMonth;
+          _restrictDevices = config.restrictDevices;
           _isLoading = false;
         });
       }
@@ -227,6 +229,7 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
         logoUrl: _logoUrlController.text.trim(),
         schoolCode: _schoolCodeController.text.trim().toUpperCase(),
         paymentStartMonth: _selectedStartMonth,
+        restrictDevices: _restrictDevices,
       );
       
       await _schoolService.saveSchoolConfig(newConfig, rawdhaId);
@@ -330,6 +333,14 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
+                    
+                    SwitchListTile(
+                      title: Text('school.restrict_devices'.tr()),
+                      subtitle: Text('school.restrict_devices_hint'.tr()),
+                      value: _restrictDevices,
+                      activeColor: AppTheme.primaryBlue,
+                      onChanged: (v) => setState(() => _restrictDevices = v),
+                    ),
                     const SizedBox(height: 24),
                     
                     _buildSectionHeader('school.contact'.tr()),

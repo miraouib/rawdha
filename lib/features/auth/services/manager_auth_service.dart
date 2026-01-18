@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../core/encryption/encryption_service.dart';
 import '../../../core/utils/device_utils.dart';
 import '../../../models/manager_model.dart';
@@ -45,9 +46,17 @@ class ManagerAuthService {
       // 3. Obtenir l'ID de l'appareil actuel
       final deviceId = await DeviceUtils.getDeviceId();
 
-      // 4. Vérifier et auto-autoriser l'appareil
+      // 4. Vérifier la restriction par appareil dans la config de l'école
+      final schoolConfig = await SchoolService().getSchoolConfig(manager.rawdhaId).first;
+      final isRestricted = schoolConfig.restrictDevices;
+
+      // 5. Vérifier et auto-autoriser l'appareil
       if (!manager.authorizedDevices.contains(deviceId)) {
-        // Ajouter le nouvel appareil à la liste
+        if (isRestricted) {
+          throw Exception('manager.auth.device_restricted'.tr());
+        }
+
+        // Ajouter le nouvel appareil à la liste (Autorisation automatique si non restreint)
         final updatedDevices = List<String>.from(manager.authorizedDevices)..add(deviceId);
         
         await _firestore

@@ -26,3 +26,8 @@ final schoolConfigProvider = StreamProvider<SchoolConfigModel?>((ref) {
   if (rawdhaId == null) return Stream.value(null);
   return SchoolService().getSchoolConfig(rawdhaId);
 });
+/// Provider pour la configuration de l'école (Paramétré par rawdhaId)
+/// Utile pour le parent side où on a accès à l'ID via le parent model
+final schoolConfigByRawdhaIdProvider = StreamProvider.family<SchoolConfigModel?, String>((ref, rawdhaId) {
+  return SchoolService().getSchoolConfig(rawdhaId);
+});

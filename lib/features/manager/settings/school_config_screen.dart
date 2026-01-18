@@ -5,6 +5,9 @@ import '../../../models/school_config_model.dart';
 import '../../../services/school_service.dart';
 import '../../auth/services/manager_auth_service.dart'; // Import
 import 'package:go_router/go_router.dart'; // Import
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import '../../../services/storage_service.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
@@ -44,7 +47,10 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
     // Add listener for auto-generation
     _nameController.addListener(_onNameChanged);
     
-    _loadConfig();
+    // Initial load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadConfig();
+    });
   }
 
   void _onNameChanged() {
@@ -78,11 +84,66 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
 
     return code.toUpperCase();
   }
-
-  Future<void> _loadConfig() async {
+  
+  Future<void> _pickAndUploadLogo() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    
+    if (image == null) return;
+    
+    final file = File(image.path);
+    final size = await file.length();
+    
+    if (size > 150 * 1024) { // 150 KB
+       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Image trop volumineuse. Max 150 Ko.')),
+        );
+      }
+      return;
+    }
+    
+    if (_nameController.text.isEmpty) {
+       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Veuillez d\'abord entrer le nom de l\'école.')),
+        );
+      }
+      return;
+    }
+    
+    setState(() => _isLoading = true);
+    
     try {
-      final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
-      // Pour l'instant on utilise un stream mais on prend juste la première valeur pour le formulaire
+      final storageService = StorageService();
+      final url = await storageService.uploadSchoolLogo(file, _nameController.text);
+      
+      setState(() {
+        _logoUrlController.text = url;
+        _isLoading = false;
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Logo téléchargé avec succès !')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur de téléchargement: $e')),
+        );
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _loadConfig([String? specificId]) async {
+    try {
+      final rawdhaId = specificId ?? ref.read(currentRawdhaIdProvider) ?? '';
+      
+      if (rawdhaId.isEmpty) return;
+
       final stream = _schoolService.getSchoolConfig(rawdhaId);
       final config = await stream.first;
       
@@ -163,6 +224,12 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<String?>(currentRawdhaIdProvider, (previous, next) {
+      if (next != null && next.isNotEmpty && next != previous) {
+        _loadConfig(next);
+      }
+    });
+
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
@@ -276,15 +343,61 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
                     _buildSectionHeader('school.branding'.tr()),
                     const SizedBox(height: 16),
                     
-                    TextFormField(
-                      controller: _logoUrlController,
-                      decoration: InputDecoration(
-                        labelText: 'school.fields.logo_url'.tr(),
-                        prefixIcon: const Icon(Icons.image),
-                        border: const OutlineInputBorder(),
-                        helperText: 'school.logo_hint'.tr(),
-                      ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _logoUrlController,
+                            readOnly: true,
+                            decoration: InputDecoration(
+                              labelText: 'school.fields.logo_url'.tr(),
+                              prefixIcon: const Icon(Icons.image),
+                              border: const OutlineInputBorder(),
+                              helperText: 'school.logo_hint'.tr(),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          children: [
+                            IconButton.filled(
+                              onPressed: _pickAndUploadLogo,
+                              icon: const Icon(Icons.upload_file),
+                              tooltip: 'Télécharger Logo (Max 150Ko)',
+                            ),
+                            const Text('Max 150Ko', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                          ],
+                        ),
+                      ],
                     ),
+                    if (_logoUrlController.text.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16.0),
+                        child: Center(
+                          child: Container(
+                            height: 120,
+                            width: 120,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey.shade300),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.network(
+                                _logoUrlController.text,
+                                fit: BoxFit.contain,
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return const Center(child: CircularProgressIndicator());
+                                },
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     
                     const SizedBox(height: 32),
                     

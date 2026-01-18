@@ -6,6 +6,7 @@
     "logout": "Déconnexion",
     "manager": {
         "title": "Espace Manager",
+        "manage_all": "Tout gérer",
         "username": "Nom d'utilisateur",
         "password": "Mot de passe",
         "login_button": "Se connecter",

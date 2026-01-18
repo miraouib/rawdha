@@ -13,6 +13,7 @@ import '../../../services/announcement_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/rawdha_provider.dart';
 
 class ParentDashboardScreen extends ConsumerWidget {
   final ParentModel parent;
@@ -47,24 +48,39 @@ class ParentDashboardScreen extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 32, 20, 16),
               child: Center(
-                child: Column(
-                  children: [
-                    Image.asset(
-                      'assets/images/logo.png',
-                      height: 80,
-                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.school, size: 80, color: AppTheme.primaryBlue),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'app_name'.tr(),
-                      style: const TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.primaryBlue,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ],
+                child: Consumer(
+                  builder: (context, ref, child) {
+                    final configAsync = ref.watch(schoolConfigByRawdhaIdProvider(parent.rawdhaId));
+                    final config = configAsync.value;
+                    
+                    return Column(
+                      children: [
+                        if (config?.logoUrl != null && config!.logoUrl!.isNotEmpty)
+                           Image.network(
+                            config.logoUrl!,
+                            height: 80,
+                            errorBuilder: (context, error, stackTrace) => Image.asset('assets/images/logo.png', height: 80),
+                          )
+                        else
+                          Image.asset(
+                            'assets/images/logo.png',
+                            height: 80,
+                            errorBuilder: (context, error, stackTrace) => const Icon(Icons.school, size: 80, color: AppTheme.primaryBlue),
+                          ),
+                        const SizedBox(height: 12),
+                        Text(
+                          config?.name ?? 'app_name'.tr(),
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryBlue,
+                            letterSpacing: 1.2,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
             ),

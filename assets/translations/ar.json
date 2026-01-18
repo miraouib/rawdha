@@ -6,6 +6,7 @@
     "logout": "تسجيل الخروج",
     "manager": {
         "title": "مساحة المدير",
+        "manage_all": "إدارة الكل",
         "username": "اسم المستخدم",
         "password": "كلمة المرور",
         "login_button": "تسجيل الدخول",

@@ -93,6 +93,7 @@
         "spouse_name": "Nom du conjoint",
         "spouse_phone": "Téléphone du conjoint",
         "family_code": "Code Famille",
+        "family_code_label": "Code Famille",
         "access_code": "Code d'accès",
         "monthly_fee": "Frais mensuels",
         "children_enrolled": "Enfants inscrits",
@@ -115,7 +116,18 @@
         "total_due": "Total dû",
         "unpaid_badge": "NON PAYÉ",
         "school_details": "Informations de l'école",
-        "view_school_details": "Détails de l'école"
+        "view_school_details": "Détails de l'école",
+        "generated_codes": "Codes d'accès (Générés)",
+        "note_codes": "Notez ces codes pour le parent.",
+        "spouse_section": "Conjoint (Optionnel)",
+        "save_button": "Enregistrer",
+        "error_rawdha_id": "Erreur: ID Rawdha non trouvé",
+        "school_code_label": "Code École",
+        "school_code_hint": "ex: ISRAA",
+        "ask_school_code": "Demandez votre code unique à l'école",
+        "school_label": "École",
+        "family_id_short": "ID",
+        "payment_history_short": "Historique Paiements"
     },
     "student": {
         "students": "Élèves",
@@ -330,6 +342,10 @@
         "success": "Succès",
         "total": "Total",
         "no_results": "Aucun résultat",
-        "not_defined": "Non défini"
+        "not_defined": "Non défini",
+        "required": "Champ requis",
+        "invalid": "Valeur invalide",
+        "code_copied": "Code copié !",
+        "unknown": "Inconnu"
     }
 }

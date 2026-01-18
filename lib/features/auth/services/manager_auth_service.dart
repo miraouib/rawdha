@@ -59,8 +59,27 @@ class ManagerAuthService {
       }
 
       return manager;
+      return manager;
     } catch (e) {
       rethrow;
+    }
+  }
+
+  /// Vérifier le mot de passe du manager actuel (pour les actions sensibles)
+  Future<bool> verifyPassword(String managerId, String password) async {
+    try {
+      final doc = await _firestore.collection('managers').doc(managerId).get();
+      if (!doc.exists) return false;
+      
+      final data = doc.data();
+      if (data == null) return false;
+      
+      final storedHash = data['passwordHash'];
+      final providedHash = _encryption.hashPassword(password);
+      
+      return storedHash == providedHash;
+    } catch (e) {
+      return false;
     }
   }
 

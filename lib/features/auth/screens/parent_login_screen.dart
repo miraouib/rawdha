@@ -20,8 +20,8 @@ class ParentLoginScreen extends ConsumerStatefulWidget {
 }
 
 class _ParentLoginScreenState extends ConsumerState<ParentLoginScreen> {
+  final _schoolCodeController = TextEditingController();
   final _idController = TextEditingController();
-  final _pinController = TextEditingController();
   final _parentService = ParentService();
   final _sessionService = SessionService();
   
@@ -39,11 +39,11 @@ class _ParentLoginScreenState extends ConsumerState<ParentLoginScreen> {
     
     // 1. Pre-fill credentials if they exist
     final creds = await _sessionService.getSavedCredentials();
+    if (creds['schoolCode'] != null) {
+      _schoolCodeController.text = creds['schoolCode']!;
+    }
     if (creds['familyCode'] != null) {
       _idController.text = creds['familyCode']!;
-    }
-    if (creds['accessCode'] != null) {
-      _pinController.text = creds['accessCode']!;
     }
 
     // 2. Try auto-login
@@ -58,18 +58,18 @@ class _ParentLoginScreenState extends ConsumerState<ParentLoginScreen> {
 
   @override
   void dispose() {
+    _schoolCodeController.dispose();
     _idController.dispose();
-    _pinController.dispose();
     super.dispose();
   }
 
   Future<void> _handleLogin() async {
+    final schoolCode = _schoolCodeController.text.trim().toUpperCase();
     final familyCode = _idController.text.trim().toUpperCase();
-    final accessCode = _pinController.text.trim();
     
-    debugPrint('Attempting login for: $familyCode');
+    debugPrint('Attempting login for: $schoolCode - $familyCode');
     
-    if (familyCode.isEmpty || accessCode.isEmpty) {
+    if (schoolCode.isEmpty || familyCode.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('common.error'.tr()),
@@ -82,13 +82,13 @@ class _ParentLoginScreenState extends ConsumerState<ParentLoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final parent = await _parentService.loginParent(familyCode, accessCode);
+      final parent = await _parentService.loginParent(schoolCode, familyCode);
       
       if (parent != null) {
         debugPrint('Login success for: ${parent.id}');
         if (_rememberMe) {
           debugPrint('Saving session for: $familyCode');
-          await _sessionService.saveSession(familyCode, accessCode, parent.rawdhaId);
+          await _sessionService.saveSession(schoolCode, familyCode, parent.rawdhaId);
         } else {
           debugPrint('Not saving session (rememberMe=false)');
         }
@@ -176,6 +176,19 @@ class _ParentLoginScreenState extends ConsumerState<ParentLoginScreen> {
                   ),
                   child: Column(
                     children: [
+                      // Champ Code École
+                      TextFormField(
+                        controller: _schoolCodeController,
+                        decoration: InputDecoration(
+                          labelText: 'parent.school_code_label'.tr(),
+                          prefixIcon: const Icon(Icons.school_outlined),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          hintText: 'parent.school_code_hint'.tr(),
+                        ),
+                        textCapitalization: TextCapitalization.characters,
+                      ),
+                      const SizedBox(height: 16),
+
                       // Champ ID
                       TextFormField(
                         controller: _idController,
@@ -186,20 +199,7 @@ class _ParentLoginScreenState extends ConsumerState<ParentLoginScreen> {
                         ),
                         textCapitalization: TextCapitalization.characters,
                       ),
-                      const SizedBox(height: 16),
-                      
-                      // Champ PIN
-                      TextFormField(
-                        controller: _pinController,
-                        keyboardType: TextInputType.number,
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          labelText: 'parent.access_pin_label'.tr(),
-                          prefixIcon: const Icon(Icons.lock_outline),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        maxLength: 6,
-                      ),
+                      const SizedBox(height: 24),
                       
                       Row(
                         children: [
@@ -262,7 +262,7 @@ class _ParentLoginScreenState extends ConsumerState<ParentLoginScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Demandez votre code unique à l\'école',
+                          'parent.ask_school_code'.tr(),
                           style: TextStyle(
                             fontSize: 12,
                             color: AppTheme.accentPink,

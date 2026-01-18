@@ -13,6 +13,60 @@ class SchoolService {
   CollectionReference get _levelsCollection => _firestore.collection('school_levels');
   CollectionReference get _configCollection => _firestore.collection('school_config');
   CollectionReference get _rawdhasCollection => _firestore.collection('rawdhas');
+  CollectionReference get _parentsCollection => _firestore.collection('parents');
+  CollectionReference get _studentsCollection => _firestore.collection('students');
+
+  /// Réinitialiser les données de l'école (Soft Delete)
+  /// Met à jour tous les parents et élèves actifs à isDeleted = true
+  Future<void> resetSchoolData(String rawdhaId) async {
+    final batch = _firestore.batch();
+    
+    // 1. Soft Delete Parents
+    final parentsQuery = await _parentsCollection
+        .where('rawdhaId', isEqualTo: rawdhaId)
+        .where('isDeleted', isEqualTo: false)
+        .get();
+
+    for (var doc in parentsQuery.docs) {
+      batch.update(doc.reference, {'isDeleted': true});
+    }
+
+    // 2. Soft Delete Students
+    final studentsQuery = await _studentsCollection
+        .where('rawdhaId', isEqualTo: rawdhaId)
+        .where('isDeleted', isEqualTo: false)
+        .get();
+
+    for (var doc in studentsQuery.docs) {
+      batch.update(doc.reference, {'isDeleted': true});
+    }
+
+    await batch.commit();
+  }
+
+  /// Restaurer un parent et ses enfants
+  /// Met isDeleted = false et met à jour les niveaux des enfants
+  Future<void> restoreParent(String parentId, Map<String, String> studentLevelUpdates) async {
+    final batch = _firestore.batch();
+    
+    // 1. Restore Parent
+    final parentRef = _parentsCollection.doc(parentId);
+    batch.update(parentRef, {'isDeleted': false});
+
+    // 2. Restore & Update Children
+    for (var entry in studentLevelUpdates.entries) {
+      final studentId = entry.key;
+      final newLevelId = entry.value;
+      
+      final studentRef = _studentsCollection.doc(studentId);
+      batch.update(studentRef, {
+        'isDeleted': false,
+        'levelId': newLevelId, // Update level for new year
+      });
+    }
+
+    await batch.commit();
+  }
 
   /// Récupérer les infos d'une Rawdha par ID
   Stream<RawdhaModel?> getRawdhaById(String id) {
@@ -102,6 +156,13 @@ class SchoolService {
       await _configCollection.add(config.toFirestore());
     } else {
       await _configCollection.doc(docId).set(config.toFirestore());
+    }
+
+    // Sync School Code to Rawdha Model for easier lookup
+    if (config.schoolCode != null && config.schoolCode!.isNotEmpty) {
+      await _rawdhasCollection.doc(rawdhaId).update({
+        'code': config.schoolCode,
+      });
     }
   }
 

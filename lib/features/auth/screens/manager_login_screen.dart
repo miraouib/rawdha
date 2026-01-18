@@ -86,8 +86,9 @@ class _ManagerLoginScreenState extends ConsumerState<ManagerLoginScreen> {
           await prefs.remove('remember_password_enc');
         }
 
-        // Set current rawdhaId for the session
+        // Set current rawdhaId and managerId for the session
         ref.read(currentRawdhaIdProvider.notifier).state = manager.rawdhaId;
+        ref.read(currentManagerIdProvider.notifier).state = manager.managerId;
 
         // Connexion réussie - naviguer vers le dashboard
         context.goNamed('manager_dashboard');

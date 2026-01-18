@@ -11,17 +11,18 @@ class StudentService {
   // Encryption service (placeholder if not fully implemented)
   // final _encryptionService = EncryptionService();
 
-  /// Récupérer tous les élèves d'une rawdha
+  /// Récupérer tous les élèves d'une rawdha (actifs et non supprimés)
   Stream<List<StudentModel>> getStudents(String rawdhaId) {
     return _studentsCollection
         .where('rawdhaId', isEqualTo: rawdhaId)
+        .where('isDeleted', isEqualTo: false) // Exclude soft deleted
         .snapshots()
         .map((snapshot) {
       final students = snapshot.docs.map((doc) {
         return StudentModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
       }).toList();
 
-      // Sort in-memory to avoid Firestore composite index requirement
+      // Sort in-memory
       students.sort((a, b) => a.firstName.compareTo(b.firstName));
       return students;
     });
@@ -34,6 +35,7 @@ class StudentService {
   Stream<List<StudentModel>> getStudentsByLevel(String rawdhaId, String levelId) {
     return _studentsCollection
         .where('rawdhaId', isEqualTo: rawdhaId)
+        .where('isDeleted', isEqualTo: false) // Filter
         .snapshots()
         .map((snapshot) {
       return snapshot.docs
@@ -43,12 +45,16 @@ class StudentService {
     });
   }
 
-  /// Récupérer les élèves d'un parent
-  Stream<List<StudentModel>> getStudentsByParentId(String rawdhaId, String parentId) {
-    return _studentsCollection
-        .where('rawdhaId', isEqualTo: rawdhaId)
-        .snapshots()
-        .map((snapshot) {
+  /// Récupérer les élèves d'un parent (option de voir les supprimés pour restauration)
+  Stream<List<StudentModel>> getStudentsByParentId(String rawdhaId, String parentId, {bool includeDeleted = false}) {
+    var query = _studentsCollection
+        .where('rawdhaId', isEqualTo: rawdhaId);
+        
+    if (!includeDeleted) {
+      query = query.where('isDeleted', isEqualTo: false);
+    }
+        
+    return query.snapshots().map((snapshot) {
       return snapshot.docs
           .map((doc) => StudentModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id))
           .where((s) => s.parentIds.contains(parentId))

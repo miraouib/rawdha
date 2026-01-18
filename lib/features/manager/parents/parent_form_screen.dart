@@ -26,7 +26,6 @@ class _ParentFormScreenState extends ConsumerState<ParentFormScreen> {
   final _monthlyFeeController = TextEditingController();
   
   String? _familyCode;
-  String? _accessCode;
   bool _isLoading = false;
   final ParentService _parentService = ParentService();
 
@@ -45,9 +44,7 @@ class _ParentFormScreenState extends ConsumerState<ParentFormScreen> {
       }
       
       _familyCode = widget.parent!.familyCode;
-      _accessCode = widget.parent!.accessCode;
     } else {
-      _accessCode = _parentService.generateAccessCode();
       _familyCode = '...';
     }
 
@@ -80,7 +77,7 @@ class _ParentFormScreenState extends ConsumerState<ParentFormScreen> {
     if (rawdhaId == null) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur: ID Rawdha non trouvé')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('parent.error_rawdha_id'.tr())));
       }
       return;
     }
@@ -96,7 +93,6 @@ class _ParentFormScreenState extends ConsumerState<ParentFormScreen> {
         spousePhone: _spousePhoneController.text.trim(),
         monthlyFee: _monthlyFeeController.text.isNotEmpty ? double.tryParse(_monthlyFeeController.text.trim()) : null,
         familyCode: _familyCode!,
-        accessCode: _accessCode!,
         studentIds: widget.parent?.studentIds ?? [],
         createdAt: widget.parent?.createdAt ?? DateTime.now(),
       );
@@ -113,7 +109,7 @@ class _ParentFormScreenState extends ConsumerState<ParentFormScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur: $e')),
+          SnackBar(content: Text('common.error'.tr() + ': $e')),
         );
       }
     } finally {
@@ -130,7 +126,7 @@ class _ParentFormScreenState extends ConsumerState<ParentFormScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: Text(isEditing ? 'Modifier Parent' : 'Ajouter Parent'),
+        title: Text(isEditing ? 'parent.edit_parent'.tr() : 'parent.add_parent'.tr()),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -147,19 +143,18 @@ class _ParentFormScreenState extends ConsumerState<ParentFormScreen> {
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
-                      const Text('Codes d\'accès (Générés)', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
+                      Text('parent.generated_codes'.tr(), style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
                       const SizedBox(height: 12),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          _CodeDisplay(label: 'Code Famille', code: _familyCode ?? '...'),
-                          _CodeDisplay(label: 'Code PIN', code: _accessCode ?? '...'),
+                          _CodeDisplay(label: 'parent.family_code_label'.tr(), code: _familyCode ?? '...'),
                         ],
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        'Notez ces codes pour le parent.',
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      Text(
+                        'parent.note_codes'.tr(),
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                     ],
                   ),
@@ -169,28 +164,28 @@ class _ParentFormScreenState extends ConsumerState<ParentFormScreen> {
 
               TextFormField(
                 controller: _firstNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Prénom',
-                  prefixIcon: Icon(Icons.person),
+                decoration: InputDecoration(
+                  labelText: 'parent.first_name'.tr(),
+                  prefixIcon: const Icon(Icons.person),
                 ),
-                validator: (value) => value == null || value.isEmpty ? 'Champ requis' : null,
+                validator: (value) => value == null || value.isEmpty ? 'common.required'.tr() : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _lastNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nom',
-                  prefixIcon: Icon(Icons.person_outline),
+                decoration: InputDecoration(
+                  labelText: 'parent.last_name'.tr(),
+                  prefixIcon: const Icon(Icons.person_outline),
                 ),
-                validator: (value) => value == null || value.isEmpty ? 'Champ requis' : null,
+                validator: (value) => value == null || value.isEmpty ? 'common.required'.tr() : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: 'Téléphone',
-                  prefixIcon: Icon(Icons.phone),
+                decoration: InputDecoration(
+                  labelText: 'parent.phone'.tr(),
+                  prefixIcon: const Icon(Icons.phone),
                 ),
                 validator: (value) => value == null || value.isEmpty ? 'Champ requis' : null,
               ),
@@ -207,23 +202,23 @@ class _ParentFormScreenState extends ConsumerState<ParentFormScreen> {
               
               const SizedBox(height: 16),
               const Divider(height: 32),
-              const Text('Conjoint (Optionnel)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey)),
+              Text('parent.spouse_section'.tr(), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey)),
               const SizedBox(height: 16),
               
               TextFormField(
                 controller: _spouseNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nom du conjoint',
-                  prefixIcon: Icon(Icons.person_add),
+                decoration: InputDecoration(
+                  labelText: 'parent.spouse_name'.tr(),
+                  prefixIcon: const Icon(Icons.person_add),
                 ),
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _spousePhoneController,
                 keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: 'Téléphone conjoint',
-                  prefixIcon: Icon(Icons.phone),
+                decoration: InputDecoration(
+                  labelText: 'parent.spouse_phone'.tr(),
+                  prefixIcon: const Icon(Icons.phone),
                 ),
               ),
 
@@ -236,7 +231,7 @@ class _ParentFormScreenState extends ConsumerState<ParentFormScreen> {
                   ),
                   child: _isLoading 
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('Enregistrer', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    : Text('parent.save_button'.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
               ),
               const SizedBox(height: 20),

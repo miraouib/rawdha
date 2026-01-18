@@ -26,6 +26,7 @@ import '../../features/manager/modules/module_list_screen.dart';
 import '../../features/manager/announcements/announcement_list_screen.dart';
 import '../../features/manager/school/school_management_screen.dart';
 import '../../features/manager/settings/school_config_screen.dart';
+import '../../features/manager/settings/restore_data_screen.dart'; // Import
 import '../../features/manager/employees/hr_management_screen.dart';
 import '../../features/parent/dashboard/parent_dashboard_screen.dart';
 import '../../features/parent/students/student_modules_screen.dart';
@@ -193,6 +194,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: 'settings', // Global Config
             name: 'school_settings',
             builder: (context, state) => const SchoolConfigScreen(),
+            routes: [
+               GoRoute(
+                 path: 'restore',
+                 name: 'restore_data',
+                 builder: (context, state) => const RestoreDataScreen(),
+               ),
+            ],
           ),
            GoRoute(
             path: 'hr', 

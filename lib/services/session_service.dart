@@ -6,18 +6,21 @@ class SessionService {
   static const String _keyFamilyCode = 'parent_family_code';
   static const String _keyAccessCode = 'parent_access_code';
   static const String _keyRawdhaId = 'parent_rawdha_id';
+  static const String _keySchoolCode = 'parent_school_code'; // Added
   static const String _keyIsLoggedIn = 'parent_is_logged_in';
 
   final ParentService _parentService = ParentService();
 
-  Future<void> saveSession(String familyCode, String accessCode, String rawdhaId) async {
+  Future<void> saveSession(String schoolCode, String familyCode, String rawdhaId) async {
     final prefs = await SharedPreferences.getInstance();
     final upperFamilyCode = familyCode.toUpperCase();
+    final upperSchoolCode = schoolCode.toUpperCase();
+    
+    await prefs.setString(_keySchoolCode, upperSchoolCode);
     bool s1 = await prefs.setString(_keyFamilyCode, upperFamilyCode);
-    bool s2 = await prefs.setString(_keyAccessCode, accessCode);
     bool s3 = await prefs.setString(_keyRawdhaId, rawdhaId);
     bool s4 = await prefs.setBool(_keyIsLoggedIn, true);
-    print('SessionService: Saved session ($upperFamilyCode, $accessCode, $rawdhaId) -> success: ${s1 && s2 && s3 && s4}');
+    print('SessionService: Saved session ($upperSchoolCode, $upperFamilyCode, $rawdhaId) -> success: ${s1 && s3 && s4}');
   }
 
   Future<void> clearSession() async {
@@ -31,11 +34,11 @@ class SessionService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.reload();
     final familyCode = prefs.getString(_keyFamilyCode);
-    final accessCode = prefs.getString(_keyAccessCode);
-    print('SessionService: getSavedCredentials found $familyCode / $accessCode');
+    final schoolCode = prefs.getString(_keySchoolCode);
+    print('SessionService: getSavedCredentials found $schoolCode / $familyCode');
     return {
       'familyCode': familyCode,
-      'accessCode': accessCode,
+      'schoolCode': schoolCode,
     };
   }
 
@@ -47,11 +50,11 @@ class SessionService {
     if (!isLoggedIn) return null;
 
     final familyCode = prefs.getString(_keyFamilyCode);
-    final accessCode = prefs.getString(_keyAccessCode);
-    print('SessionService: Found credentials: $familyCode / $accessCode');
+    final schoolCode = prefs.getString(_keySchoolCode);
+    print('SessionService: Found credentials: $schoolCode / $familyCode');
 
-    if (familyCode != null && accessCode != null) {
-      return await _parentService.loginParent(familyCode, accessCode);
+    if (familyCode != null && schoolCode != null) {
+      return await _parentService.loginParent(schoolCode, familyCode);
     }
     return null;
   }

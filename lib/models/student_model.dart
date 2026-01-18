@@ -16,6 +16,7 @@ class StudentModel {
   final DateTime? birthdate;
   final DateTime createdAt;
   final bool active;
+  final bool isDeleted; // Soft delete
   final String? photoUrl; // URL de la photo (optionnel)
 
   StudentModel({
@@ -31,6 +32,7 @@ class StudentModel {
     this.birthdate,
     required this.createdAt,
     this.active = true,
+    this.isDeleted = false,
     this.photoUrl,
   });
 
@@ -49,6 +51,7 @@ class StudentModel {
       birthdate: (data['birthdate'] as Timestamp?)?.toDate(),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       active: data['active'] ?? true,
+      isDeleted: data['isDeleted'] ?? false,
       photoUrl: data['photoUrl'],
     );
   }
@@ -67,6 +70,7 @@ class StudentModel {
       'birthdate': birthdate != null ? Timestamp.fromDate(birthdate!) : null,
       'createdAt': Timestamp.fromDate(createdAt),
       'active': active,
+      'isDeleted': isDeleted,
       'photoUrl': photoUrl,
     };
   }
@@ -93,6 +97,7 @@ class StudentModel {
     DateTime? birthdate,
     DateTime? createdAt,
     bool? active,
+    bool? isDeleted,
     String? photoUrl,
   }) {
     return StudentModel(
@@ -108,6 +113,7 @@ class StudentModel {
       birthdate: birthdate ?? this.birthdate,
       createdAt: createdAt ?? this.createdAt,
       active: active ?? this.active,
+      isDeleted: isDeleted ?? this.isDeleted,
       photoUrl: photoUrl ?? this.photoUrl,
     );
   }

@@ -7,18 +7,14 @@ class ParentService {
   final CollectionReference _parentsCollection = FirebaseFirestore.instance.collection('parents');
   final _encryptionService = EncryptionService(); // Assume singleton or instance
 
-  // Generate Family Code: First Letter + 4 digits
+  // Generate Family Code: First Letter + 5 digits
   String generateFamilyCode(String firstName) {
-    if (firstName.isEmpty) return 'P${_generateRandomDigits(4)}';
+    if (firstName.isEmpty) return 'P${_generateRandomDigits(5)}';
     String letter = firstName[0].toUpperCase();
     if (!RegExp(r'[A-Z]').hasMatch(letter)) letter = 'P'; // Fail-safe
-    return '$letter${_generateRandomDigits(4)}';
+    return '$letter${_generateRandomDigits(5)}';
   }
 
-  // Generate Access Code: 6 digits
-  String generateAccessCode() {
-    return _generateRandomDigits(6);
-  }
 
   String _generateRandomDigits(int length) {
     final rand = Random();
@@ -29,38 +25,71 @@ class ParentService {
     return result;
   }
 
+    /// Stream of active parents for a given Rawdha
   Stream<List<ParentModel>> getParents(String rawdhaId) {
     return _parentsCollection
         .where('rawdhaId', isEqualTo: rawdhaId)
+        .where('isDeleted', isEqualTo: false)
         .snapshots()
         .map((snapshot) {
       final parents = snapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
         return ParentModel.fromFirestore(data, doc.id);
       }).toList();
-
-      // Sort in-memory to avoid Firestore composite index requirement
-      parents.sort((a, b) => b.createdAt.compareTo(a.createdAt)); // Descending
+      parents.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return parents;
     });
   }
 
+  /// Stream of archived (soft deleted) parents for a given Rawdha
+  Stream<List<ParentModel>> getArchivedParents(String rawdhaId) {
+    return _parentsCollection
+        .where('rawdhaId', isEqualTo: rawdhaId)
+        .where('isDeleted', isEqualTo: true)
+        .snapshots()
+        .map((snapshot) {
+      final parents = snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return ParentModel.fromFirestore(data, doc.id);
+      }).toList();
+      parents.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return parents;
+    });
+  } 
+
   /// Vérifier les identifiants d'un parent
-  Future<ParentModel?> loginParent(String familyCode, String accessCode) async {
+  /// Login with ONLY School Code + Family Code
+  Future<ParentModel?> loginParent(String schoolCode, String familyCode) async {
     try {
+      // 1. Find Rawdha by School Code
+      final rawdhaQuery = await FirebaseFirestore.instance
+          .collection('rawdhas')
+          .where('code', isEqualTo: schoolCode.toUpperCase())
+          .limit(1)
+          .get();
+
+      if (rawdhaQuery.docs.isEmpty) {
+        throw Exception('Code école incorrect');
+      }
+      
+      final rawdhaId = rawdhaQuery.docs.first.id;
+
+      // 2. Find Parent by Family Code AND Rawdha ID
       final snapshot = await _parentsCollection
+          .where('rawdhaId', isEqualTo: rawdhaId)
           .where('familyCode', isEqualTo: familyCode)
+          .where('isDeleted', isEqualTo: false) // Ensure active
+          .limit(1)
           .get();
 
       if (snapshot.docs.isNotEmpty) {
         final doc = snapshot.docs.first;
-        final parent = ParentModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
-        if (parent.accessCode == accessCode) {
-          return parent;
-        }
+        return ParentModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
       }
-      return null;
+      
+      throw Exception('Code famille introuvable pour cette école');
     } catch (e) {
+      if (e is Exception) rethrow; // Pass specific messages
       return null;
     }
   }

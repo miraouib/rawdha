@@ -5,6 +5,9 @@ import '../../services/school_service.dart';
 /// Provider pour l'ID de la Rawdha actuelle
 final currentRawdhaIdProvider = StateProvider<String?>((ref) => null);
 
+/// Provider pour l'ID du Manager connecté
+final currentManagerIdProvider = StateProvider<String?>((ref) => null);
+
 /// Provider pour les informations de la Rawdha actuelle (abonnement, etc.)
 final currentRawdhaProvider = StreamProvider<RawdhaModel?>((ref) {
   final rawdhaId = ref.watch(currentRawdhaIdProvider);

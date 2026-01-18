@@ -93,6 +93,7 @@
         "spouse_name": "اسم الزوج/الزوجة",
         "spouse_phone": "هاتف الزوج/الزوجة",
         "family_code": "رمز العائلة",
+        "family_code_label": "رمز العائلة",
         "access_code": "رمز الدخول",
         "monthly_fee": "الرسوم الشهرية",
         "children_enrolled": "الأطفال المسجلون",
@@ -115,7 +116,18 @@
         "total_due": "إجمالي المستحق",
         "unpaid_badge": "غير مدفوع",
         "school_details": "معلومات الروضة",
-        "view_school_details": "تفاصيل الروضة"
+        "view_school_details": "تفاصيل الروضة",
+        "generated_codes": "رموز الوصول (تلقائية)",
+        "note_codes": "احفظ هذه الرموز لتزويد الولي بها.",
+        "spouse_section": "الزوج / الزوجة (اختياري)",
+        "save_button": "حفظ",
+        "error_rawdha_id": "خطأ: لم يتم العثور على معرف الروضة",
+        "school_code_label": "رمز المدرسة",
+        "school_code_hint": "مثال: ISRAA",
+        "ask_school_code": "اطلب الرمز الخاص بك من المدرسة",
+        "school_label": "المدرسة",
+        "family_id_short": "المعرف",
+        "payment_history_short": "سجل الدفع"
     },
     "student": {
         "students": "التلاميذ",
@@ -330,6 +342,10 @@
         "success": "نجاح",
         "total": "المجموع",
         "no_results": "لم يتم العثور على نتائج",
-        "not_defined": "غير محدد"
+        "not_defined": "غير محدد",
+        "required": "الحقل مطلوب",
+        "invalid": "قيمة غير صالحة",
+        "code_copied": "تم نسخ الرمز!",
+        "unknown": "غير معروف"
     }
 }

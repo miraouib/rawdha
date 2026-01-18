@@ -10,6 +10,8 @@ import '../../../services/parent_service.dart';
 import '../../../services/student_service.dart';
 import '../../../models/payment_model.dart';
 import '../../../services/payment_service.dart';
+import '../../../services/school_service.dart'; // Import
+import '../../../models/school_config_model.dart'; // Import
 import 'parent_form_screen.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -74,47 +76,54 @@ class _ParentListScreenState extends ConsumerState<ParentListScreen> {
           ),
 
           Expanded(
-            child: StreamBuilder<List<ParentModel>>(
-              stream: _parentService.getParents(ref.watch(currentRawdhaIdProvider) ?? ''),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+            child: StreamBuilder<SchoolConfigModel>(
+              stream: SchoolService().getSchoolConfig(ref.watch(currentRawdhaIdProvider) ?? ''),
+              builder: (context, configSnapshot) {
+                final schoolCode = configSnapshot.data?.schoolCode ?? '';
+                
+                return StreamBuilder<List<ParentModel>>(
+                  stream: _parentService.getParents(ref.watch(currentRawdhaIdProvider) ?? ''),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return _buildEmptyState(context);
-                }
+                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return _buildEmptyState(context);
+                    }
 
-                // Filter list
-                final parents = snapshot.data!.where((parent) {
-                  final query = _searchQuery;
-                  return parent.firstName.toLowerCase().contains(query) ||
-                      parent.lastName.toLowerCase().contains(query) ||
-                      parent.phone.contains(query) ||
-                      parent.familyCode.toLowerCase().contains(query) ||
-                      parent.spouseName.toLowerCase().contains(query) ||
-                      parent.spousePhone.contains(query);
-                }).toList()
-                ..sort((a, b) {
-                   int cmp = a.firstName.toLowerCase().compareTo(b.firstName.toLowerCase());
-                   if (cmp != 0) return cmp;
-                   return a.lastName.toLowerCase().compareTo(b.lastName.toLowerCase());
-                });
+                    // Filter list
+                    final parents = snapshot.data!.where((parent) {
+                      final query = _searchQuery;
+                      return parent.firstName.toLowerCase().contains(query) ||
+                          parent.lastName.toLowerCase().contains(query) ||
+                          parent.phone.contains(query) ||
+                          parent.familyCode.toLowerCase().contains(query) ||
+                          parent.spouseName.toLowerCase().contains(query) ||
+                          parent.spousePhone.contains(query);
+                    }).toList()
+                    ..sort((a, b) {
+                       int cmp = a.firstName.toLowerCase().compareTo(b.firstName.toLowerCase());
+                       if (cmp != 0) return cmp;
+                       return a.lastName.toLowerCase().compareTo(b.lastName.toLowerCase());
+                    });
 
-                if (parents.isEmpty) {
-                  return Center(child: Text('common.search'.tr() + ': "$_searchQuery"'));
-                }
+                    if (parents.isEmpty) {
+                      return Center(child: Text('common.search'.tr() + ': "$_searchQuery"'));
+                    }
 
-                return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                  itemCount: parents.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final parent = parents[index];
-                    return _ParentCard(parent: parent);
+                    return ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                      itemCount: parents.length,
+                      separatorBuilder: (context, index) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final parent = parents[index];
+                        return _ParentCard(parent: parent, schoolCode: schoolCode);
+                      },
+                    );
                   },
                 );
-              },
+              }
             ),
           ),
         ],
@@ -149,8 +158,9 @@ class _ParentListScreenState extends ConsumerState<ParentListScreen> {
 
 class _ParentCard extends StatelessWidget {
   final ParentModel parent;
+  final String schoolCode;
 
-  const _ParentCard({required this.parent});
+  const _ParentCard({required this.parent, required this.schoolCode});
 
   Future<void> _copyToClipboard(BuildContext context, String text) async {
     await Clipboard.setData(ClipboardData(text: text));
@@ -192,11 +202,13 @@ class _ParentCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            Row(
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
               children: [
-                _CodeBadge(label: 'ID', code: parent.familyCode, color: Colors.blue),
-                const SizedBox(width: 8),
-                _CodeBadge(label: 'PIN', code: parent.accessCode, color: Colors.green),
+                if (schoolCode.isNotEmpty)
+                  _CodeBadge(label: 'parent.school_label'.tr(), code: schoolCode, color: Colors.purple),
+                _CodeBadge(label: 'parent.family_id_short'.tr(), code: parent.familyCode, color: Colors.blue),
               ],
             ),
           ],
@@ -206,31 +218,37 @@ class _ParentCard extends StatelessWidget {
              const Divider(),
              Padding(
                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-               child: Row(
-                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                 children: [
-                   Column(
-                     crossAxisAlignment: CrossAxisAlignment.start,
-                     children: [
-                        Text('parent.spouse_name'.tr(), style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                       Text(parent.spouseName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                     ],
-                   ),
-                   if (parent.spousePhone.isNotEmpty)
-                     InkWell(
-                       onTap: () => _copyToClipboard(context, parent.spousePhone),
-                       child: Row(
-                         children: [
-                           const Icon(Icons.phone, size: 16, color: AppTheme.textGray),
-                           const SizedBox(width: 4),
-                           Text(parent.spousePhone),
-                           const SizedBox(width: 4),
-                           const Icon(Icons.copy, size: 12, color: AppTheme.primaryBlue),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('parent.spouse_name'.tr(), style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                          Text(parent.spouseName, style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    if (parent.spousePhone.isNotEmpty)
+                      Flexible(
+                        child: InkWell(
+                          onTap: () => _copyToClipboard(context, parent.spousePhone),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              const Icon(Icons.phone, size: 16, color: AppTheme.textGray),
+                              const SizedBox(width: 4),
+                              Flexible(child: Text(parent.spousePhone, overflow: TextOverflow.ellipsis)),
+                              const SizedBox(width: 4),
+                              const Icon(Icons.copy, size: 12, color: AppTheme.primaryBlue),
                          ],
                        ),
                      ),
-                 ],
-               ),
+                   ),
+                  ],
+                ),
              ),
           ],
           const Divider(),
@@ -276,7 +294,7 @@ class _CodeBadge extends StatelessWidget {
     return InkWell(
       onTap: () {
         Clipboard.setData(ClipboardData(text: code));
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Code copié !')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('common.code_copied'.tr())));
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -335,7 +353,7 @@ class _ParentChildrenList extends ConsumerWidget {
                 child: student.photoUrl == null ? Text(student.firstName[0], style: const TextStyle(fontSize: 10)) : null,
               ),
               title: Text('${student.firstName} ${student.lastName}'),
-              subtitle: Text(student.levelId.isNotEmpty ? LevelHelper.getLevelName(student.levelId, context) : 'Niveau ?'),
+              subtitle: Text(student.levelId.isNotEmpty ? LevelHelper.getLevelName(student.levelId, context) : 'common.unknown'.tr()),
               trailing: const Icon(Icons.chevron_right, size: 16),
               onTap: () {
                 // Future: Navigate to student detail
@@ -374,9 +392,9 @@ class _ParentPaymentHistory extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Divider(),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Text('Historique Paiements :', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text('parent.payment_history_short'.tr() + ' :', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
             ),
             SizedBox(
               height: 60,
@@ -402,7 +420,7 @@ class _ParentPaymentHistory extends ConsumerWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(DateFormat('MMM', 'fr_FR').format(p.date).toUpperCase(), style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: color)),
+                        Text(DateFormat('MMM', context.locale.languageCode).format(p.date).toUpperCase(), style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: color)),
                         Text('${p.amount.toInt()}', style: const TextStyle(fontSize: 10)),
                       ],
                     ),

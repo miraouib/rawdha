@@ -9,6 +9,7 @@ class SchoolConfigModel {
   final String? email;
   final String? logoUrl;
   final Map<String, dynamic>? socialLinks;
+  final String? schoolCode; // Unique School Code (e.g. ISRAA)
   final DateTime? updatedAt;
 
   const SchoolConfigModel({
@@ -20,6 +21,7 @@ class SchoolConfigModel {
     this.email,
     this.logoUrl,
     this.socialLinks,
+    this.schoolCode,
     this.updatedAt,
   });
 
@@ -34,6 +36,7 @@ class SchoolConfigModel {
       email: data['email'],
       logoUrl: data['logoUrl'],
       socialLinks: data['socialLinks'] as Map<String, dynamic>?,
+      schoolCode: data['schoolCode'],
       updatedAt: data['updatedAt'] != null 
           ? (data['updatedAt'] as Timestamp).toDate() 
           : null,
@@ -50,6 +53,7 @@ class SchoolConfigModel {
       'email': email,
       'logoUrl': logoUrl,
       'socialLinks': socialLinks,
+      'schoolCode': schoolCode,
       'updatedAt': FieldValue.serverTimestamp(),
     };
   }
@@ -63,6 +67,7 @@ class SchoolConfigModel {
     String? logoUrl,
     Map<String, dynamic>? socialLinks,
     String? rawdhaId,
+    String? schoolCode,
   }) {
     return SchoolConfigModel(
       id: id,
@@ -73,6 +78,7 @@ class SchoolConfigModel {
       email: email ?? this.email,
       logoUrl: logoUrl ?? this.logoUrl,
       socialLinks: socialLinks ?? this.socialLinks,
+      schoolCode: schoolCode ?? this.schoolCode,
       updatedAt: updatedAt,
     );
   }

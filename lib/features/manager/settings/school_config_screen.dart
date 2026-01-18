@@ -99,7 +99,7 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
     if (size > 150 * 1024) { // 150 KB
        if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Image trop volumineuse. Max 150 Ko.')),
+          SnackBar(content: Text('school.logo_too_large'.tr())),
         );
       }
       return;
@@ -108,7 +108,7 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
     if (_nameController.text.isEmpty) {
        if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Veuillez d\'abord entrer le nom de l\'école.')),
+          SnackBar(content: Text('school.enter_name_first'.tr())),
         );
       }
       return;
@@ -127,13 +127,13 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Logo téléchargé avec succès !')),
+          SnackBar(content: Text('school.logo_uploaded'.tr())),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur de téléchargement: $e')),
+          SnackBar(content: Text('${"school.upload_error".tr()}: $e')),
         );
         setState(() => _isLoading = false);
       }
@@ -167,7 +167,7 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur de chargement: $e')),
+          SnackBar(content: Text('${"school.load_error".tr()}: $e')),
         );
       }
     }
@@ -199,7 +199,7 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
         if (mounted) {
           setState(() => _isLoading = false);
           ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(content: Text('Erreur: Le code école "$code" est déjà utilisé.')),
+             SnackBar(content: Text('school.code_taken'.tr(namedArgs: {'code': code}))),
           );
         }
         return;
@@ -208,7 +208,7 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur vérification code: $e')),
+          SnackBar(content: Text('${"school.code_check_error".tr()}: $e')),
         );
       }
       return;
@@ -248,7 +248,7 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur: $e')),
+          SnackBar(content: Text('${"common.error".tr()}: $e')),
         );
       }
     }
@@ -300,15 +300,15 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
                     TextFormField(
                       controller: _schoolCodeController,
                       textCapitalization: TextCapitalization.characters,
-                      decoration: const InputDecoration(
-                        labelText: 'Code École (Unique)',
-                        prefixIcon: Icon(Icons.qr_code),
-                        border: OutlineInputBorder(),
-                        helperText: 'Ex: ISRAA - Requis pour connexion parents',
+                      decoration: InputDecoration(
+                        labelText: 'school.fields.code'.tr(),
+                        prefixIcon: const Icon(Icons.qr_code),
+                        border: const OutlineInputBorder(),
+                        helperText: 'school.fields.code_hint'.tr(),
                       ),
                       validator: (v) {
-                        if (v == null || v.isEmpty) return 'Code requis';
-                        if (v.length < 3) return '3 caractères min.';
+                        if (v == null || v.isEmpty) return 'school.validation.code_required'.tr();
+                        if (v.length < 3) return 'school.validation.code_min_length'.tr();
                         return null;
                       },
                     ),
@@ -327,7 +327,7 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
                       ),
                       items: List.generate(12, (i) => i + 1).map((m) => DropdownMenuItem(
                         value: m,
-                        child: Text(DateFormat('MMMM', 'fr').format(DateTime(2022, m))),
+                        child: Text(DateFormat('MMMM', context.locale.languageCode).format(DateTime(2022, m))),
                       )).toList(),
                       onChanged: (v) {
                         if (v != null) setState(() => _selectedStartMonth = v);
@@ -404,9 +404,9 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
                             IconButton.filled(
                               onPressed: _pickAndUploadLogo,
                               icon: const Icon(Icons.upload_file),
-                              tooltip: 'Télécharger Logo (Max 150Ko)',
+                              tooltip: 'school.upload_logo_tooltip'.tr(),
                             ),
-                            const Text('Max 150Ko', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                            Text('school.max_size'.tr(), style: const TextStyle(fontSize: 10, color: Colors.grey)),
                           ],
                         ),
                       ],
@@ -455,7 +455,7 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
                     ),
                     
                     const SizedBox(height: 40),
-                    _buildSectionHeader('Zone de Danger', color: Colors.red),
+                    _buildSectionHeader('school.danger_zone'.tr(), color: Colors.red),
                     const SizedBox(height: 16),
                     
                     // Restore Data Button
@@ -468,8 +468,8 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
                       ),
                       child: ListTile(
                         leading: const Icon(Icons.history, color: Colors.blue),
-                        title: const Text('Restaurer des données'),
-                        subtitle: const Text('Récupérer d\'anciens élèves et parents'),
+                        title: Text('school.restore_data'.tr()),
+                        subtitle: Text('school.restore_data_desc'.tr()),
                         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                         onTap: () => context.pushNamed('restore_data'),
                       ),
@@ -486,8 +486,8 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
                       ),
                       child: ListTile(
                         leading: const Icon(Icons.delete_forever, color: Colors.red),
-                        title: const Text('Réinitialiser l\'année scolaire'),
-                        subtitle: const Text('Supprime tous les parents et élèves (Soft Delete)'),
+                        title: Text('school.reset_year'.tr()),
+                        subtitle: Text('school.reset_year_desc'.tr()),
                         onTap: _showResetConfirmation,
                       ),
                     ),
@@ -505,22 +505,19 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Attention ! ⚠️'),
+        title: Text('school.reset_warning_title'.tr()),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Cette action va archiver TOUS les parents et élèves actuels pour commencer une nouvelle année.\n\n'
-                'Veuillez entrer votre mot de passe pour confirmer.'
-              ),
+              Text('school.reset_warning_desc'.tr()),
               const SizedBox(height: 16),
               TextField(
                 controller: passwordController,
                 obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Mot de passe Manager',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: 'manager.password'.tr(),
+                  border: const OutlineInputBorder(),
                 ),
               ),
             ],
@@ -529,12 +526,12 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Annuler'),
+            child: Text('common.cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Confirmer Réinitialisation'),
+            child: Text('school.confirm_reset'.tr()),
           ),
         ],
       ),
@@ -569,13 +566,13 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
       
       try {
          final managerId = ref.read(currentManagerIdProvider);
-         if (managerId == null) throw Exception("Manager non identifié");
+         if (managerId == null) throw Exception("manager.auth.not_found".tr());
 
          final isValid = await managerAuth.verifyPassword(managerId, passwordController.text);
          if (!isValid) {
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Mot de passe incorrect ❌'), backgroundColor: Colors.red),
+                SnackBar(content: Text('manager.auth.password_incorrect'.tr()), backgroundColor: Colors.red),
               );
               setState(() => _isLoading = false);
             }
@@ -587,7 +584,7 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
          
          if (mounted) {
            ScaffoldMessenger.of(context).showSnackBar(
-             const SnackBar(content: Text('Année réinitialisée avec succès 🚀'), backgroundColor: Colors.green),
+             SnackBar(content: Text('school.reset_success'.tr()), backgroundColor: Colors.green),
            );
          }
       } catch (e) {

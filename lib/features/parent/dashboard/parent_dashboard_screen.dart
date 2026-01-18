@@ -11,16 +11,49 @@ import '../../../core/helpers/date_helper.dart';
 import '../../../models/announcement_model.dart';
 import '../../../services/announcement_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
 
-class ParentDashboardScreen extends ConsumerWidget {
+class ParentDashboardScreen extends ConsumerStatefulWidget {
   final ParentModel parent;
   const ParentDashboardScreen({super.key, required this.parent});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ParentDashboardScreen> createState() => _ParentDashboardScreenState();
+}
+
+class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkAndInitPub();
+  }
+
+  Future<void> _checkAndInitPub() async {
+    try {
+      final docRef = FirebaseFirestore.instance.collection('pub').doc('pub');
+      final doc = await docRef.get();
+      
+      if (!doc.exists) {
+        // Auto-initialize if not exists
+        final now = DateTime.now();
+        await docRef.set({
+          'image': 'https://safekids.app/assets/images/site/slide-2.jpg',
+          'link': 'https://safekids.app',
+          'startDate': Timestamp.fromDate(now),
+          'endDate': Timestamp.fromDate(now.add(const Duration(days: 7))),
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      debugPrint('Error initializing pub: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final studentService = StudentService();
     final sessionService = SessionService();
     final announcementService = AnnouncementService();
@@ -50,7 +83,7 @@ class ParentDashboardScreen extends ConsumerWidget {
               child: Center(
                 child: Consumer(
                   builder: (context, ref, child) {
-                    final configAsync = ref.watch(schoolConfigByRawdhaIdProvider(parent.rawdhaId));
+                    final configAsync = ref.watch(schoolConfigByRawdhaIdProvider(widget.parent.rawdhaId));
                     final config = configAsync.value;
                     
                     return Column(
@@ -92,7 +125,7 @@ class ParentDashboardScreen extends ConsumerWidget {
                 child: Column(
                   children: [
                     Text(
-                      '${'welcome'.tr()}, ${parent.firstName}',
+                      '${'welcome'.tr()}, ${widget.parent.firstName}',
                       style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 26, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
                     ),
@@ -107,26 +140,69 @@ class ParentDashboardScreen extends ConsumerWidget {
               ),
             ),
 
-            // Section Publicité (Banner) - NOUVEAU
+            // Section Publicité (Banner)
             StreamBuilder<DocumentSnapshot>(
               stream: FirebaseFirestore.instance.collection('pub').doc('pub').snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData || !snapshot.data!.exists) return const SizedBox.shrink();
-                
+
                 final data = snapshot.data!.data() as Map<String, dynamic>?;
-                final link = data?['link'] as String?;
+                if (data == null) return const SizedBox.shrink();
+
+                final imageUrl = data['image'] as String?;
+                final targetUrl = data['link'] as String?;
+                final startDate = data['startDate'] as Timestamp?;
+                final endDate = data['endDate'] as Timestamp?;
                 
-                if (link == null || link.isEmpty) return const SizedBox.shrink();
+                // Hide if no image
+                if (imageUrl == null || imageUrl.isEmpty) return const SizedBox.shrink();
+
+                final now = DateTime.now();
+
+                // Check startDate (not in future)
+                if (startDate != null) {
+                  if (now.isBefore(startDate.toDate())) {
+                    return const SizedBox.shrink();
+                  }
+                } else if (data.containsKey('startDate')) {
+                   // startDate exists but is empty -> hide
+                   return const SizedBox.shrink();
+                }
+
+                // Check endDate (not in past)
+                if (endDate != null) {
+                  if (now.isAfter(endDate.toDate())) {
+                    return const SizedBox.shrink();
+                  }
+                } else if (data.containsKey('endDate')) {
+                   // endDate exists but is empty -> hide
+                   return const SizedBox.shrink();
+                }
+                
+                // If neither startDate or endDate exists at all, we might want to show it?
+                // But the user said "date periode current", implying dates are required.
+                // For safety, let's assume they are needed if the object exists.
+                if (startDate == null && endDate == null) return const SizedBox.shrink();
 
                 return Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Image.network(
-                      link,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                  child: InkWell(
+                    onTap: () async {
+                      if (targetUrl != null && targetUrl.isNotEmpty) {
+                        final uri = Uri.parse(targetUrl);
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        }
+                      }
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.network(
+                        imageUrl,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                      ),
                     ),
                   ),
                 );
@@ -135,7 +211,7 @@ class ParentDashboardScreen extends ConsumerWidget {
 
             // Section Mes Enfants
             StreamBuilder<List<StudentModel>>(
-              stream: studentService.getStudentsByParentId(parent.rawdhaId, parent.id),
+              stream: studentService.getStudentsByParentId(widget.parent.rawdhaId, widget.parent.id),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Padding(
@@ -158,7 +234,7 @@ class ParentDashboardScreen extends ConsumerWidget {
 
             // Section Annonces Actives (Directement après les enfants)
             StreamBuilder<List<AnnouncementModel>>(
-              stream: announcementService.getAnnouncements(parent.rawdhaId),
+              stream: announcementService.getAnnouncements(widget.parent.rawdhaId),
               builder: (context, snapshot) {
                 final allAnnouncements = snapshot.data ?? [];
                 final activeAnnouncements = allAnnouncements.where((a) => a.isActiveNow()).toList();
@@ -214,7 +290,7 @@ class ParentDashboardScreen extends ConsumerWidget {
                     subtitle: 'Cliquez pour voir le détail des impayés',
                     icon: Icons.payment,
                     color: AppTheme.primaryBlue,
-                    onTap: () => context.pushNamed('parent_payments_unpaid', extra: parent),
+                    onTap: () => context.pushNamed('parent_payments_unpaid', extra: widget.parent),
                   ),
                   const SizedBox(height: 12),
                   _ParentActionTile(

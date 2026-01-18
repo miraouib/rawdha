@@ -41,7 +41,7 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: const Text('Gestion des Élèves'),
+        title: Text('student.management_title'.tr()),
       ),
       body: Column(
         children: [
@@ -53,7 +53,7 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
                 TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: 'Rechercher un élève',
+                    hintText: 'student.search_hint'.tr(),
                     prefixIcon: const Icon(Icons.search),
                     suffixIcon: _searchQuery.isNotEmpty
                       ? IconButton(icon: const Icon(Icons.clear), onPressed: () {
@@ -81,7 +81,7 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
                         itemBuilder: (context, index) {
                           if (index == 0) {
                             return FilterChip(
-                              label: const Text('Tous'),
+                              label: Text('student.all'.tr()),
                               selected: _selectedLevelId == null,
                               onSelected: (v) => setState(() => _selectedLevelId = null),
                             );
@@ -112,7 +112,7 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
           }
 
           if (snapshot.hasError) {
-            return Center(child: Text('Erreur: ${snapshot.error}'));
+            return Center(child: Text('${'common.error'.tr()}: ${snapshot.error}'));
           }
 
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -144,7 +144,7 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
         onPressed: () {
           context.pushNamed('student_add');
         },
-        label: const Text('Nouvel Élève'),
+        label: Text('student.new_student'.tr()),
         icon: const Icon(Icons.add),
         backgroundColor: AppTheme.primaryBlue,
       ),
@@ -159,9 +159,9 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
         children: [
           Icon(Icons.school_outlined, size: 80, color: AppTheme.textLight),
           const SizedBox(height: 16),
-          const Text(
-            'Aucun élève enregistré',
-            style: TextStyle(fontSize: 18, color: AppTheme.textGray),
+          Text(
+            'student.empty_state'.tr(),
+            style: const TextStyle(fontSize: 18, color: AppTheme.textGray),
           ),
         ],
       ),
@@ -192,7 +192,7 @@ class _StudentCard extends ConsumerWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(student.levelId.isEmpty ? 'Niveau non défini' : LevelHelper.getLevelName(student.levelId, context)),
+            Text(student.levelId.isEmpty ? 'student.level_not_defined'.tr() : LevelHelper.getLevelName(student.levelId, context)),
             if (student.parentIds.isNotEmpty)
               FutureBuilder<ParentModel?>(
                 future: ParentService().getParentById(rawdhaId, student.parentIds.first),
@@ -200,7 +200,7 @@ class _StudentCard extends ConsumerWidget {
                   if (snapshot.hasData && snapshot.data != null) {
                     final parent = snapshot.data!;
                     return Text(
-                      'Resp: ${parent.firstName} - ${parent.phone}',
+                      'student.resp_hint'.tr(args: [parent.firstName, parent.phone]),
                       style: TextStyle(color: AppTheme.textGray, fontSize: 12),
                     );
                   }

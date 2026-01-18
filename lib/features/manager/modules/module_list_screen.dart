@@ -109,42 +109,44 @@ class _ModuleListScreenState extends ConsumerState<ModuleListScreen> with Single
         // Trouver le module actif (le tableau est déjà trié ou pas, mais on cherche isCurrentlyActive)
         final activeModule = modules.where((m) => m.isCurrentlyActive).firstOrNull;
 
-        return Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Section Module Actif
-              Text(
-                'module.active_label'.tr(),
-                style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-                   color: AppTheme.textGray,
-                   fontWeight: FontWeight.bold,
+        return SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Section Module Actif
+                Text(
+                  'module.active_label'.tr(),
+                  style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
+                     color: AppTheme.textGray,
+                     fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              
-              if (activeModule != null)
-                _buildActiveModuleCard(activeModule, levelId)
-              else
-                 _buildEmptyActiveState(),
-
-              const SizedBox(height: 32),
-              
-              // Bouton pour gérer l'historique
-              ElevatedButton.icon(
-                onPressed: () {
-                  _showModuleHistorySheet(context, modules, levelId);
-                },
-                icon: const Icon(Icons.history),
-                label: Text('module.manage_all').tr(),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: AppTheme.primaryBlue,
-                  side: const BorderSide(color: AppTheme.primaryBlue),
+                const SizedBox(height: 12),
+                
+                if (activeModule != null)
+                  _buildActiveModuleCard(activeModule, levelId)
+                else
+                   _buildEmptyActiveState(),
+        
+                const SizedBox(height: 32),
+                
+                // Bouton pour gérer l'historique
+                ElevatedButton.icon(
+                  onPressed: () {
+                    _showModuleHistorySheet(context, modules, levelId);
+                  },
+                  icon: const Icon(Icons.history),
+                  label: Text('module.manage_all').tr(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: AppTheme.primaryBlue,
+                    side: const BorderSide(color: AppTheme.primaryBlue),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -152,6 +154,10 @@ class _ModuleListScreenState extends ConsumerState<ModuleListScreen> with Single
   }
 
   Widget _buildActiveModuleCard(ModuleModel module, String levelId) {
+    final languageCode = context.locale.languageCode;
+    final title = module.getTitle(languageCode);
+    final description = module.getDescription(languageCode);
+
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(
@@ -180,15 +186,15 @@ class _ModuleListScreenState extends ConsumerState<ModuleListScreen> with Single
             ),
             const SizedBox(height: 16),
             Text(
-              module.title,
+              title,
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppTheme.textDark),
               textAlign: TextAlign.center,
             ),
-            if (module.description.isNotEmpty)
+            if (description.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Text(
-                  module.description,
+                  description,
                   style: const TextStyle(fontSize: 16, color: AppTheme.textGray),
                   textAlign: TextAlign.center,
                   maxLines: 3,
@@ -355,7 +361,7 @@ class _ModuleListScreenState extends ConsumerState<ModuleListScreen> with Single
                               ),
                             ),
                             title: Text(
-                              module.title,
+                              module.getTitle(context.locale.languageCode),
                               style: TextStyle(fontWeight: module.isCurrentlyActive ? FontWeight.bold : FontWeight.normal),
                             ),
                             subtitle: Text(

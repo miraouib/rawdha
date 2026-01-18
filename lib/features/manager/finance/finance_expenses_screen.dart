@@ -32,7 +32,7 @@ class _FinanceExpensesScreenState extends ConsumerState<FinanceExpensesScreen> {
     
     if (increment < 0 && newMonth.isBefore(startDate)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Limite de l\'année scolaire atteinte')),
+        SnackBar(content: Text('finance.limit_reached'.tr())),
       );
       return;
     }

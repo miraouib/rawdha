@@ -60,13 +60,13 @@ class StudentDetailScreen extends ConsumerWidget {
             const SizedBox(height: 32),
 
             // Details Section
-            _buildSectionTitle('Informations personnelles'),
-            _buildInfoTile(Icons.wc, 'Sexe', student.gender == 'boy' ? 'Garçon' : 'Fille'),
+            _buildSectionTitle('student.personal_info'.tr()),
+            _buildInfoTile(Icons.wc, 'student.gender'.tr(), student.gender == 'boy' ? 'student.boy'.tr() : 'student.girl'.tr()),
            if (student.birthdate != null)
-              _buildInfoTile(Icons.cake, 'Date de naissance', DateFormat('dd/MM/yyyy').format(student.birthdate!)),
+              _buildInfoTile(Icons.cake, 'student.birthdate'.tr(), DateFormat('dd/MM/yyyy').format(student.birthdate!)),
             
             const SizedBox(height: 24),
-            _buildSectionTitle('Responsable'),
+            _buildSectionTitle('student.responsible'.tr()),
             if (student.parentIds.isNotEmpty)
               FutureBuilder<ParentModel?>(
                 future: ParentService().getParentById(rawdhaId, student.parentIds.first),
@@ -75,7 +75,7 @@ class StudentDetailScreen extends ConsumerWidget {
                     return const Padding(padding: EdgeInsets.all(16.0), child: CircularProgressIndicator());
                   }
                   if (!snapshot.hasData || snapshot.data == null) {
-                    return _buildInfoTile(Icons.error_outline, 'Parent', 'Introuvable');
+                    return _buildInfoTile(Icons.error_outline, 'parent.parent_info'.tr(), 'student.not_found'.tr());
                   }
                   final parent = snapshot.data!;
                   return Column(
@@ -87,7 +87,7 @@ class StudentDetailScreen extends ConsumerWidget {
                 },
               )
             else
-              _buildInfoTile(Icons.warning, 'Parent', 'Aucun parent lié'),
+              _buildInfoTile(Icons.warning, 'parent.parent_info'.tr(), 'student.no_parent_linked'.tr()),
 
             // TODO: Add payment info etc.
           ],
@@ -143,7 +143,7 @@ class StudentDetailScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Téléphone', style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                Text('student.phone'.tr(), style: const TextStyle(fontSize: 12, color: Colors.black54)),
                 Text(phone, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
               ],
             ),
@@ -155,7 +155,7 @@ class StudentDetailScreen extends ConsumerWidget {
               Clipboard.setData(ClipboardData(text: phone));
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Numéro copié: $phone'),
+                  content: Text('student.phone_copied'.tr(args: [phone])),
                   duration: const Duration(seconds: 2),
                   backgroundColor: AppTheme.primaryBlue,
                 ),
@@ -182,7 +182,7 @@ class StudentDetailScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Nom du parent', style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                  Text('student.parent_name'.tr(), style: const TextStyle(fontSize: 12, color: Colors.black54)),
                   Text(
                     '${parent.firstName} ${parent.lastName}',
                     style: const TextStyle(

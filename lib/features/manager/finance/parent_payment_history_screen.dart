@@ -200,7 +200,7 @@ class ParentPaymentHistoryScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('${'parent.amount_paid'.tr()}: ${payment.amount.toStringAsFixed(2)} ${'finance.currency'.tr()}'),
-                  Text('${'parent.payment_date'.tr()}: ${DateFormat('dd/MM/yyyy').format(payment.date)}'),
+                  Text('${'parent.payment_date'.tr()}: ${DateFormat('dd/MM/yyyy', 'fr').format(payment.date)}'),
                   Text('${'parent.status'.tr()}: ${_getStatusText(payment.status)}'),
                   if (payment.note != null && payment.note!.isNotEmpty)
                     Text('${'parent.note'.tr()}: ${payment.note}'),

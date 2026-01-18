@@ -40,7 +40,7 @@ class _FinanceRevenueScreenState extends ConsumerState<FinanceRevenueScreen> {
     // Check lower bound (Start Date)
     if (increment < 0 && newMonth.isBefore(startDate)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Limite de l\'année scolaire atteinte')),
+        SnackBar(content: Text('finance.limit_reached'.tr())),
       );
       return;
     }
@@ -103,7 +103,7 @@ class _FinanceRevenueScreenState extends ConsumerState<FinanceRevenueScreen> {
               children: [
                 FilterChip(
                   avatar: Icon(Icons.check_circle, color: _filterGreen ? Colors.green : Colors.grey, size: 20),
-                  label: const Text(''),
+                  label: Text('finance.status_paid_label'.tr()),
                   selected: _filterGreen,
                   onSelected: (v) => setState(() => _filterGreen = v),
                   selectedColor: Colors.green.withOpacity(0.2),
@@ -111,7 +111,7 @@ class _FinanceRevenueScreenState extends ConsumerState<FinanceRevenueScreen> {
                 ),
                 FilterChip(
                   avatar: Icon(Icons.warning, color: _filterOrange ? Colors.orange : Colors.grey, size: 20),
-                  label: const Text(''),
+                  label: Text('finance.status_partial_label'.tr()),
                   selected: _filterOrange,
                   onSelected: (v) => setState(() => _filterOrange = v),
                   selectedColor: Colors.orange.withOpacity(0.2),

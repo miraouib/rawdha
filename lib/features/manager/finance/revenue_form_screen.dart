@@ -361,7 +361,7 @@ class _RevenueFormScreenState extends ConsumerState<RevenueFormScreen> {
                         InkWell(
                           onTap: () => _showMonthPicker(context),
                           child: InputDecorator(
-                            decoration: InputDecoration(labelText: 'Mois Concerné', prefixIcon: const Icon(Icons.calendar_month)),
+                            decoration: InputDecoration(labelText: 'finance.month_concerned'.tr(), prefixIcon: const Icon(Icons.calendar_month)),
                             child: Text(DateFormat('MM-yyyy', 'fr').format(_selectedDate), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                           ),
                         ),

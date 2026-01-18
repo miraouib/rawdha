@@ -15,6 +15,10 @@ class ModuleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final languageCode = context.locale.languageCode;
+    final title = module.getTitle(languageCode);
+    final description = module.getDescription(languageCode);
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -30,7 +34,7 @@ class ModuleCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  module.title,
+                  title,
                   style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -38,9 +42,9 @@ class ModuleCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          if (module.description.isNotEmpty)
+          if (description.isNotEmpty)
             Text(
-              module.description,
+              description,
               style: const TextStyle(color: Colors.white70, fontSize: 16),
             ),
           const Divider(color: Colors.white24, height: 32),

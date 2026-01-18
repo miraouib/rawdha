@@ -4,14 +4,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class ModuleModel {
   final String rawdhaId;
   final String id;
-  final String title;
-  final String description;
+  final String titleAr;
+  final String titleFr;
+  final String descriptionAr;
+  final String descriptionFr;
   final String levelId; // Niveau associé (3, 4, 5 ans)
   final DateTime startDate;
   final DateTime endDate;
-  // isActive n'est plus stocké, c'est calculé
   
-  // Contenu éducatif
+  // Contenu éducatif - These could also be localized if needed, but for now we'll stick to title/desc
+  // Many modules use the same letter/number but different words
   final String letter;
   final String word;
   final String number;
@@ -22,8 +24,10 @@ class ModuleModel {
   ModuleModel({
     required this.rawdhaId,
     required this.id,
-    required this.title,
-    required this.description,
+    required this.titleAr,
+    required this.titleFr,
+    required this.descriptionAr,
+    required this.descriptionFr,
     required this.levelId,
     required this.startDate,
     required this.endDate,
@@ -34,6 +38,12 @@ class ModuleModel {
     this.prayer,
     this.song,
   });
+
+  /// Get title based on locale
+  String getTitle(String languageCode) => languageCode == 'ar' ? titleAr : titleFr;
+  
+  /// Get description based on locale
+  String getDescription(String languageCode) => languageCode == 'ar' ? descriptionAr : descriptionFr;
 
   /// Vérifie si le module est actif aujourd'hui
   bool get isCurrentlyActive {
@@ -49,8 +59,10 @@ class ModuleModel {
   Map<String, dynamic> toFirestore() {
     return {
       'rawdhaId': rawdhaId,
-      'title': title,
-      'description': description,
+      'titleAr': titleAr,
+      'titleFr': titleFr,
+      'descriptionAr': descriptionAr,
+      'descriptionFr': descriptionFr,
       'levelId': levelId,
       'startDate': Timestamp.fromDate(startDate),
       'endDate': Timestamp.fromDate(endDate),
@@ -71,8 +83,10 @@ class ModuleModel {
     return ModuleModel(
       id: id,
       rawdhaId: data['rawdhaId'] ?? '',
-      title: data['title'] ?? '',
-      description: data['description'] ?? '',
+      titleAr: data['titleAr'] ?? data['title'] ?? '',
+      titleFr: data['titleFr'] ?? data['title'] ?? '',
+      descriptionAr: data['descriptionAr'] ?? data['description'] ?? '',
+      descriptionFr: data['descriptionFr'] ?? data['description'] ?? '',
       levelId: data['levelId'] ?? '',
       startDate: (data['startDate'] as Timestamp).toDate(),
       endDate: (data['endDate'] as Timestamp).toDate(),

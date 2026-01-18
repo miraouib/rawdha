@@ -77,11 +77,11 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
   Future<void> _saveStudent() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedParentId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Veuillez sélectionner un parent')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('student.validation.select_parent'.tr())));
       return;
     }
     if (_selectedLevelId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Veuillez sélectionner un niveau')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('student.validation.select_level'.tr())));
       return;
     }
 
@@ -89,7 +89,7 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
     if (rawdhaId == null) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur: ID Rawdha non trouvé')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('student.validation.rawdha_not_found'.tr())));
       }
       return;
     }
@@ -120,11 +120,11 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
 
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Élève enregistré')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('student.validation.saved'.tr())));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${'common.error'.tr()}: $e')));
       }
     } finally {
       if (mounted) {
@@ -136,7 +136,7 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.student == null ? 'Nouvel Élève' : 'Modifier Élève')),
+      appBar: AppBar(title: Text(widget.student == null ? 'student.new_student'.tr() : 'student.edit_student'.tr())),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -162,7 +162,7 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
                   ),
                   child: _isLoading 
                     ? const CircularProgressIndicator()
-                    : const Text('Enregistrer', style: TextStyle(fontSize: 18)),
+                    : Text('common.save'.tr(), style: const TextStyle(fontSize: 18)),
                 ),
               ),
               const SizedBox(height: 20),
@@ -180,18 +180,18 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Identité', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text('student.identity'.tr(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             TextFormField(
               controller: _firstNameController,
-              decoration: const InputDecoration(labelText: 'Prénom', prefixIcon: Icon(Icons.person)),
-              validator: (v) => v!.isEmpty ? 'Requis' : null,
+              decoration: InputDecoration(labelText: 'student.first_name'.tr(), prefixIcon: const Icon(Icons.person)),
+              validator: (v) => v!.isEmpty ? 'common.required'.tr() : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _lastNameController,
-              decoration: const InputDecoration(labelText: 'Nom', prefixIcon: Icon(Icons.person_outline)),
-              validator: (v) => v!.isEmpty ? 'Requis' : null,
+              decoration: InputDecoration(labelText: 'student.last_name'.tr(), prefixIcon: const Icon(Icons.person_outline)),
+              validator: (v) => v!.isEmpty ? 'common.required'.tr() : null,
             ),
             const SizedBox(height: 12),
             // Monthly fee field removed
@@ -213,10 +213,10 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     value: _gender,
-                    decoration: const InputDecoration(labelText: 'Sexe', prefixIcon: Icon(Icons.wc)),
-                    items: const [
-                      DropdownMenuItem(value: 'boy', child: Text('Garçon')),
-                      DropdownMenuItem(value: 'girl', child: Text('Fille')),
+                    decoration: InputDecoration(labelText: 'student.gender'.tr(), prefixIcon: const Icon(Icons.wc)),
+                    items: [
+                      DropdownMenuItem(value: 'boy', child: Text('student.boy'.tr())),
+                      DropdownMenuItem(value: 'girl', child: Text('student.girl'.tr())),
                     ],
                     onChanged: (v) => setState(() => _gender = v!),
                   ),
@@ -226,11 +226,11 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
                   child: InkWell(
                     onTap: () => _selectDate(context),
                     child: InputDecorator(
-                      decoration: const InputDecoration(labelText: 'Date de naissance', prefixIcon: Icon(Icons.calendar_today)),
+                      decoration: InputDecoration(labelText: 'student.birthdate'.tr(), prefixIcon: const Icon(Icons.calendar_today)),
                       child: Text(
                         _birthdate != null 
                           ? DateFormat('dd/MM/yyyy').format(_birthdate!) 
-                          : 'Choisir',
+                          : 'student.choose'.tr(),
                       ),
                     ),
                   ),
@@ -256,17 +256,17 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Scolarité', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                Text('student.schooling'.tr(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   value: _selectedLevelId,
-                  decoration: const InputDecoration(labelText: 'Niveau', prefixIcon: Icon(Icons.school)),
+                  decoration: InputDecoration(labelText: 'student.level'.tr(), prefixIcon: const Icon(Icons.school)),
                   items: levels.map((l) => DropdownMenuItem(
                     value: l.id, 
                     child: Text(context.locale.languageCode == 'ar' ? l.nameAr : l.nameFr),
                   )).toList(),
                   onChanged: (v) => setState(() => _selectedLevelId = v),
-                  validator: (v) => v == null ? 'Requis' : null,
+                  validator: (v) => v == null ? 'common.required'.tr() : null,
                 ),
               ],
             ),
@@ -292,17 +292,17 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Parent Responsable', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                Text('student.parent_resp'.tr(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   value: _selectedParentId,
-                  decoration: const InputDecoration(labelText: 'Sélectionner le parent', prefixIcon: Icon(Icons.family_restroom)),
+                  decoration: InputDecoration(labelText: 'student.select_parent_hint'.tr(), prefixIcon: const Icon(Icons.family_restroom)),
                   items: parents.map((p) => DropdownMenuItem(
                     value: p.id, 
                     child: Text('${p.firstName} ${p.lastName} (${p.phone})', overflow: TextOverflow.ellipsis),
                   )).toList(),
                   onChanged: (v) => setState(() => _selectedParentId = v),
-                  validator: (v) => v == null ? 'Requis' : null,
+                  validator: (v) => v == null ? 'common.required'.tr() : null,
                   isExpanded: true,
                 ),
               ],

@@ -38,6 +38,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
       initialDate: _selectedDate,
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
+      locale: const Locale('fr'),
     );
     if (picked != null && picked != _selectedDate) {
       setState(() {
@@ -53,7 +54,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
     if (rawdhaId == null) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur: ID Rawdha non trouvé')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('common.error_rawdha_id'.tr())));
       }
       return;
     }
@@ -143,7 +144,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                         onTap: () => _selectDate(context),
                         child: InputDecorator(
                           decoration: InputDecoration(labelText: 'finance.payment_date'.tr(), prefixIcon: const Icon(Icons.calendar_today)),
-                          child: Text(DateFormat('dd/MM/yyyy').format(_selectedDate)),
+                          child: Text(DateFormat('dd/MM/yyyy', 'fr').format(_selectedDate)),
                         ),
                       ),
                       const SizedBox(height: 16),

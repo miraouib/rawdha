@@ -10,6 +10,8 @@ import '../widgets/module_card.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
 
+import '../../../core/widgets/parent_footer.dart';
+
 class StudentModulesScreen extends ConsumerWidget {
   final StudentModel student;
   const StudentModulesScreen({super.key, required this.student});
@@ -21,6 +23,7 @@ class StudentModulesScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
+      bottomNavigationBar: const ParentFooter(),
       appBar: AppBar(
         title: Text('${student.firstName} - ${'module.management_title'.tr()}'),
       ),

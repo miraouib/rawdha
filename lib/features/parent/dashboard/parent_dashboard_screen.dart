@@ -12,9 +12,12 @@ import '../../../models/announcement_model.dart';
 import '../../../services/announcement_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../services/notification_service.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
+
+import '../../../core/widgets/parent_footer.dart';
 
 class ParentDashboardScreen extends ConsumerStatefulWidget {
   final ParentModel parent;
@@ -29,6 +32,16 @@ class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
   void initState() {
     super.initState();
     _checkAndInitPub();
+    _initNotifications();
+  }
+
+  Future<void> _initNotifications() async {
+    final ns = NotificationService();
+    await ns.requestPermissions();
+    await ns.subscribeToSchool(
+      parentId: widget.parent.id,
+      rawdhaId: widget.parent.rawdhaId,
+    );
   }
 
   Future<void> _checkAndInitPub() async {
@@ -60,6 +73,7 @@ class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
+      bottomNavigationBar: const ParentFooter(),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,

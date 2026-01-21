@@ -6,6 +6,8 @@ import '../../../models/student_absence_model.dart';
 import '../../../services/student_absence_service.dart';
 import '../../../core/helpers/date_helper.dart';
 
+import '../../../core/widgets/parent_footer.dart';
+
 class ParentAbsenceFormScreen extends StatefulWidget {
   final StudentModel student;
 
@@ -79,6 +81,7 @@ class _ParentAbsenceFormScreenState extends State<ParentAbsenceFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
+      bottomNavigationBar: const ParentFooter(),
       appBar: AppBar(
         title: Text('absence.report_title'.tr()),
       ),

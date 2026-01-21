@@ -7,6 +7,7 @@ import '../../../services/employee_service.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
+import '../../../core/helpers/validator_helper.dart';
 
 /// Formulaire d'ajout/modification d'employé
 class EmployeeFormScreen extends ConsumerStatefulWidget {

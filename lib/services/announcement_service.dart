@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/announcement_model.dart';
+import 'notification_service.dart';
 
 
 class AnnouncementService {
@@ -21,6 +22,14 @@ class AnnouncementService {
 
     // 2. Add to Firestore
     await _firestore.collection(_collection).add(announcement.toFirestore());
+
+    // 3. Trigger Notification
+    await NotificationService().sendNotification(
+      rawdhaId: rawdhaId,
+      title: 'Nouvelle Annonce / إعلان جديد',
+      body: announcement.title,
+      type: 'announcement',
+    );
   }
 
   // Check if any existing announcement overlaps with the given range related to the target level

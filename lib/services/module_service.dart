@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../models/module_model.dart';
+import 'notification_service.dart';
 
 class ModuleService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -43,6 +44,14 @@ class ModuleService {
       throw Exception('Il y a déjà un module actif sur cette période.');
     }
     await _modulesCollection.add(module.toFirestore());
+
+    // Trigger Notification
+    await NotificationService().sendNotification(
+      rawdhaId: module.rawdhaId,
+      title: 'Programme de la semaine / برنامج الأسبوع',
+      body: '${module.titleFr} / ${module.titleAr}',
+      type: 'module',
+    );
   }
 
   /// Mettre à jour un module

@@ -7,6 +7,8 @@ import '../../../services/school_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
 
+import '../../../core/widgets/parent_footer.dart';
+
 class ParentSchoolDetailScreen extends ConsumerWidget {
   const ParentSchoolDetailScreen({super.key});
 
@@ -17,6 +19,7 @@ class ParentSchoolDetailScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
+      bottomNavigationBar: const ParentFooter(),
       appBar: AppBar(
         title: Text('parent.view_school_details'.tr()),
       ),

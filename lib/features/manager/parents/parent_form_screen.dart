@@ -6,6 +6,7 @@ import '../../../services/parent_service.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
+import '../../../core/helpers/validator_helper.dart';
 
 class ParentFormScreen extends ConsumerStatefulWidget {
   final ParentModel? parent;
@@ -187,7 +188,7 @@ class _ParentFormScreenState extends ConsumerState<ParentFormScreen> {
                   labelText: 'parent.phone'.tr(),
                   prefixIcon: const Icon(Icons.phone),
                 ),
-                validator: (value) => value == null || value.isEmpty ? 'Champ requis' : null,
+                validator: ValidatorHelper.phoneValidator,
               ),
               const SizedBox(height: 16),
               
@@ -220,6 +221,12 @@ class _ParentFormScreenState extends ConsumerState<ParentFormScreen> {
                   labelText: 'parent.spouse_phone'.tr(),
                   prefixIcon: const Icon(Icons.phone),
                 ),
+                validator: (value) {
+                  if (value != null && value.isNotEmpty) {
+                    return ValidatorHelper.phoneValidator(value);
+                  }
+                  return null;
+                },
               ),
 
               SafeArea(

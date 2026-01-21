@@ -9,6 +9,8 @@ import '../../../core/helpers/date_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
 
+import '../../../core/widgets/parent_footer.dart';
+
 class ParentPaymentUnpaidScreen extends ConsumerWidget {
   final ParentModel parent;
 
@@ -49,6 +51,7 @@ class ParentPaymentUnpaidScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
+      bottomNavigationBar: const ParentFooter(),
       appBar: AppBar(
         title: Text('parent.unpaid_months'.tr()),
       ),

@@ -96,7 +96,7 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
     final file = File(image.path);
     final size = await file.length();
     
-    if (size > 150 * 1024) { // 150 KB
+    if (size > 350 * 1024) { // 350 KB
        if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('school.logo_too_large'.tr())),

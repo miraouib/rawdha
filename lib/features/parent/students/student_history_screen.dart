@@ -10,6 +10,8 @@ import '../../../core/helpers/date_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
 
+import '../../../core/widgets/parent_footer.dart';
+
 class StudentHistoryScreen extends ConsumerWidget {
   final StudentModel student;
   const StudentHistoryScreen({super.key, required this.student});
@@ -21,6 +23,7 @@ class StudentHistoryScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
+      bottomNavigationBar: const ParentFooter(),
       appBar: AppBar(
         title: Text('module.history_title'.tr()),
       ),

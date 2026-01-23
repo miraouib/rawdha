@@ -22,7 +22,7 @@ class ParentFooter extends StatelessWidget {
           height: 60,
           child: Center(
             child: Image.asset(
-              'assets/images/logo2.png',
+              'assets/images/logo.png',
               width: 80,
               height: 48,
               fit: BoxFit.contain,

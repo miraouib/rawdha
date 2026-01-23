@@ -45,7 +45,7 @@ const Spacer(),
               mainAxisSize: MainAxisSize.min,
               children: [
                 Image.asset(
-                  'assets/images/logo2.png',
+                  'assets/images/logo.png',
                   height: 48,
                   fit: BoxFit.contain,
                 ),

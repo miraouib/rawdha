@@ -526,7 +526,7 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('logout'.tr()),
-        content: Text('Voulez-vous vraiment vous déconnecter ?'), // Ideally localized
+        content: Text('logout_confirmation'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),

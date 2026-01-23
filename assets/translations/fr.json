@@ -4,6 +4,7 @@
     "welcome": "Bienvenue",
     "login": "Connexion",
     "logout": "Déconnexion",
+    "logout_confirmation": "Voulez-vous vraiment vous déconnecter ?",
     "manager": {
         "title": "Espace Manager",
         "manage_all": "Tout gérer",

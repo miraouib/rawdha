@@ -38,7 +38,7 @@ class RoleSelectionScreen extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(20.0), // Padding to keep it inside the circle nicely
                     child: Image.asset(
-                      'assets/images/logo3.png',
+                      'assets/images/logo.png',
                       fit: BoxFit.contain,
                     ),
                   ),

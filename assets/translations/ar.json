@@ -4,6 +4,7 @@
     "welcome": "مرحبا",
     "login": "تسجيل الدخول",
     "logout": "تسجيل الخروج",
+    "logout_confirmation": "هل أنت متأكد أنك تريد تسجيل الخروج؟",
     "manager": {
         "title": "مساحة المدير",
         "manage_all": "إدارة الكل",

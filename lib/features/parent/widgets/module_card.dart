@@ -15,9 +15,8 @@ class ModuleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final languageCode = context.locale.languageCode;
-    final title = module.getTitle(languageCode);
-    final description = module.getDescription(languageCode);
+    final title = module.title;
+    final description = module.description;
 
     return Container(
       padding: const EdgeInsets.all(20),

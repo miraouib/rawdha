@@ -154,9 +154,9 @@ class _ModuleListScreenState extends ConsumerState<ModuleListScreen> with Single
   }
 
   Widget _buildActiveModuleCard(ModuleModel module, String levelId) {
-    final languageCode = context.locale.languageCode;
-    final title = module.getTitle(languageCode);
-    final description = module.getDescription(languageCode);
+    final title = module.title;
+    final description = module.description;
+
 
     return Card(
       elevation: 4,
@@ -361,7 +361,7 @@ class _ModuleListScreenState extends ConsumerState<ModuleListScreen> with Single
                               ),
                             ),
                             title: Text(
-                              module.getTitle(context.locale.languageCode),
+                              module.title,
                               style: TextStyle(fontWeight: module.isCurrentlyActive ? FontWeight.bold : FontWeight.normal),
                             ),
                             subtitle: Text(

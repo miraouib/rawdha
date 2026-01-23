@@ -86,7 +86,7 @@ class _HistoryCard extends StatelessWidget {
           ),
           child: const Icon(Icons.book, color: AppTheme.primaryBlue),
         ),
-        title: Text(module.getTitle(context.locale.languageCode), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        title: Text(module.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         subtitle: Text(
           DateHelper.formatMonthYear(context, module.startDate).toUpperCase(),
           style: const TextStyle(color: AppTheme.textGray, fontSize: 13),

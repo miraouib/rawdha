@@ -49,7 +49,7 @@ class ModuleService {
     await NotificationService().sendNotification(
       rawdhaId: module.rawdhaId,
       title: 'Programme de la semaine / برنامج الأسبوع',
-      body: '${module.titleFr} / ${module.titleAr}',
+      body: module.title,
       type: 'module',
     );
   }

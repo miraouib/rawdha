@@ -194,6 +194,8 @@
         "management_title": "Modules Pédagogiques",
         "new_module": "Nouveau Module",
         "module_of_week": "Module de la semaine",
+        "field_title": "Titre",
+        "field_content": "Description",
         "title": "Titre",
         "letter": "Lettre",
         "word": "Mot",

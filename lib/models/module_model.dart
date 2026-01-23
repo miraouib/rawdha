@@ -4,16 +4,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class ModuleModel {
   final String rawdhaId;
   final String id;
-  final String titleAr;
-  final String titleFr;
-  final String descriptionAr;
-  final String descriptionFr;
+  final String title;
+  final String description;
   final String levelId; // Niveau associé (3, 4, 5 ans)
   final DateTime startDate;
   final DateTime endDate;
   
-  // Contenu éducatif - These could also be localized if needed, but for now we'll stick to title/desc
-  // Many modules use the same letter/number but different words
+  // Contenu éducatif
   final String letter;
   final String word;
   final String number;
@@ -24,10 +21,8 @@ class ModuleModel {
   ModuleModel({
     required this.rawdhaId,
     required this.id,
-    required this.titleAr,
-    required this.titleFr,
-    required this.descriptionAr,
-    required this.descriptionFr,
+    required this.title,
+    required this.description,
     required this.levelId,
     required this.startDate,
     required this.endDate,
@@ -38,12 +33,6 @@ class ModuleModel {
     this.prayer,
     this.song,
   });
-
-  /// Get title based on locale
-  String getTitle(String languageCode) => languageCode == 'ar' ? titleAr : titleFr;
-  
-  /// Get description based on locale
-  String getDescription(String languageCode) => languageCode == 'ar' ? descriptionAr : descriptionFr;
 
   /// Vérifie si le module est actif aujourd'hui
   bool get isCurrentlyActive {
@@ -59,10 +48,8 @@ class ModuleModel {
   Map<String, dynamic> toFirestore() {
     return {
       'rawdhaId': rawdhaId,
-      'titleAr': titleAr,
-      'titleFr': titleFr,
-      'descriptionAr': descriptionAr,
-      'descriptionFr': descriptionFr,
+      'title': title,
+      'description': description,
       'levelId': levelId,
       'startDate': Timestamp.fromDate(startDate),
       'endDate': Timestamp.fromDate(endDate),
@@ -80,13 +67,15 @@ class ModuleModel {
   factory ModuleModel.fromFirestore(Map<String, dynamic> data, String id) {
     final content = data['content'] as Map<String, dynamic>? ?? {};
     
+    // Migration: prefer new fields, fallback to old Fr then Ar
+    String title = data['title'] ?? data['titleFr'] ?? data['titleAr'] ?? '';
+    String description = data['description'] ?? data['descriptionFr'] ?? data['descriptionAr'] ?? '';
+
     return ModuleModel(
       id: id,
       rawdhaId: data['rawdhaId'] ?? '',
-      titleAr: data['titleAr'] ?? data['title'] ?? '',
-      titleFr: data['titleFr'] ?? data['title'] ?? '',
-      descriptionAr: data['descriptionAr'] ?? data['description'] ?? '',
-      descriptionFr: data['descriptionFr'] ?? data['description'] ?? '',
+      title: title,
+      description: description,
       levelId: data['levelId'] ?? '',
       startDate: (data['startDate'] as Timestamp).toDate(),
       endDate: (data['endDate'] as Timestamp).toDate(),

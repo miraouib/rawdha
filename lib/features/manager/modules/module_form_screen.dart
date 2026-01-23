@@ -22,10 +22,8 @@ class _ModuleFormScreenState extends ConsumerState<ModuleFormScreen> {
   final _formKey = GlobalKey<FormState>();
   
   // Champs principaux
-  final _titleArController = TextEditingController();
-  final _titleFrController = TextEditingController();
-  final _descriptionArController = TextEditingController();
-  final _descriptionFrController = TextEditingController();
+  final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
   
   // Champs contenu
   final _letterController = TextEditingController();
@@ -43,10 +41,8 @@ class _ModuleFormScreenState extends ConsumerState<ModuleFormScreen> {
   void initState() {
     super.initState();
     if (widget.module != null) {
-      _titleArController.text = widget.module!.titleAr;
-      _titleFrController.text = widget.module!.titleFr;
-      _descriptionArController.text = widget.module!.descriptionAr;
-      _descriptionFrController.text = widget.module!.descriptionFr;
+      _titleController.text = widget.module!.title;
+      _descriptionController.text = widget.module!.description;
       _letterController.text = widget.module!.letter;
       _wordController.text = widget.module!.word;
       _numberController.text = widget.module!.number;
@@ -98,10 +94,8 @@ class _ModuleFormScreenState extends ConsumerState<ModuleFormScreen> {
       final module = ModuleModel(
         rawdhaId: rawdhaId,
         id: widget.module?.id ?? '',
-        titleAr: _titleArController.text.trim(),
-        titleFr: _titleFrController.text.trim(),
-        descriptionAr: _descriptionArController.text.trim(),
-        descriptionFr: _descriptionFrController.text.trim(),
+        title: _titleController.text.trim(),
+        description: _descriptionController.text.trim(),
         levelId: widget.levelId,
         startDate: _selectedDateRange!.start,
         endDate: _selectedDateRange!.end,
@@ -156,45 +150,25 @@ class _ModuleFormScreenState extends ConsumerState<ModuleFormScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // French Title
+                    // Unified Title
                     TextFormField(
-                      controller: _titleFrController,
+                      controller: _titleController,
                       decoration: InputDecoration(
-                        labelText: '${'module.form_title_label'.tr()} (Français)',
+                        labelText: 'module.field_title'.tr(), // Utilise la clé générique
                         prefixIcon: const Icon(Icons.title),
-                        hintText: 'ex: Les Fruits',
-                      ),
-                      validator: (v) => v!.isEmpty ? 'common.required'.tr() : null,
-                    ),
-                    const SizedBox(height: 12),
-                    // Arabic Title
-                    TextFormField(
-                      controller: _titleArController,
-                      textAlign: TextAlign.right,
-                      decoration: InputDecoration(
-                        labelText: '${'module.form_title_label'.tr()} (العربية)',
-                        prefixIcon: const Icon(Icons.title),
-                        hintText: 'مثال: الفواكه',
                       ),
                       validator: (v) => v!.isEmpty ? 'common.required'.tr() : null,
                     ),
                     const SizedBox(height: 16),
-                    // French Description
+                    // Unified Description
                     TextFormField(
-                      controller: _descriptionFrController,
+                      controller: _descriptionController,
                       decoration: InputDecoration(
-                        labelText: '${'module.form_desc_label'.tr()} (Français)',
-                        prefixIcon: const Icon(Icons.description),
-                      ),
-                      maxLines: 2,
-                    ),
-                    const SizedBox(height: 12),
-                    // Arabic Description
-                    TextFormField(
-                      controller: _descriptionArController,
-                      textAlign: TextAlign.right,
-                      decoration: InputDecoration(
-                        labelText: '${'module.form_desc_label'.tr()} (العربية)',
+                        labelText: 'module.field_content'.tr(), // Key generic, reuse existing? 'description' not found in json search but 'field_content' exists in 'announcements' maybe? Let's check keys.
+                        // Wait, 'module.form_desc_label' was used before. Let's reuse it.
+                        // Actually I should verify keys. 'module.form_desc_label' ("Description") is good.
+                        // I'll stick to 'module.form_desc_label'.
+                        hintText: 'module.form_desc_label'.tr(), 
                         prefixIcon: const Icon(Icons.description),
                       ),
                       maxLines: 2,

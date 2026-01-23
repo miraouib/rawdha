@@ -220,17 +220,31 @@ class _ModuleListScreenState extends ConsumerState<ModuleListScreen> with Single
             const SizedBox(height: 8),
             _buildContentGrid(module),
             const SizedBox(height: 20),
-            OutlinedButton.icon(
-              icon: const Icon(Icons.edit, size: 18),
-              label: Text('module.edit_btn').tr(),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ModuleFormScreen(module: module, levelId: levelId),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.edit, size: 18),
+                  label: Text('module.edit_btn').tr(),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ModuleFormScreen(module: module, levelId: levelId),
+                      ),
+                    );
+                  },
+                ),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.delete, size: 18),
+                  label: Text('common.delete'.tr()),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red,
+                    side: const BorderSide(color: Colors.red),
                   ),
-                );
-              },
+                  onPressed: () => _deleteModule(module),
+                ),
+              ],
             ),
           ],
         ),
@@ -372,15 +386,27 @@ class _ModuleListScreenState extends ConsumerState<ModuleListScreen> with Single
                               ]),
                               style: const TextStyle(color: Colors.grey),
                             ),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () {
-                                Navigator.pop(context); // Fermer la sheet
-                                Navigator.push(
-                                  context, 
-                                  MaterialPageRoute(builder: (context) => ModuleFormScreen(module: module, levelId: levelId)),
-                                );
-                              },
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit, color: AppTheme.primaryBlue),
+                                  onPressed: () {
+                                    Navigator.pop(context); // Fermer la sheet
+                                    Navigator.push(
+                                      context, 
+                                      MaterialPageRoute(builder: (context) => ModuleFormScreen(module: module, levelId: levelId)),
+                                    );
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete, color: Colors.red),
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    _deleteModule(module);
+                                  },
+                                ),
+                              ],
                             ),
                             onTap: () async {
                               // Activer rapidement au clic ? Ou ouvrir le détail ?
@@ -412,5 +438,49 @@ class _ModuleListScreenState extends ConsumerState<ModuleListScreen> with Single
       current = current.add(const Duration(days: 1));
     }
     return days;
+  }
+
+  Future<void> _deleteModule(ModuleModel module) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('common.delete'.tr()), // "Supprimer"
+        content: Text('module.confirm_delete'.tr()), // "Voulez-vous vraiment supprimer ce module ?" (Assuming key exists or using generic)
+        // If specific key doesn't exist, I'll use a hardcoded string or a generic one if available.
+        // Checking fr.json earlier showed "confirm_delete" under announcements and employees. Let's use a safe fallback or add key later if needed.
+        // Actually module.confirm_delete might not exist. Let's check or use generic.
+        // 'common.delete' exists.
+        // Let's use a generic message if check fails, but better to be safe.
+        // "Voulez-vous vraiment supprimer cet élément ?"
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('common.cancel'.tr()),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            child: Text('common.delete'.tr()),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      try {
+        await _moduleService.deleteModule(module.id);
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('common.success'.tr()), backgroundColor: Colors.green),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
+          );
+        }
+      }
+    }
   }
 }

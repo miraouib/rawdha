@@ -146,7 +146,10 @@
         "ask_school_code": "Demandez votre code unique à l'école",
         "school_label": "École",
         "family_id_short": "ID",
-        "payment_history_short": "Historique Paiements"
+        "delete_warning_title": "Attention ! Cette action est irréversible.",
+        "delete_warning_student": "La suppression de ce parent entraînera la suppression définitive de TOUS les élèves associés.",
+        "delete_warning_restore": "Les données ne pourront pas être restaurées.",
+        "delete_confirm_btn": "Supprimer Tout"
     },
     "student": {
         "students": "Élèves",
@@ -228,7 +231,7 @@
         "song_hint": "Chant & Anachid",
         "view_history": "Voir l'Historique",
         "history_title": "Historique des Modules",
-        "no_history": "Aucun historique disponible"
+        "confirm_delete": "Voulez-vous vraiment supprimer ce module ?"
     },
     "levels": {
         "level_3": "Petite Section (3 Ans)",

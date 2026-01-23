@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/parent_model.dart';
 import '../core/encryption/encryption_service.dart';
+import '../services/student_service.dart';
 
 class ParentService {
   final CollectionReference _parentsCollection = FirebaseFirestore.instance.collection('parents');
@@ -129,6 +130,27 @@ class ParentService {
     // map['accessCode'] = _encryptionService.encrypt(parent.accessCode); // Can change
 
     await _parentsCollection.doc(parent.id).update(map);
+  }
+
+  Future<void> deleteParentWithStudents(String rawdhaId, String parentId) async {
+    final studentService = StudentService();
+    
+    // 1. Get all students for this parent
+    final studentsSnapshot = await FirebaseFirestore.instance.collection('students')
+        .where('rawdhaId', isEqualTo: rawdhaId)
+        .where('parentIds', arrayContains: parentId)
+        .get();
+
+    // 2. Delete each student
+    for (var doc in studentsSnapshot.docs) {
+      final data = doc.data();
+      final List<String> parentIds = List<String>.from(data['parentIds'] ?? []);
+      
+      await studentService.deleteStudent(rawdhaId, doc.id, parentIds);
+    }
+
+    // 3. Delete the parent
+    await _parentsCollection.doc(parentId).delete();
   }
 
   Future<void> deleteParent(String parentId) async {

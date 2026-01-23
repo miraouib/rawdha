@@ -119,7 +119,11 @@ class _ParentListScreenState extends ConsumerState<ParentListScreen> {
                       separatorBuilder: (context, index) => const SizedBox(height: 12),
                       itemBuilder: (context, index) {
                         final parent = parents[index];
-                        return _ParentCard(parent: parent, schoolCode: schoolCode);
+                        return _ParentCard(
+                          parent: parent, 
+                          schoolCode: schoolCode,
+                          onDelete: () => _deleteParent(parent),
+                        );
                       },
                     );
                   },
@@ -156,13 +160,73 @@ class _ParentListScreenState extends ConsumerState<ParentListScreen> {
       ),
     );
   }
+
+  Future<void> _deleteParent(ParentModel parent) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('common.delete'.tr()),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('parent.delete_warning_title'.tr()),
+            const SizedBox(height: 8),
+            Text(
+              'parent.delete_warning_student'.tr(),
+              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+            ),
+            const SizedBox(height: 8),
+            Text('parent.delete_warning_restore'.tr()),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('common.cancel'.tr()),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            child: Text('parent.delete_confirm_btn'.tr()),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      try {
+        final rawdhaId = ref.read(currentRawdhaIdProvider);
+        if (rawdhaId == null) return;
+
+        await _parentService.deleteParentWithStudents(rawdhaId, parent.id);
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('common.success'.tr()), backgroundColor: Colors.green),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
+          );
+        }
+      }
+    }
+  }
 }
 
 class _ParentCard extends StatelessWidget {
   final ParentModel parent;
   final String schoolCode;
+  final VoidCallback onDelete;
 
-  const _ParentCard({required this.parent, required this.schoolCode});
+  const _ParentCard({
+    required this.parent, 
+    required this.schoolCode,
+    required this.onDelete,
+  });
 
   Future<void> _copyToClipboard(BuildContext context, String text) async {
     await Clipboard.setData(ClipboardData(text: text));
@@ -275,6 +339,11 @@ class _ParentCard extends StatelessWidget {
                   onPressed: () {
                     context.pushNamed('parent_edit', extra: parent);
                   },
+                ),
+                TextButton.icon(
+                  icon: const Icon(Icons.delete, size: 18, color: Colors.red),
+                  label: Text('common.delete'.tr(), style: const TextStyle(color: Colors.red)),
+                  onPressed: onDelete,
                 ),
               ],
             ),

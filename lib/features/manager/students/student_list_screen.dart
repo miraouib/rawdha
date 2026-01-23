@@ -132,7 +132,10 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
             separatorBuilder: (context, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final student = students[index];
-              return _StudentCard(student: student);
+              return _StudentCard(
+                student: student,
+                onDelete: () => _deleteStudent(student),
+              );
                 },
               );
             },
@@ -167,12 +170,58 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
       ),
     );
   }
+
+  Future<void> _deleteStudent(StudentModel student) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('common.delete'.tr()),
+        content: Text('student.confirm_delete'.tr()), // Using specific key, need to add it or fallback
+        // If key missing, I'll add it to translations next step or use generic.
+        // Let's assume I'll add it or use a generic "Are you sure?"
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('common.cancel'.tr()),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            child: Text('common.delete'.tr()),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      try {
+        final rawdhaId = ref.read(currentRawdhaIdProvider);
+        if (rawdhaId == null) return;
+        
+        // We need parent IDs to unlink
+        await _studentService.deleteStudent(rawdhaId, student.studentId, student.parentIds);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('common.success'.tr()), backgroundColor: Colors.green),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
+          );
+        }
+      }
+    }
+  }
 }
 
 class _StudentCard extends ConsumerWidget {
   final StudentModel student;
+  final VoidCallback onDelete;
 
-  const _StudentCard({required this.student});
+  const _StudentCard({required this.student, required this.onDelete});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -209,7 +258,16 @@ class _StudentCard extends ConsumerWidget {
               ),
           ],
         ),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: onDelete,
+            ),
+            const Icon(Icons.arrow_forward_ios, size: 16),
+          ],
+        ),
         onTap: () {
           context.pushNamed('student_detail', extra: student);
         },

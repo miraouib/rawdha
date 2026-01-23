@@ -191,7 +191,8 @@
             "select_level": "Veuillez sélectionner un niveau",
             "rawdha_not_found": "Erreur: ID Rawdha non trouvé",
             "saved": "Élève enregistré"
-        }
+        },
+        "confirm_delete": "Voulez-vous vraiment supprimer cet élève ?"
     },
     "module": {
         "management_title": "Modules Pédagogiques",

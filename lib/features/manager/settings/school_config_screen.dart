@@ -491,12 +491,63 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
                         onTap: _showResetConfirmation,
                       ),
                     ),
-                  ],
+ 
+                      
+                       const SizedBox(height: 16),
+                      _buildSessionCard(),
+                      
+                    ],
+                  ),
                 ),
               ),
-            ),
       bottomNavigationBar: const ManagerFooter(),
     );
+  }
+
+  // Helper widget for session card
+  Widget _buildSessionCard() {
+    return Card(
+      elevation: 0,
+      color: Colors.red.shade50,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.red.shade200),
+      ),
+      child: ListTile(
+        leading: const Icon(Icons.logout, color: Colors.red),
+        title: Text('logout'.tr(), style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+        onTap: _showLogoutConfirmation,
+      ),
+    );
+  }
+
+  Future<void> _showLogoutConfirmation() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('logout'.tr()),
+        content: Text('Voulez-vous vraiment vous déconnecter ?'), // Ideally localized
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('common.cancel'.tr()),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            child: Text('logout'.tr()),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+       ref.read(currentRawdhaIdProvider.notifier).state = null;
+       ref.read(currentManagerIdProvider.notifier).state = null;
+       ref.read(currentManagerUsernameProvider.notifier).state = null;
+       // Assuming ManagerAuthService might have a logout method, but simple state clear works as shown in dashboard.
+       context.go('/'); 
+    }
   }
 
   Future<void> _showResetConfirmation() async {

@@ -79,16 +79,7 @@ class _ManagerDashboardScreenState extends ConsumerState<ManagerDashboardScreen>
             tooltip: _isGridView ? 'Vue Liste' : 'Vue Grille', // Could be localized
           ),
           const SizedBox(width: 8),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              // Clear session and go back
-              ref.read(currentRawdhaIdProvider.notifier).state = null;
-              ref.read(currentManagerIdProvider.notifier).state = null;
-              ref.read(currentManagerUsernameProvider.notifier).state = null;
-              context.go('/'); // Go back to Role Selection (or Login)
-            },
-          ),
+
         ],
       ),
       body: SingleChildScrollView(

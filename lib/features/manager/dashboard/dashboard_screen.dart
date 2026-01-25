@@ -21,7 +21,6 @@ import '../../../services/notification_service.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
-import '../../../core/widgets/offline_wrapper.dart'; // Import
 
 /// Dashboard Manager
 /// 
@@ -66,11 +65,10 @@ class _ManagerDashboardScreenState extends ConsumerState<ManagerDashboardScreen>
   Widget build(BuildContext context) {
     final username = ref.watch(currentManagerUsernameProvider) ?? 'Admin';
 
-    return OfflineWrapper(
-      child: Scaffold(
-        backgroundColor: AppTheme.backgroundLight,
-        appBar: AppBar(
-          title: Text('app_name'.tr()),
+    return Scaffold(
+      backgroundColor: AppTheme.backgroundLight,
+      appBar: AppBar(
+        title: Text('app_name'.tr()),
         actions: [
           // Sélecteur de langue
           _LanguageSelector(),
@@ -114,7 +112,6 @@ class _ManagerDashboardScreenState extends ConsumerState<ManagerDashboardScreen>
         ),
       ),
       bottomNavigationBar: const ManagerFooter(),
-      ),
     );
   }
 

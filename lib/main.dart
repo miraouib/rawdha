@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
+import 'core/widgets/offline_wrapper.dart'; // Import global wrapper
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,6 +50,11 @@ class RawdhaApp extends ConsumerWidget {
       
       // Thème
       theme: AppTheme.lightTheme,
+
+      // Global Offline Check
+      builder: (context, child) {
+        return OfflineWrapper(child: child!);
+      },
     );
   }
 }

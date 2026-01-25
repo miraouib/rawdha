@@ -7,7 +7,6 @@ import '../../../services/session_service.dart';
 import '../../../models/parent_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
-import '../../../core/widgets/offline_wrapper.dart';
 
 class ParentLoginScreen extends ConsumerStatefulWidget {
   const ParentLoginScreen({super.key});
@@ -89,114 +88,112 @@ class _ParentLoginScreenState extends ConsumerState<ParentLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return OfflineWrapper(
-      child: Scaffold(
-        backgroundColor: AppTheme.backgroundLight,
-        appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
-        body: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      gradient: AppTheme.parentGradient,
-                      shape: BoxShape.circle,
-                      boxShadow: AppTheme.gradientCardShadow,
-                    ),
-                    child: const Icon(Icons.family_restroom, size: 60, color: Colors.white),
+    return Scaffold(
+      backgroundColor: AppTheme.backgroundLight,
+      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    gradient: AppTheme.parentGradient,
+                    shape: BoxShape.circle,
+                    boxShadow: AppTheme.gradientCardShadow,
                   ),
-                  const SizedBox(height: 32),
-                  Text('parent.title'.tr(), style: Theme.of(context).textTheme.displayMedium),
-                  const SizedBox(height: 8),
-                  Text('parent.enter_code'.tr(), style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppTheme.textGray)),
-                  const SizedBox(height: 48),
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: AppTheme.cardShadow,
-                    ),
-                    child: Column(
-                      children: [
-                        TextFormField(
-                          controller: _schoolCodeController,
-                          decoration: InputDecoration(
-                            labelText: 'parent.school_code_label'.tr(),
-                            prefixIcon: const Icon(Icons.school_outlined),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                            hintText: 'parent.school_code_hint'.tr(),
-                          ),
-                          textCapitalization: TextCapitalization.characters,
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _idController,
-                          decoration: InputDecoration(
-                            labelText: 'parent.family_id_label'.tr(),
-                            prefixIcon: const Icon(Icons.badge_outlined),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          textCapitalization: TextCapitalization.characters,
-                        ),
-                        const SizedBox(height: 24),
-                        Row(
-                          children: [
-                            Checkbox(
-                              value: _rememberMe,
-                              activeColor: AppTheme.accentPink,
-                              onChanged: (v) => setState(() => _rememberMe = v ?? true),
-                            ),
-                            Text('parent.remember_me'.tr(), style: const TextStyle(fontSize: 14)),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: ElevatedButton(
-                            onPressed: _isLoading ? null : _handleLogin,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.accentPink,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                            child: _isLoading
-                                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                                : Text('parent.login_button'.tr(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                          ),
-                        ),
-                      ],
-                    ),
+                  child: const Icon(Icons.family_restroom, size: 60, color: Colors.white),
+                ),
+                const SizedBox(height: 32),
+                Text('parent.title'.tr(), style: Theme.of(context).textTheme.displayMedium),
+                const SizedBox(height: 8),
+                Text('parent.enter_code'.tr(), style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppTheme.textGray)),
+                const SizedBox(height: 48),
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: AppTheme.cardShadow,
                   ),
-                  const SizedBox(height: 24),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppTheme.accentPink.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppTheme.accentPink.withOpacity(0.3)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.info_outline, color: AppTheme.accentPink, size: 20),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'parent.ask_school_code'.tr(),
-                            style: const TextStyle(fontSize: 12, color: AppTheme.accentPink),
-                          ),
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        controller: _schoolCodeController,
+                        decoration: InputDecoration(
+                          labelText: 'parent.school_code_label'.tr(),
+                          prefixIcon: const Icon(Icons.school_outlined),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          hintText: 'parent.school_code_hint'.tr(),
                         ),
-                      ],
-                    ),
+                        textCapitalization: TextCapitalization.characters,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _idController,
+                        decoration: InputDecoration(
+                          labelText: 'parent.family_id_label'.tr(),
+                          prefixIcon: const Icon(Icons.badge_outlined),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        textCapitalization: TextCapitalization.characters,
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: _rememberMe,
+                            activeColor: AppTheme.accentPink,
+                            onChanged: (v) => setState(() => _rememberMe = v ?? true),
+                          ),
+                          Text('parent.remember_me'.tr(), style: const TextStyle(fontSize: 14)),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _handleLogin,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.accentPink,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: _isLoading
+                              ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                              : Text('parent.login_button'.tr(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 48),
-                ],
-              ),
+                ),
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentPink.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.accentPink.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.info_outline, color: AppTheme.accentPink, size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'parent.ask_school_code'.tr(),
+                          style: const TextStyle(fontSize: 12, color: AppTheme.accentPink),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 48),
+              ],
             ),
           ),
         ),

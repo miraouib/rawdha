@@ -27,7 +27,16 @@ class _AnnouncementFormScreenState extends ConsumerState<AnnouncementFormScreen>
 
   
   bool _isLoading = false;
+  late Stream<List<SchoolLevelModel>> _levelsStream;
+  final SchoolService _schoolService = SchoolService();
   
+  @override
+  void initState() {
+    super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    _levelsStream = _schoolService.getLevels(rawdhaId);
+  }
+
   @override
   void dispose() {
     _titleController.dispose();
@@ -154,7 +163,7 @@ class _AnnouncementFormScreenState extends ConsumerState<AnnouncementFormScreen>
 
               // Level Target Selector
               StreamBuilder<List<SchoolLevelModel>>(
-                stream: SchoolService().getLevels(ref.read(currentRawdhaIdProvider) ?? ''),
+                stream: _levelsStream,
                 builder: (context, snapshot) {
                   final levels = snapshot.data ?? [];
                   return DropdownButtonFormField<String?>(

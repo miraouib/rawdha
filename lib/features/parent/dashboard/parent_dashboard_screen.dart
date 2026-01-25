@@ -28,11 +28,24 @@ class ParentDashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
+  late Stream<DocumentSnapshot> _pubStream;
+  late Stream<List<StudentModel>> _studentsStream;
+  late Stream<List<AnnouncementModel>> _announcementsStream;
+
+  final StudentService _studentService = StudentService();
+  final SessionService _sessionService = SessionService();
+  final AnnouncementService _announcementService = AnnouncementService();
+
   @override
   void initState() {
     super.initState();
     _checkAndInitPub();
     _initNotifications();
+    
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? widget.parent.rawdhaId;
+    _pubStream = FirebaseFirestore.instance.collection('pub').doc('pub').snapshots();
+    _studentsStream = _studentService.getStudentsByParentId(widget.parent.rawdhaId, widget.parent.id);
+    _announcementsStream = _announcementService.getAnnouncements(widget.parent.rawdhaId);
   }
 
   Future<void> _initNotifications() async {
@@ -67,10 +80,6 @@ class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final studentService = StudentService();
-    final sessionService = SessionService();
-    final announcementService = AnnouncementService();
-
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       bottomNavigationBar: const ParentFooter(),
@@ -81,7 +90,7 @@ class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
-              await sessionService.clearSession();
+              await _sessionService.clearSession();
               if (context.mounted) context.go('/');
             },
           ),
@@ -156,7 +165,7 @@ class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
 
             // Section Publicité (Banner)
             StreamBuilder<DocumentSnapshot>(
-              stream: FirebaseFirestore.instance.collection('pub').doc('pub').snapshots(),
+              stream: _pubStream,
               builder: (context, snapshot) {
                 if (!snapshot.hasData || !snapshot.data!.exists) return const SizedBox.shrink();
 
@@ -225,7 +234,7 @@ class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
 
             // Section Mes Enfants
             StreamBuilder<List<StudentModel>>(
-              stream: studentService.getStudentsByParentId(widget.parent.rawdhaId, widget.parent.id),
+              stream: _studentsStream,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Padding(
@@ -248,7 +257,7 @@ class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
 
             // Section Annonces Actives (Directement après les enfants)
             StreamBuilder<List<AnnouncementModel>>(
-              stream: announcementService.getAnnouncements(widget.parent.rawdhaId),
+              stream: _announcementsStream,
               builder: (context, snapshot) {
                 final allAnnouncements = snapshot.data ?? [];
                 final activeAnnouncements = allAnnouncements.where((a) => a.isActiveNow()).toList();

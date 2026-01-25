@@ -96,17 +96,178 @@ class _ModuleListScreenState extends ConsumerState<ModuleListScreen> with Single
 
   /// Vue par niveau : Affiche uniquement le module actif, avec option de voir l'historique
   Widget _buildModuleView(String levelId) {
-    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
+    return _ModuleLevelView(levelId: levelId);
+  }
+
+  void _deleteModule(ModuleModel module) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('common.delete'.tr()),
+        content: Text('module.confirm_delete'.tr()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('common.cancel'.tr()),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            child: Text('common.delete'.tr()),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      try {
+        await _moduleService.deleteModule(module.id);
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('common.success'.tr()), backgroundColor: Colors.green),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
+          );
+        }
+      }
+    }
+  }
+
+  void _showModuleHistorySheet(BuildContext context, List<ModuleModel> modules, String levelId) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          minChildSize: 0.5,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) {
+            return Column(
+              children: [
+                const SizedBox(height: 12),
+                Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text('module.all_modules'.tr(), style: AppTheme.lightTheme.textTheme.titleLarge),
+                ),
+                Expanded(
+                  child: modules.isEmpty 
+                    ? const Center(child: Text('Aucun module.'))
+                    : ListView.builder(
+                        controller: scrollController,
+                        itemCount: modules.length,
+                        itemBuilder: (context, index) {
+                          final module = modules[index];
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: module.isCurrentlyActive ? AppTheme.successGreen : Colors.grey[200],
+                              child: Icon(
+                                module.isCurrentlyActive ? Icons.check : Icons.book, 
+                                color: module.isCurrentlyActive ? Colors.white : Colors.grey,
+                              ),
+                            ),
+                            title: Text(
+                              module.title,
+                              style: TextStyle(fontWeight: module.isCurrentlyActive ? FontWeight.bold : FontWeight.normal),
+                            ),
+                            subtitle: Text(
+                              'module.period_format'.tr(args: [
+                                DateFormat('dd/MM').format(module.startDate),
+                                DateFormat('dd/MM').format(module.endDate),
+                                _calculateWorkingDays(module.startDate, module.endDate).toString()
+                              ]),
+                              style: const TextStyle(color: Colors.grey),
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit, color: AppTheme.primaryBlue),
+                                  onPressed: () {
+                                    Navigator.pop(context); // Fermer la sheet
+                                    Navigator.push(
+                                      context, 
+                                      MaterialPageRoute(builder: (context) => ModuleFormScreen(module: module, levelId: levelId)),
+                                    );
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete, color: Colors.red),
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    _deleteModule(module);
+                                  },
+                                ),
+                              ],
+                            ),
+                            onTap: () async {
+                              Navigator.pop(context);
+                              Navigator.push(
+                                context, 
+                                MaterialPageRoute(builder: (context) => ModuleFormScreen(module: module, levelId: levelId)),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  int _calculateWorkingDays(DateTime start, DateTime end) {
+    int days = 0;
+    DateTime current = start;
+    while (current.isBefore(end) || current.isAtSameMomentAs(end)) {
+      if (current.weekday != DateTime.saturday && current.weekday != DateTime.sunday) {
+        days++;
+      }
+      current = current.add(const Duration(days: 1));
+    }
+    return days;
+  }
+}
+
+class _ModuleLevelView extends ConsumerStatefulWidget {
+  final String levelId;
+  const _ModuleLevelView({required this.levelId});
+
+  @override
+  ConsumerState<_ModuleLevelView> createState() => _ModuleLevelViewState();
+}
+
+class _ModuleLevelViewState extends ConsumerState<_ModuleLevelView> {
+  late Stream<List<ModuleModel>> _modulesStream;
+  final ModuleService _moduleService = ModuleService();
+
+  @override
+  void initState() {
+    super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    _modulesStream = _moduleService.getModulesForLevel(rawdhaId, widget.levelId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return StreamBuilder<List<ModuleModel>>(
-      stream: _moduleService.getModulesForLevel(rawdhaId, levelId),
+      stream: _modulesStream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
 
         final modules = snapshot.data ?? [];
-
-        // Trouver le module actif (le tableau est déjà trié ou pas, mais on cherche isCurrentlyActive)
         final activeModule = modules.where((m) => m.isCurrentlyActive).firstOrNull;
 
         return SingleChildScrollView(
@@ -115,27 +276,26 @@ class _ModuleListScreenState extends ConsumerState<ModuleListScreen> with Single
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Section Module Actif
                 Text(
                   'module.active_label'.tr(),
                   style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-                     color: AppTheme.textGray,
-                     fontWeight: FontWeight.bold,
+                    color: AppTheme.textGray,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 12),
                 
                 if (activeModule != null)
-                  _buildActiveModuleCard(activeModule, levelId)
+                  _buildActiveModuleCard(activeModule, widget.levelId)
                 else
                    _buildEmptyActiveState(),
         
                 const SizedBox(height: 32),
                 
-                // Bouton pour gérer l'historique
                 ElevatedButton.icon(
                   onPressed: () {
-                    _showModuleHistorySheet(context, modules, levelId);
+                    final parent = context.findAncestorStateOfType<_ModuleListScreenState>();
+                    parent?._showModuleHistorySheet(context, modules, widget.levelId);
                   },
                   icon: const Icon(Icons.history),
                   label: Text('module.manage_all').tr(),
@@ -154,10 +314,6 @@ class _ModuleListScreenState extends ConsumerState<ModuleListScreen> with Single
   }
 
   Widget _buildActiveModuleCard(ModuleModel module, String levelId) {
-    final title = module.title;
-    final description = module.description;
-
-
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(
@@ -186,15 +342,15 @@ class _ModuleListScreenState extends ConsumerState<ModuleListScreen> with Single
             ),
             const SizedBox(height: 16),
             Text(
-              title,
+              module.title,
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppTheme.textDark),
               textAlign: TextAlign.center,
             ),
-            if (description.isNotEmpty)
+            if (module.description.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Text(
-                  description,
+                  module.description,
                   style: const TextStyle(fontSize: 16, color: AppTheme.textGray),
                   textAlign: TextAlign.center,
                   maxLines: 3,
@@ -242,7 +398,10 @@ class _ModuleListScreenState extends ConsumerState<ModuleListScreen> with Single
                     foregroundColor: Colors.red,
                     side: const BorderSide(color: Colors.red),
                   ),
-                  onPressed: () => _deleteModule(module),
+                  onPressed: () {
+                    final parent = context.findAncestorStateOfType<_ModuleListScreenState>();
+                    parent?._deleteModule(module);
+                  },
                 ),
               ],
             ),
@@ -336,151 +495,5 @@ class _ModuleListScreenState extends ConsumerState<ModuleListScreen> with Single
         ],
       ),
     );
-  }
-
-  void _showModuleHistorySheet(BuildContext context, List<ModuleModel> modules, String levelId) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.7,
-          minChildSize: 0.5,
-          maxChildSize: 0.9,
-          expand: false,
-          builder: (context, scrollController) {
-            return Column(
-              children: [
-                const SizedBox(height: 12),
-                Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text('module.all_modules'.tr(), style: AppTheme.lightTheme.textTheme.titleLarge),
-                ),
-                Expanded(
-                  child: modules.isEmpty 
-                    ? const Center(child: Text('Aucun module.'))
-                    : ListView.builder(
-                        controller: scrollController,
-                        itemCount: modules.length,
-                        itemBuilder: (context, index) {
-                          final module = modules[index];
-                          return ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: module.isCurrentlyActive ? AppTheme.successGreen : Colors.grey[200],
-                              child: Icon(
-                                module.isCurrentlyActive ? Icons.check : Icons.book, 
-                                color: module.isCurrentlyActive ? Colors.white : Colors.grey,
-                              ),
-                            ),
-                            title: Text(
-                              module.title,
-                              style: TextStyle(fontWeight: module.isCurrentlyActive ? FontWeight.bold : FontWeight.normal),
-                            ),
-                            subtitle: Text(
-                              'module.period_format'.tr(args: [
-                                DateFormat('dd/MM').format(module.startDate),
-                                DateFormat('dd/MM').format(module.endDate),
-                                _calculateWorkingDays(module.startDate, module.endDate).toString()
-                              ]),
-                              style: const TextStyle(color: Colors.grey),
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit, color: AppTheme.primaryBlue),
-                                  onPressed: () {
-                                    Navigator.pop(context); // Fermer la sheet
-                                    Navigator.push(
-                                      context, 
-                                      MaterialPageRoute(builder: (context) => ModuleFormScreen(module: module, levelId: levelId)),
-                                    );
-                                  },
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.red),
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                    _deleteModule(module);
-                                  },
-                                ),
-                              ],
-                            ),
-                            onTap: () async {
-                              // Activer rapidement au clic ? Ou ouvrir le détail ?
-                              // Pour l'instant on ouvre le form
-                              Navigator.pop(context);
-                              Navigator.push(
-                                context, 
-                                MaterialPageRoute(builder: (context) => ModuleFormScreen(module: module, levelId: levelId)),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-  int _calculateWorkingDays(DateTime start, DateTime end) {
-    int days = 0;
-    DateTime current = start;
-    while (current.isBefore(end) || current.isAtSameMomentAs(end)) {
-      if (current.weekday != DateTime.saturday && current.weekday != DateTime.sunday) {
-        days++;
-      }
-      current = current.add(const Duration(days: 1));
-    }
-    return days;
-  }
-
-  Future<void> _deleteModule(ModuleModel module) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('common.delete'.tr()), // "Supprimer"
-        content: Text('module.confirm_delete'.tr()), // "Voulez-vous vraiment supprimer ce module ?" (Assuming key exists or using generic)
-        // If specific key doesn't exist, I'll use a hardcoded string or a generic one if available.
-        // Checking fr.json earlier showed "confirm_delete" under announcements and employees. Let's use a safe fallback or add key later if needed.
-        // Actually module.confirm_delete might not exist. Let's check or use generic.
-        // 'common.delete' exists.
-        // Let's use a generic message if check fails, but better to be safe.
-        // "Voulez-vous vraiment supprimer cet élément ?"
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('common.cancel'.tr()),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
-            child: Text('common.delete'.tr()),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && mounted) {
-      try {
-        await _moduleService.deleteModule(module.id);
-        if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('common.success'.tr()), backgroundColor: Colors.green),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
-          );
-        }
-      }
-    }
   }
 }

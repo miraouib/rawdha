@@ -14,11 +14,13 @@ class ContactDeveloperScreen extends StatefulWidget {
 
 class _ContactDeveloperScreenState extends State<ContactDeveloperScreen> {
   final DeveloperService _developerService = DeveloperService();
+  late Stream<DeveloperModel?> _developerInfoStream;
 
   @override
   void initState() {
     super.initState();
     _developerService.seedDeveloperData();
+    _developerInfoStream = _developerService.getDeveloperInfo();
   }
 
   Future<void> _launchWhatsApp(String phoneNumber) async {
@@ -72,7 +74,7 @@ class _ContactDeveloperScreenState extends State<ContactDeveloperScreen> {
         ),
       ),
       body: StreamBuilder<DeveloperModel?>(
-        stream: _developerService.getDeveloperInfo(),
+        stream: _developerInfoStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

@@ -13,21 +13,35 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
 
 /// Page de détails d'un employé
-class EmployeeDetailScreen extends ConsumerWidget {
+class EmployeeDetailScreen extends ConsumerStatefulWidget {
   final EmployeeModel employee;
 
   const EmployeeDetailScreen({super.key, required this.employee});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<EmployeeDetailScreen> createState() => _EmployeeDetailScreenState();
+}
+
+class _EmployeeDetailScreenState extends ConsumerState<EmployeeDetailScreen> {
+  late Stream<List<EmployeeAbsenceModel>> _absencesStream;
+  final EmployeeService _employeeService = EmployeeService();
+
+  @override
+  void initState() {
+    super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    _absencesStream = _employeeService.getEmployeeAbsences(rawdhaId, widget.employee.employeeId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
     final encryption = EncryptionService();
-    final employeeService = EmployeeService();
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: Text(employee.fullName),
+        title: Text(widget.employee.fullName),
         actions: [
           // Modifier
           IconButton(
@@ -36,7 +50,7 @@ class EmployeeDetailScreen extends ConsumerWidget {
               final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => EmployeeFormScreen(employee: employee),
+                  builder: (context) => EmployeeFormScreen(employee: widget.employee),
                 ),
               );
               if (result != null) {
@@ -48,7 +62,7 @@ class EmployeeDetailScreen extends ConsumerWidget {
           // Supprimer
           IconButton(
             icon: const Icon(Icons.delete),
-            onPressed: () => _showDeleteDialog(context, employeeService, rawdhaId),
+            onPressed: () => _showDeleteDialog(context, _employeeService, rawdhaId),
           ),
         ],
       ),
@@ -73,7 +87,7 @@ class EmployeeDetailScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  employee.fullName,
+                  widget.employee.fullName,
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -82,7 +96,7 @@ class EmployeeDetailScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  employee.role,
+                  widget.employee.role,
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.white.withOpacity(0.9),
@@ -100,25 +114,25 @@ class EmployeeDetailScreen extends ConsumerWidget {
               _InfoTile(
                 icon: Icons.phone,
                 label: 'employee.phone'.tr(),
-                value: encryption.decryptString(employee.encryptedPhone),
+                value: encryption.decryptString(widget.employee.encryptedPhone),
                 enableCopy: true,
               ),
               _InfoTile(
                 icon: Icons.cake,
                 label: 'employee.birthdate'.tr(),
-                value: employee.birthdate != null
-                    ? DateFormat('dd/MM/yyyy').format(employee.birthdate!)
+                value: widget.employee.birthdate != null
+                    ? DateFormat('dd/MM/yyyy').format(widget.employee.birthdate!)
                     : 'common.not_defined'.tr(),
               ),
               _InfoTile(
                 icon: Icons.work_history,
                 label: 'employee.hire_date'.tr(),
-                value: DateFormat('dd/MM/yyyy').format(employee.hireDate),
+                value: DateFormat('dd/MM/yyyy').format(widget.employee.hireDate),
               ),
               _InfoTile(
                 icon: Icons.attach_money,
                 label: 'employee.salary'.tr(),
-                value: '${encryption.decryptNumber(employee.encryptedSalary).toStringAsFixed(2)} ${'finance.currency'.tr()}',
+                value: '${encryption.decryptNumber(widget.employee.encryptedSalary).toStringAsFixed(2)} ${'finance.currency'.tr()}',
                 isConfidential: true,
               ),
             ],
@@ -130,11 +144,11 @@ class EmployeeDetailScreen extends ConsumerWidget {
             title: 'absence.absence'.tr(),
             trailing: IconButton(
               icon: const Icon(Icons.add),
-              onPressed: () => _showAddAbsenceDialog(context, employeeService),
+              onPressed: () => _showAddAbsenceDialog(context, _employeeService),
             ),
             children: [
               StreamBuilder<List<EmployeeAbsenceModel>>(
-                stream: employeeService.getEmployeeAbsences(rawdhaId, employee.employeeId),
+                stream: _absencesStream,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -249,7 +263,7 @@ class EmployeeDetailScreen extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () async {
-              await service.deleteEmployee(rawdhaId, employee.employeeId);
+              await service.deleteEmployee(rawdhaId, widget.employee.employeeId);
               if (context.mounted) {
                 Navigator.pop(context); // Dialog
                 Navigator.pop(context); // Detail screen
@@ -272,7 +286,7 @@ class EmployeeDetailScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AddAbsenceDialog(
-        employeeId: employee.employeeId,
+        employeeId: widget.employee.employeeId,
         employeeService: service,
       ),
     );

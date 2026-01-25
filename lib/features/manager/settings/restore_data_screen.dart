@@ -9,6 +9,8 @@ import '../../../models/student_model.dart';
 import '../../../services/school_service.dart';
 import '../../../services/parent_service.dart';
 import '../../../services/student_service.dart';
+import '../../../models/school_level_model.dart';
+
 
 class RestoreDataScreen extends ConsumerStatefulWidget {
   const RestoreDataScreen({super.key});
@@ -24,6 +26,15 @@ class _RestoreDataScreenState extends ConsumerState<RestoreDataScreen> {
   
   String _searchQuery = '';
   final Map<String, String> _selectedLevels = {}; // studentId -> levelId
+
+  late Stream<List<ParentModel>> _archivedParentsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    _archivedParentsStream = _parentService.getArchivedParents(rawdhaId);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +65,7 @@ class _RestoreDataScreenState extends ConsumerState<RestoreDataScreen> {
           // List
           Expanded(
             child: StreamBuilder<List<ParentModel>>(
-              stream: _parentService.getArchivedParents(rawdhaId),
+              stream: _archivedParentsStream,
               builder: (context, snapshot) {
                 if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
                 
@@ -101,90 +112,7 @@ class _RestoreDataScreenState extends ConsumerState<RestoreDataScreen> {
   }
 
   Widget _buildRestoreForm(String rawdhaId, ParentModel parent) {
-    return StreamBuilder<List<StudentModel>>(
-      // Important: fetch deleted students too
-      stream: _studentService.getStudentsByParentId(rawdhaId, parent.id, includeDeleted: true),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) return const Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator());
-        
-        final students = snapshot.data!;
-        if (students.isEmpty) return const Text("Aucun enfant trouvé.");
-
-        return Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text("Mettre à jour les niveaux pour la nouvelle année :", 
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              
-              ...students.map((student) {
-                return _buildStudentLevelSelector(rawdhaId, student);
-              }),
-
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.restore),
-                label: const Text('Restaurer ce parent et ses enfants'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryBlue,
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: () => _restoreParent(parent, students),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildStudentLevelSelector(String rawdhaId, StudentModel student) {
-    return StreamBuilder(
-      stream: _schoolService.getLevels(rawdhaId),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) return const SizedBox();
-        final levels = snapshot.data!;
-        
-        // Default to current selection or student's old level
-        final currentSelection = _selectedLevels[student.studentId] ?? student.levelId;
-
-        // Ensure selection is valid (exists in list), otherwise default to first
-        final validSelection = levels.any((l) => l.id == currentSelection) 
-            ? currentSelection 
-            : (levels.isNotEmpty ? levels.first.id : '');
-
-        if (validSelection != _selectedLevels[student.studentId]) {
-             // Defer state update to avoid build error
-             WidgetsBinding.instance.addPostFrameCallback((_) {
-               if (mounted) {
-                 setState(() => _selectedLevels[student.studentId] = validSelection);
-               }
-             });
-        }
-
-        return ListTile(
-          contentPadding: EdgeInsets.zero,
-          title: Text('${student.firstName} ${student.lastName}'),
-          trailing: DropdownButton<String>(
-            value: validSelection,
-            items: levels.map((l) => DropdownMenuItem(
-              value: l.id,
-              child: Text(
-                context.locale.toString() == 'ar' ? l.nameAr : l.nameFr,
-                style: const TextStyle(fontSize: 14),
-              ),
-            )).toList(),
-            onChanged: (val) {
-              if (val != null) {
-                setState(() => _selectedLevels[student.studentId] = val);
-              }
-            },
-          ),
-        );
-      },
-    );
+    return _RestoreParentForm(rawdhaId: rawdhaId, parent: parent, onRestore: _restoreParent);
   }
 
   Future<void> _restoreParent(ParentModel parent, List<StudentModel> students) async {
@@ -209,5 +137,142 @@ class _RestoreDataScreenState extends ConsumerState<RestoreDataScreen> {
         );
       }
     }
+  }
+}
+
+class _RestoreParentForm extends ConsumerStatefulWidget {
+  final String rawdhaId;
+  final ParentModel parent;
+  final Function(ParentModel, List<StudentModel>) onRestore;
+
+  const _RestoreParentForm({
+    required this.rawdhaId,
+    required this.parent,
+    required this.onRestore,
+  });
+
+  @override
+  ConsumerState<_RestoreParentForm> createState() => _RestoreParentFormState();
+}
+
+class _RestoreParentFormState extends ConsumerState<_RestoreParentForm> {
+  late Stream<List<StudentModel>> _studentsStream;
+  final StudentService _studentService = StudentService();
+
+  @override
+  void initState() {
+    super.initState();
+    _studentsStream = _studentService.getStudentsByParentId(widget.rawdhaId, widget.parent.id, includeDeleted: true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<StudentModel>>(
+      stream: _studentsStream,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator());
+        
+        final students = snapshot.data!;
+        if (students.isEmpty) return const Text("Aucun enfant trouvé.");
+
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text("Mettre à jour les niveaux pour la nouvelle année :", 
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              
+              ...students.map((student) {
+                return _StudentLevelSelector(rawdhaId: widget.rawdhaId, student: student);
+              }),
+
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.restore),
+                label: const Text('Restaurer ce parent et ses enfants'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryBlue,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () => widget.onRestore(widget.parent, students),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _StudentLevelSelector extends ConsumerStatefulWidget {
+  final String rawdhaId;
+  final StudentModel student;
+
+  const _StudentLevelSelector({required this.rawdhaId, required this.student});
+
+  @override
+  ConsumerState<_StudentLevelSelector> createState() => _StudentLevelSelectorState();
+}
+
+class _StudentLevelSelectorState extends ConsumerState<_StudentLevelSelector> {
+  late Stream<List<SchoolLevelModel>> _levelsStream;
+  final SchoolService _schoolService = SchoolService();
+
+  @override
+  void initState() {
+    super.initState();
+    _levelsStream = _schoolService.getLevels(widget.rawdhaId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<SchoolLevelModel>>(
+      stream: _levelsStream,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const SizedBox();
+        final levels = snapshot.data!;
+        
+        final parent = context.findAncestorStateOfType<_RestoreDataScreenState>();
+        if (parent == null) return const SizedBox();
+
+        // Default to current selection or student's old level
+        final currentSelection = parent._selectedLevels[widget.student.studentId] ?? widget.student.levelId;
+
+        // Ensure selection is valid (exists in list), otherwise default to first
+        final validSelection = levels.any((l) => l.id == currentSelection) 
+            ? currentSelection 
+            : (levels.isNotEmpty ? levels.first.id : '');
+
+        if (validSelection != parent._selectedLevels[widget.student.studentId]) {
+             WidgetsBinding.instance.addPostFrameCallback((_) {
+               if (mounted && parent.mounted) {
+                 parent.setState(() => parent._selectedLevels[widget.student.studentId] = validSelection);
+               }
+             });
+        }
+
+        return ListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text('${widget.student.firstName} ${widget.student.lastName}'),
+          trailing: DropdownButton<String>(
+            value: validSelection,
+            items: levels.map((l) => DropdownMenuItem(
+              value: l.id,
+              child: Text(
+                context.locale.toString() == 'ar' ? l.nameAr : l.nameFr,
+                style: const TextStyle(fontSize: 14),
+              ),
+            )).toList(),
+            onChanged: (val) {
+              if (val != null) {
+                parent.setState(() => parent._selectedLevels[widget.student.studentId] = val);
+              }
+            },
+          ),
+        );
+      },
+    );
   }
 }

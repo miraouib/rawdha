@@ -26,9 +26,20 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
   final StudentService _studentService = StudentService();
   final SchoolService _schoolService = SchoolService();
   
+  late Stream<List<SchoolLevelModel>> _levelsStream;
+  late Stream<List<StudentModel>> _studentsStream;
+  
   String _searchQuery = '';
   String? _selectedLevelId;
   final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    _levelsStream = _schoolService.getLevels(rawdhaId);
+    _studentsStream = _studentService.getStudents(rawdhaId);
+  }
 
   @override
   void dispose() {
@@ -68,7 +79,7 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
                 ),
                 const SizedBox(height: 12),
                 StreamBuilder<List<SchoolLevelModel>>(
-                  stream: _schoolService.getLevels(ref.watch(currentRawdhaIdProvider) ?? ''),
+                  stream: _levelsStream,
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) return const SizedBox.shrink();
                     final levels = snapshot.data!;
@@ -105,7 +116,7 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
           
           Expanded(
             child: StreamBuilder<List<StudentModel>>(
-        stream: _studentService.getStudents(ref.watch(currentRawdhaIdProvider) ?? ''),
+        stream: _studentsStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

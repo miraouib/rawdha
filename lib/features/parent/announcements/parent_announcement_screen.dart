@@ -11,12 +11,26 @@ import '../../../core/providers/rawdha_provider.dart';
 
 import '../../../core/widgets/parent_footer.dart';
 
-class ParentAnnouncementScreen extends ConsumerWidget {
+class ParentAnnouncementScreen extends ConsumerStatefulWidget {
   const ParentAnnouncementScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
+  ConsumerState<ParentAnnouncementScreen> createState() => _ParentAnnouncementScreenState();
+}
+
+class _ParentAnnouncementScreenState extends ConsumerState<ParentAnnouncementScreen> {
+  late Stream<List<AnnouncementModel>> _announcementsStream;
+  final AnnouncementService _announcementService = AnnouncementService();
+
+  @override
+  void initState() {
+    super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    _announcementsStream = _announcementService.getAnnouncements(rawdhaId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       bottomNavigationBar: const ParentFooter(),
@@ -24,7 +38,7 @@ class ParentAnnouncementScreen extends ConsumerWidget {
         title: Text('announcements.title'.tr()),
       ),
       body: StreamBuilder<List<AnnouncementModel>>(
-        stream: AnnouncementService().getAnnouncements(rawdhaId),
+        stream: _announcementsStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

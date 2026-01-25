@@ -12,23 +12,35 @@ import '../../../core/providers/rawdha_provider.dart';
 
 import '../../../core/widgets/parent_footer.dart';
 
-class StudentModulesScreen extends ConsumerWidget {
+class StudentModulesScreen extends ConsumerStatefulWidget {
   final StudentModel student;
   const StudentModulesScreen({super.key, required this.student});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? student.rawdhaId;
-    final moduleService = ModuleService();
+  ConsumerState<StudentModulesScreen> createState() => _StudentModulesScreenState();
+}
 
+class _StudentModulesScreenState extends ConsumerState<StudentModulesScreen> {
+  late Stream<List<ModuleModel>> _modulesStream;
+  final ModuleService _moduleService = ModuleService();
+
+  @override
+  void initState() {
+    super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? widget.student.rawdhaId;
+    _modulesStream = _moduleService.getModulesForLevel(rawdhaId, widget.student.levelId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       bottomNavigationBar: const ParentFooter(),
       appBar: AppBar(
-        title: Text('${student.firstName} - ${'module.management_title'.tr()}'),
+        title: Text('${widget.student.firstName} - ${'module.management_title'.tr()}'),
       ),
       body: StreamBuilder<List<ModuleModel>>(
-        stream: moduleService.getModulesForLevel(rawdhaId, student.levelId),
+        stream: _modulesStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -45,7 +57,7 @@ class StudentModulesScreen extends ConsumerWidget {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    context.pushNamed('parent_report_absence', extra: student);
+                    context.pushNamed('parent_report_absence', extra: widget.student);
                   },
                   icon: const Icon(Icons.warning_amber_rounded, color: Colors.white),
                   label: Text('absence.report_title'.tr(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -86,7 +98,7 @@ class StudentModulesScreen extends ConsumerWidget {
                   width: double.infinity,
                   child: OutlinedButton.icon(
                     onPressed: () {
-                      context.pushNamed('student_history', extra: student);
+                      context.pushNamed('student_history', extra: widget.student);
                     },
                     icon: const Icon(Icons.history),
                     label: Text('module.view_history'.tr()),

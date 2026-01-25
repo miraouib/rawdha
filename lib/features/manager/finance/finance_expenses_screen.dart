@@ -19,6 +19,14 @@ class FinanceExpensesScreen extends ConsumerStatefulWidget {
 class _FinanceExpensesScreenState extends ConsumerState<FinanceExpensesScreen> {
   DateTime _currentMonth = DateTime.now();
   final FinanceService _financeService = FinanceService();
+  late Stream<List<ExpenseModel>> _expensesStream;
+
+  @override
+  void initState() {
+    super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    _expensesStream = _financeService.getExpensesByMonth(rawdhaId, _currentMonth.month, _currentMonth.year);
+  }
 
   void _changeMonth(int increment) {
     final config = ref.read(schoolConfigProvider).value;
@@ -39,6 +47,8 @@ class _FinanceExpensesScreenState extends ConsumerState<FinanceExpensesScreen> {
 
     setState(() {
       _currentMonth = newMonth;
+      final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+      _expensesStream = _financeService.getExpensesByMonth(rawdhaId, _currentMonth.month, _currentMonth.year);
     });
   }
 
@@ -70,7 +80,7 @@ class _FinanceExpensesScreenState extends ConsumerState<FinanceExpensesScreen> {
           
           Expanded(
             child: StreamBuilder<List<ExpenseModel>>(
-              stream: _financeService.getExpensesByMonth(ref.watch(currentRawdhaIdProvider) ?? '', _currentMonth.month, _currentMonth.year),
+              stream: _expensesStream,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());

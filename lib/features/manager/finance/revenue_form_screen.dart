@@ -33,12 +33,17 @@ class _RevenueFormScreenState extends ConsumerState<RevenueFormScreen> {
   String _paymentType = 'full'; // 'full' (Total) or 'partial' (Partiel)
 
   
+  late Stream<List<ParentModel>> _parentsStream;
+  
   final PaymentService _paymentService = PaymentService();
   final ParentService _parentService = ParentService();
 
   @override
   void initState() {
     super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    _parentsStream = _parentService.getParents(rawdhaId);
+
     if (widget.parentId != null) {
       _selectedParentId = widget.parentId;
       _calculateExpected();
@@ -232,7 +237,7 @@ class _RevenueFormScreenState extends ConsumerState<RevenueFormScreen> {
                       
                       // Parent Selector
                       StreamBuilder<List<ParentModel>>(
-                        stream: _parentService.getParents(ref.watch(currentRawdhaIdProvider) ?? ''),
+                        stream: _parentsStream,
                         builder: (context, snapshot) {
                           if (!snapshot.hasData) return const CircularProgressIndicator();
                           

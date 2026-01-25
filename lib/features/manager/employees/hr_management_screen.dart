@@ -27,6 +27,21 @@ class _HRManagementScreenState extends ConsumerState<HRManagementScreen> {
   final _searchController = TextEditingController();
   final _employeeService = EmployeeService();
   
+  late Stream<List<dynamic>> _hrStatsStream;
+  late Stream<List<EmployeeModel>> _employeesStream;
+
+  @override
+  void initState() {
+    super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    _hrStatsStream = Rx.combineLatest2(
+      _employeeService.getEmployees(rawdhaId),
+      _employeeService.getAllAbsencesStream(rawdhaId),
+      (List<EmployeeModel> employees, List<EmployeeAbsenceModel> absences) => [employees, absences],
+    );
+    _employeesStream = _employeeService.getEmployees(rawdhaId);
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -74,11 +89,7 @@ class _HRManagementScreenState extends ConsumerState<HRManagementScreen> {
           
           // Statistiques rapides
           StreamBuilder<List<dynamic>>(
-            stream: Rx.combineLatest2(
-              _employeeService.getEmployees(ref.watch(currentRawdhaIdProvider) ?? ''),
-              _employeeService.getAllAbsencesStream(ref.watch(currentRawdhaIdProvider) ?? ''),
-              (List<EmployeeModel> employees, List<EmployeeAbsenceModel> absences) => [employees, absences],
-            ),
+            stream: _hrStatsStream,
             builder: (context, snapshot) {
               if (!snapshot.hasData) {
                 return const SizedBox(height: 100, child: Center(child: CircularProgressIndicator()));
@@ -149,7 +160,7 @@ class _HRManagementScreenState extends ConsumerState<HRManagementScreen> {
 
   Widget _buildEmployeeList() {
     return StreamBuilder<List<EmployeeModel>>(
-      stream: _employeeService.getEmployees(ref.watch(currentRawdhaIdProvider) ?? ''),
+      stream: _employeesStream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());

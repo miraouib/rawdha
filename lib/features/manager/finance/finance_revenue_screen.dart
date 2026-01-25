@@ -22,10 +22,20 @@ class _FinanceRevenueScreenState extends ConsumerState<FinanceRevenueScreen> {
   final PaymentService _paymentService = PaymentService();
   final ParentService _parentService = ParentService();
   
+  late Stream<List<PaymentModel>> _paymentsStream;
+  late Stream<List<ParentModel>> _parentsStream;
 
   bool _filterOrange = true;
   bool _filterGreen = true;
   String _revenueSearchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    _paymentsStream = _paymentService.getPaymentsByMonth(rawdhaId, _currentMonth.month, _currentMonth.year);
+    _parentsStream = _parentService.getParents(rawdhaId);
+  }
 
   void _changeMonth(int increment) {
     final config = ref.read(schoolConfigProvider).value;
@@ -52,6 +62,8 @@ class _FinanceRevenueScreenState extends ConsumerState<FinanceRevenueScreen> {
 
     setState(() {
       _currentMonth = newMonth;
+      final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+      _paymentsStream = _paymentService.getPaymentsByMonth(rawdhaId, _currentMonth.month, _currentMonth.year);
     });
   }
 
@@ -124,7 +136,7 @@ class _FinanceRevenueScreenState extends ConsumerState<FinanceRevenueScreen> {
 
           Expanded(
             child: StreamBuilder<List<PaymentModel>>(
-              stream: _paymentService.getPaymentsByMonth(ref.watch(currentRawdhaIdProvider) ?? '', _currentMonth.month, _currentMonth.year),
+              stream: _paymentsStream,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -137,7 +149,7 @@ class _FinanceRevenueScreenState extends ConsumerState<FinanceRevenueScreen> {
                 final allPayments = snapshot.data ?? [];
                 
                 return StreamBuilder<List<ParentModel>>(
-                  stream: _parentService.getParents(ref.watch(currentRawdhaIdProvider) ?? ''),
+                  stream: _parentsStream,
                   builder: (context, parentSnapshot) {
                     if (!parentSnapshot.hasData) {
                       return const Center(child: CircularProgressIndicator());

@@ -12,15 +12,27 @@ import '../../../core/providers/rawdha_provider.dart';
 
 import '../../../core/widgets/parent_footer.dart';
 
-class StudentHistoryScreen extends ConsumerWidget {
+class StudentHistoryScreen extends ConsumerStatefulWidget {
   final StudentModel student;
   const StudentHistoryScreen({super.key, required this.student});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? student.rawdhaId;
-    final moduleService = ModuleService();
+  ConsumerState<StudentHistoryScreen> createState() => _StudentHistoryScreenState();
+}
 
+class _StudentHistoryScreenState extends ConsumerState<StudentHistoryScreen> {
+  late Stream<List<ModuleModel>> _historyStream;
+  final ModuleService _moduleService = ModuleService();
+
+  @override
+  void initState() {
+    super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? widget.student.rawdhaId;
+    _historyStream = _moduleService.getModulesForLevel(rawdhaId, widget.student.levelId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       bottomNavigationBar: const ParentFooter(),
@@ -28,7 +40,7 @@ class StudentHistoryScreen extends ConsumerWidget {
         title: Text('module.history_title'.tr()),
       ),
       body: StreamBuilder<List<ModuleModel>>(
-        stream: moduleService.getModulesForLevel(rawdhaId, student.levelId),
+        stream: _historyStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

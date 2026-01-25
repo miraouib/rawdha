@@ -9,14 +9,26 @@ import '../../../core/providers/rawdha_provider.dart';
 
 import '../../../core/widgets/parent_footer.dart';
 
-class ParentSchoolDetailScreen extends ConsumerWidget {
+class ParentSchoolDetailScreen extends ConsumerStatefulWidget {
   const ParentSchoolDetailScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
-    final schoolService = SchoolService();
+  ConsumerState<ParentSchoolDetailScreen> createState() => _ParentSchoolDetailScreenState();
+}
 
+class _ParentSchoolDetailScreenState extends ConsumerState<ParentSchoolDetailScreen> {
+  late Stream<SchoolConfigModel> _schoolConfigStream;
+  final SchoolService _schoolService = SchoolService();
+
+  @override
+  void initState() {
+    super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    _schoolConfigStream = _schoolService.getSchoolConfig(rawdhaId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       bottomNavigationBar: const ParentFooter(),
@@ -24,7 +36,7 @@ class ParentSchoolDetailScreen extends ConsumerWidget {
         title: Text('parent.view_school_details'.tr()),
       ),
       body: StreamBuilder<SchoolConfigModel>(
-        stream: schoolService.getSchoolConfig(rawdhaId),
+        stream: _schoolConfigStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

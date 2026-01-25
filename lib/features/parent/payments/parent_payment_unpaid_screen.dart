@@ -11,10 +11,27 @@ import '../../../core/providers/rawdha_provider.dart';
 
 import '../../../core/widgets/parent_footer.dart';
 
-class ParentPaymentUnpaidScreen extends ConsumerWidget {
+class ParentPaymentUnpaidScreen extends ConsumerStatefulWidget {
   final ParentModel parent;
 
   const ParentPaymentUnpaidScreen({super.key, required this.parent});
+
+  @override
+  ConsumerState<ParentPaymentUnpaidScreen> createState() => _ParentPaymentUnpaidScreenState();
+}
+
+class _ParentPaymentUnpaidScreenState extends ConsumerState<ParentPaymentUnpaidScreen> {
+  late Stream<List<PaymentModel>> _paymentsStream;
+  late Future<double> _expectedAmountFuture;
+  final PaymentService _paymentService = PaymentService();
+
+  @override
+  void initState() {
+    super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    _paymentsStream = _paymentService.getPaymentsByParent(rawdhaId, widget.parent.id);
+    _expectedAmountFuture = _paymentService.calculateExpectedAmount(rawdhaId, widget.parent.id);
+  }
 
   List<DateTime> _generatePastUnpaidMonths(int startMonth) {
     final now = DateTime.now();
@@ -42,9 +59,7 @@ class ParentPaymentUnpaidScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
-    final paymentService = PaymentService();
+  Widget build(BuildContext context) {
     final config = ref.watch(schoolConfigProvider).value;
     final startMonth = config?.paymentStartMonth ?? 9;
     final allRelevantMonths = _generatePastUnpaidMonths(startMonth);
@@ -56,12 +71,12 @@ class ParentPaymentUnpaidScreen extends ConsumerWidget {
         title: Text('parent.unpaid_months'.tr()),
       ),
       body: FutureBuilder<double>(
-        future: paymentService.calculateExpectedAmount(rawdhaId, parent.id),
+        future: _expectedAmountFuture,
         builder: (context, expectedSnapshot) {
-          final expectedMonthlyAmount = expectedSnapshot.data ?? parent.monthlyFee ?? 0.0;
+          final expectedMonthlyAmount = expectedSnapshot.data ?? widget.parent.monthlyFee ?? 0.0;
 
           return StreamBuilder<List<PaymentModel>>(
-            stream: paymentService.getPaymentsByParent(rawdhaId, parent.id),
+            stream: _paymentsStream,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());

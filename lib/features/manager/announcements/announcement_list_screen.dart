@@ -12,12 +12,33 @@ import '../../../services/school_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
 
-class AnnouncementListScreen extends ConsumerWidget {
+class AnnouncementListScreen extends ConsumerStatefulWidget {
   const AnnouncementListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
+  ConsumerState<AnnouncementListScreen> createState() => _AnnouncementListScreenState();
+}
+
+class _AnnouncementListScreenState extends ConsumerState<AnnouncementListScreen> {
+  late Stream<List<dynamic>> _combinedStream;
+  final AnnouncementService _announcementService = AnnouncementService();
+  final SchoolService _schoolService = SchoolService();
+
+  @override
+  void initState() {
+    super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    _combinedStream = Rx.combineLatest2(
+      _announcementService.getAnnouncements(rawdhaId),
+      _schoolService.getLevels(rawdhaId),
+      (List<AnnouncementModel> announcements, List<SchoolLevelModel> levels) {
+        return [announcements, levels];
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
@@ -35,13 +56,7 @@ class AnnouncementListScreen extends ConsumerWidget {
         backgroundColor: AppTheme.primaryBlue,
       ),
       body: StreamBuilder<List<dynamic>>(
-        stream: Rx.combineLatest2(
-          AnnouncementService().getAnnouncements(rawdhaId),
-          SchoolService().getLevels(rawdhaId),
-          (List<AnnouncementModel> announcements, List<SchoolLevelModel> levels) {
-            return [announcements, levels];
-          },
-        ),
+        stream: _combinedStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

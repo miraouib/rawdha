@@ -421,23 +421,37 @@ class _LanguageButton extends StatelessWidget {
   }
 }
 
-class _LatestAbsenceAlert extends ConsumerWidget {
+class _LatestAbsenceAlert extends ConsumerStatefulWidget {
+  const _LatestAbsenceAlert();
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final absenceService = StudentAbsenceService();
-    final studentService = StudentService();
-    final rawdhaId = ref.watch(currentRawdhaIdProvider);
+  ConsumerState<_LatestAbsenceAlert> createState() => _LatestAbsenceAlertState();
+}
 
-    if (rawdhaId == null) return const SizedBox.shrink();
+class _LatestAbsenceAlertState extends ConsumerState<_LatestAbsenceAlert> {
+  late Stream<List<StudentAbsenceModel>> _absenceStream;
+  final StudentAbsenceService _absenceService = StudentAbsenceService();
+  final StudentService _studentService = StudentService();
 
+  @override
+  void initState() {
+    super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    _absenceStream = _absenceService.getAllRecentAbsences(rawdhaId, limit: 1);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return StreamBuilder<List<StudentAbsenceModel>>(
-      stream: absenceService.getAllRecentAbsences(rawdhaId, limit: 1),
+      stream: _absenceStream,
       builder: (context, snapshot) {
         if (!snapshot.hasData || snapshot.data!.isEmpty) return const SizedBox.shrink();
 
         final absence = snapshot.data!.first;
+        final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
+        
         return FutureBuilder<StudentModel?>(
-          future: studentService.getStudentById(rawdhaId, absence.studentId),
+          future: _studentService.getStudentById(rawdhaId, absence.studentId),
           builder: (context, studentSnapshot) {
             final student = studentSnapshot.data;
             final studentName = student != null ? '${student.firstName} ${student.lastName}' : '...';

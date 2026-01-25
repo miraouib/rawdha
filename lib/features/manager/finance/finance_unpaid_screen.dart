@@ -22,7 +22,19 @@ class _FinanceUnpaidScreenState extends ConsumerState<FinanceUnpaidScreen> {
   DateTime _currentMonth = DateTime.now();
   final PaymentService _paymentService = PaymentService();
   final ParentService _parentService = ParentService();
+  
+  late Stream<List<ParentModel>> _parentsStream;
+  late Stream<List<PaymentModel>> _paymentsStream;
+  
   String _revenueSearchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    _parentsStream = _parentService.getParents(rawdhaId);
+    _paymentsStream = _paymentService.getPaymentsByMonth(rawdhaId, _currentMonth.month, _currentMonth.year);
+  }
 
   void _changeMonth(int increment) {
     final config = ref.read(schoolConfigProvider).value;
@@ -43,6 +55,8 @@ class _FinanceUnpaidScreenState extends ConsumerState<FinanceUnpaidScreen> {
 
     setState(() {
       _currentMonth = newMonth;
+      final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+      _paymentsStream = _paymentService.getPaymentsByMonth(rawdhaId, _currentMonth.month, _currentMonth.year);
     });
   }
 
@@ -87,13 +101,13 @@ class _FinanceUnpaidScreenState extends ConsumerState<FinanceUnpaidScreen> {
           
           Expanded(
             child: StreamBuilder<List<ParentModel>>(
-              stream: _parentService.getParents(ref.watch(currentRawdhaIdProvider) ?? ''),
+              stream: _parentsStream,
               builder: (context, parentSnapshot) {
                 if (!parentSnapshot.hasData) return const Center(child: CircularProgressIndicator());
                 final allParents = parentSnapshot.data!;
-
+ 
                 return StreamBuilder<List<PaymentModel>>(
-                  stream: _paymentService.getPaymentsByMonth(ref.watch(currentRawdhaIdProvider) ?? '', _currentMonth.month, _currentMonth.year),
+                  stream: _paymentsStream,
                   builder: (context, paymentSnapshot) {
                     if (paymentSnapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());

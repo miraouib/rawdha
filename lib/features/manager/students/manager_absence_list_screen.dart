@@ -18,19 +18,26 @@ class ManagerAbsenceListScreen extends ConsumerStatefulWidget {
 }
 
 class _ManagerAbsenceListScreenState extends ConsumerState<ManagerAbsenceListScreen> {
+  late Stream<List<StudentAbsenceModel>> _absencesStream;
+  final StudentAbsenceService _absenceService = StudentAbsenceService();
+  final StudentService _studentService = StudentService();
+
+  @override
+  void initState() {
+    super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    _absencesStream = _absenceService.getAllRecentAbsences(rawdhaId, limit: 50);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
-    final absenceService = StudentAbsenceService();
-    final studentService = StudentService();
-
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
         title: Text('absence.manager_title'.tr()),
       ),
       body: StreamBuilder<List<StudentAbsenceModel>>(
-        stream: absenceService.getAllRecentAbsences(rawdhaId, limit: 50),
+        stream: _absencesStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -55,7 +62,7 @@ class _ManagerAbsenceListScreenState extends ConsumerState<ManagerAbsenceListScr
             itemCount: absences.length,
             itemBuilder: (context, index) {
               final absence = absences[index];
-              return _AbsenceListItem(absence: absence, studentService: studentService);
+              return _AbsenceListItem(absence: absence, studentService: _studentService);
             },
           );
         },

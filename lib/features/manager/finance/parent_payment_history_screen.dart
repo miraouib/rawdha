@@ -9,10 +9,25 @@ import '../../../services/payment_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
 
-class ParentPaymentHistoryScreen extends ConsumerWidget {
+class ParentPaymentHistoryScreen extends ConsumerStatefulWidget {
   final ParentModel parent;
 
   const ParentPaymentHistoryScreen({super.key, required this.parent});
+
+  @override
+  ConsumerState<ParentPaymentHistoryScreen> createState() => _ParentPaymentHistoryScreenState();
+}
+
+class _ParentPaymentHistoryScreenState extends ConsumerState<ParentPaymentHistoryScreen> {
+  late Stream<List<PaymentModel>> _paymentsStream;
+  final PaymentService _paymentService = PaymentService();
+
+  @override
+  void initState() {
+    super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    _paymentsStream = _paymentService.getPaymentsByParent(rawdhaId, widget.parent.id);
+  }
 
   /// Generate list of months from startMonth to current month
   List<DateTime> _generateSchoolYearMonths(int startMonth) {
@@ -44,9 +59,8 @@ class ParentPaymentHistoryScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
-    final paymentService = PaymentService();
     final config = ref.watch(schoolConfigProvider).value;
     final startMonth = config?.paymentStartMonth ?? 9;
     final months = _generateSchoolYearMonths(startMonth);
@@ -54,10 +68,10 @@ class ParentPaymentHistoryScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: Text('parent.view_payments'.tr() + ' - ${parent.firstName} ${parent.lastName}'),
+        title: Text('parent.view_payments'.tr() + ' - ${widget.parent.firstName} ${widget.parent.lastName}'),
       ),
       body: StreamBuilder<List<PaymentModel>>(
-        stream: paymentService.getPaymentsByParent(rawdhaId, parent.id),
+        stream: _paymentsStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -91,7 +105,7 @@ class ParentPaymentHistoryScreen extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '${parent.firstName} ${parent.lastName}',
+                                '${widget.parent.firstName} ${widget.parent.lastName}',
                                 style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -99,15 +113,15 @@ class ParentPaymentHistoryScreen extends ConsumerWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '${'parent.family_code'.tr()}: ${parent.familyCode}',
+                                '${'parent.family_code'.tr()}: ${widget.parent.familyCode}',
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: AppTheme.textGray,
                                 ),
                               ),
-                              if (parent.monthlyFee != null)
+                              if (widget.parent.monthlyFee != null)
                                 Text(
-                                  '${'parent.monthly_fee'.tr()}: ${parent.monthlyFee!.toStringAsFixed(2)} ${'finance.currency'.tr()}',
+                                  '${'parent.monthly_fee'.tr()}: ${widget.parent.monthlyFee!.toStringAsFixed(2)} ${'finance.currency'.tr()}',
                                   style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
@@ -161,7 +175,7 @@ class ParentPaymentHistoryScreen extends ConsumerWidget {
                     return _MonthCard(
                       month: month,
                       payment: payment,
-                      expectedAmount: parent.monthlyFee ?? 0.0,
+                      expectedAmount: widget.parent.monthlyFee ?? 0.0,
                       onTap: () {
                         // TODO: Navigate to payment detail/edit
                         _showPaymentDetails(context, month, payment, rawdhaId);
@@ -217,7 +231,7 @@ class ParentPaymentHistoryScreen extends ConsumerWidget {
               onPressed: () {
                 Navigator.pop(context);
                 context.pushNamed('revenue_add', extra: {
-                  'parentId': parent.id,
+                  'parentId': widget.parent.id,
                   'rawdhaId': rawdhaId,
                 });
               },

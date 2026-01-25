@@ -27,8 +27,21 @@ class ParentListScreen extends ConsumerStatefulWidget {
 
 class _ParentListScreenState extends ConsumerState<ParentListScreen> {
   final ParentService _parentService = ParentService();
+  final SchoolService _schoolService = SchoolService();
+  
+  late Stream<SchoolConfigModel> _configStream;
+  late Stream<List<ParentModel>> _parentsStream;
+
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    _configStream = _schoolService.getSchoolConfig(rawdhaId);
+    _parentsStream = _parentService.getParents(rawdhaId);
+  }
 
   @override
   void dispose() {
@@ -78,12 +91,12 @@ class _ParentListScreenState extends ConsumerState<ParentListScreen> {
 
           Expanded(
             child: StreamBuilder<SchoolConfigModel>(
-              stream: SchoolService().getSchoolConfig(ref.watch(currentRawdhaIdProvider) ?? ''),
+              stream: _configStream,
               builder: (context, configSnapshot) {
                 final schoolCode = configSnapshot.data?.schoolCode ?? '';
                 
                 return StreamBuilder<List<ParentModel>>(
-                  stream: _parentService.getParents(ref.watch(currentRawdhaIdProvider) ?? ''),
+                  stream: _parentsStream,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
@@ -384,18 +397,30 @@ class _CodeBadge extends StatelessWidget {
   }
 }
 
-class _ParentChildrenList extends ConsumerWidget {
+class _ParentChildrenList extends ConsumerStatefulWidget {
   final String parentId;
 
   const _ParentChildrenList({required this.parentId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final studentService = StudentService();
-    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
+  ConsumerState<_ParentChildrenList> createState() => _ParentChildrenListState();
+}
 
+class _ParentChildrenListState extends ConsumerState<_ParentChildrenList> {
+  late Stream<List<StudentModel>> _childrenStream;
+  final StudentService _studentService = StudentService();
+
+  @override
+  void initState() {
+    super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    _childrenStream = _studentService.getStudentsByParentId(rawdhaId, widget.parentId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return StreamBuilder<List<StudentModel>>(
-      stream: studentService.getStudentsByParentId(rawdhaId, parentId),
+      stream: _childrenStream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Padding(
@@ -438,20 +463,30 @@ class _ParentChildrenList extends ConsumerWidget {
   }
 }
 
-class _ParentPaymentHistory extends ConsumerWidget {
+class _ParentPaymentHistory extends ConsumerStatefulWidget {
   final String parentId;
 
   const _ParentPaymentHistory({required this.parentId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final paymentService = PaymentService();
-    final rawdhaId = ref.watch(currentRawdhaIdProvider) ?? '';
-    // Assuming start of school year is September of current/previous year
-    // For simplicity, just show all payments covering the logical school year or just list all sorted by date.
-    
+  ConsumerState<_ParentPaymentHistory> createState() => _ParentPaymentHistoryState();
+}
+
+class _ParentPaymentHistoryState extends ConsumerState<_ParentPaymentHistory> {
+  late Stream<List<PaymentModel>> _paymentsStream;
+  final PaymentService _paymentService = PaymentService();
+
+  @override
+  void initState() {
+    super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    _paymentsStream = _paymentService.getPaymentsByParent(rawdhaId, widget.parentId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return StreamBuilder<List<PaymentModel>>(
-      stream: paymentService.getPaymentsByParent(rawdhaId, parentId), // Ensure this method exists
+      stream: _paymentsStream,
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const SizedBox.shrink();
         final payments = snapshot.data!;
@@ -467,11 +502,6 @@ class _ParentPaymentHistory extends ConsumerWidget {
 
         // Filter payments to hide those before start date
         final filteredPayments = payments.where((p) {
-           // We compare year/month. 
-           // If p.year < startYear, remove.
-           // If p.year == startYear and p.month < startMonth, remove.
-           // Or just compare dates. PaymentModel usually has a full date or month/year.
-           // Let's use the date if available or construct it.
            final pDate = DateTime(p.year, p.month, 1);
            return !pDate.isBefore(startDate);
         }).toList();

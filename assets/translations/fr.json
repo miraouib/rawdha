@@ -32,8 +32,16 @@
             "phone_invalid": "Numéro invalide",
             "device_restricted": "Cet appareil n'est pas autorisé. Contactez l'administrateur.",
             "password_incorrect": "Mot de passe incorrect ❌",
-            "not_found": "Manager non identifié"
+            "not_found": "Manager non identifié",
+            "password_changed": "Mot de passe modifié avec succès ✅"
         },
+        "change_password": "Changer le mot de passe",
+        "security": "Sécurité",
+        "current_password": "Mot de passe actuel",
+        "new_password": "Nouveau mot de passe",
+        "confirm_password": "Confirmer le mot de passe",
+        "passwords_not_match": "Les mots de passe ne correspondent pas",
+        "password_too_short": "Le mot de passe doit faire au moins 6 caractères",
         "device_not_authorized": "Appareil non autorisé",
         "dashboard": "Tableau de bord",
         "welcome": "Bienvenue",

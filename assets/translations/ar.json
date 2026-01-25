@@ -32,8 +32,16 @@
             "phone_invalid": "رقم غير صالح",
             "device_restricted": "هذا الجهاز غير مصرح به. يرجى الاتصال بالمسؤول.",
             "password_incorrect": "كلمة المرور غير صحيحة ❌",
-            "not_found": "المدير غير معروف"
+            "not_found": "المدير غير معروف",
+            "password_changed": "تم تغيير كلمة المرور بنجاح ✅"
         },
+        "change_password": "تغيير كلمة المرور",
+        "security": "الأمان",
+        "current_password": "كلمة المرور الحالية",
+        "new_password": "كلمة المرور الجديدة",
+        "confirm_password": "تأكيد كلمة المرور",
+        "passwords_not_match": "كلمات المرور غير متطابقة",
+        "password_too_short": "يجب أن تتكون كلمة المرور من 6 أحرف على الأقل",
         "device_not_authorized": "الجهاز غير مصرح",
         "dashboard": "لوحة القيادة",
         "welcome": "مرحبا",

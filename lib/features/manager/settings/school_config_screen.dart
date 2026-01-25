@@ -8,7 +8,9 @@ import 'package:go_router/go_router.dart'; // Import
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import '../../../services/storage_service.dart';
-import '../../../services/session_service.dart'; // Import
+import '../../../services/session_service.dart';
+import '../../../core/encryption/encryption_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
@@ -455,53 +457,196 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
                       ),
                     ),
                     
-                    const SizedBox(height: 40),
-                    _buildSectionHeader('school.danger_zone'.tr(), color: Colors.red),
-                    const SizedBox(height: 16),
-                    
-                    // Restore Data Button
-                    Card(
-                      elevation: 0,
-                      color: Colors.blue.shade50,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: Colors.blue.shade200),
-                      ),
-                      child: ListTile(
-                        leading: const Icon(Icons.history, color: Colors.blue),
-                        title: Text('school.restore_data'.tr()),
-                        subtitle: Text('school.restore_data_desc'.tr()),
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                        onTap: () => context.pushNamed('restore_data'),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Reset Data Button
-                    Card(
-                      elevation: 0,
-                      color: Colors.red.shade50,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: Colors.red.shade200),
-                      ),
-                      child: ListTile(
-                        leading: const Icon(Icons.delete_forever, color: Colors.red),
-                        title: Text('school.reset_year'.tr()),
-                        subtitle: Text('school.reset_year_desc'.tr()),
-                        onTap: _showResetConfirmation,
-                      ),
-                    ),
- 
+                       const SizedBox(height: 16),
+                      _buildSectionHeader('manager.security'.tr()),
+                      const SizedBox(height: 16),
                       
+                      Card(
+                        elevation: 0,
+                        color: Colors.blue.shade50,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(color: Colors.blue.shade200),
+                        ),
+                        child: ListTile(
+                          leading: const Icon(Icons.lock_outline, color: Colors.blue),
+                          title: Text('manager.change_password'.tr()),
+                          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                          onTap: _showChangePasswordDialog,
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      _buildSectionHeader('school.danger_zone'.tr(), color: Colors.red),
+                      const SizedBox(height: 16),
+                      
+                      // Restore Data Button
+                      Card(
+                        elevation: 0,
+                        color: Colors.green.shade50,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(color: Colors.green.shade200),
+                        ),
+                        child: ListTile(
+                          leading: const Icon(Icons.history, color: Colors.green),
+                          title: Text('school.restore_data'.tr()),
+                          subtitle: Text('school.restore_data_desc'.tr()),
+                          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                          onTap: () => context.pushNamed('restore_data'),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Reset Data Button
+                      Card(
+                        elevation: 0,
+                        color: Colors.red.shade50,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(color: Colors.red.shade200),
+                        ),
+                        child: ListTile(
+                          leading: const Icon(Icons.delete_forever, color: Colors.red),
+                          title: Text('school.reset_year'.tr()),
+                          subtitle: Text('school.reset_year_desc'.tr()),
+                          onTap: _showResetConfirmation,
+                        ),
+                      ),
+                       
                        const SizedBox(height: 16),
                       _buildSessionCard(),
-                      
                     ],
                   ),
                 ),
               ),
       bottomNavigationBar: const ManagerFooter(),
+    );
+  }
+
+  Future<void> _showChangePasswordDialog() async {
+    final currentPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    bool obscureCurrent = true;
+    bool obscureNew = true;
+    bool obscureConfirm = true;
+
+    await showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text('manager.change_password'.tr()),
+          content: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: currentPasswordController,
+                    obscureText: obscureCurrent,
+                    decoration: InputDecoration(
+                      labelText: 'manager.current_password'.tr(),
+                      suffixIcon: IconButton(
+                        icon: Icon(obscureCurrent ? Icons.visibility : Icons.visibility_off),
+                        onPressed: () => setDialogState(() => obscureCurrent = !obscureCurrent),
+                      ),
+                    ),
+                    validator: (v) => v!.isEmpty ? 'common.required'.tr() : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: newPasswordController,
+                    obscureText: obscureNew,
+                    decoration: InputDecoration(
+                      labelText: 'manager.new_password'.tr(),
+                      suffixIcon: IconButton(
+                        icon: Icon(obscureNew ? Icons.visibility : Icons.visibility_off),
+                        onPressed: () => setDialogState(() => obscureNew = !obscureNew),
+                      ),
+                    ),
+                    validator: (v) {
+                      if (v!.isEmpty) return 'common.required'.tr();
+                      if (v.length < 6) return 'manager.password_too_short'.tr();
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: confirmPasswordController,
+                    obscureText: obscureConfirm,
+                    decoration: InputDecoration(
+                      labelText: 'manager.confirm_password'.tr(),
+                      suffixIcon: IconButton(
+                        icon: Icon(obscureConfirm ? Icons.visibility : Icons.visibility_off),
+                        onPressed: () => setDialogState(() => obscureConfirm = !obscureConfirm),
+                      ),
+                    ),
+                    validator: (v) {
+                      if (v != newPasswordController.text) return 'manager.passwords_not_match'.tr();
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('common.cancel'.tr()),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (!formKey.currentState!.validate()) return;
+                
+                final managerId = ref.read(currentManagerIdProvider);
+                if (managerId == null) return;
+
+                Navigator.pop(context); // Close dialog first
+                setState(() => _isLoading = true);
+
+                try {
+                  final authService = ManagerAuthService();
+                  // 1. Verify current password
+                  final isValid = await authService.verifyPassword(managerId, currentPasswordController.text);
+                  if (!isValid) {
+                    throw Exception('manager.auth.password_incorrect'.tr());
+                  }
+
+                  // 2. Update password in Firestore
+                  await authService.updatePassword(managerId, newPasswordController.text);
+
+                  // 3. Update SharedPreferences if "remember me" was used
+                  final prefs = await SharedPreferences.getInstance();
+                  final rememberMe = prefs.getBool('remember_me') ?? false;
+                  if (rememberMe) {
+                    final encryptedPass = EncryptionService().encryptString(newPasswordController.text);
+                    await prefs.setString('remember_password_enc', encryptedPass);
+                  }
+
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('manager.auth.password_changed'.tr()), backgroundColor: Colors.green),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
+                    );
+                  }
+                } finally {
+                  if (mounted) setState(() => _isLoading = false);
+                }
+              },
+              child: Text('common.save'.tr()),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

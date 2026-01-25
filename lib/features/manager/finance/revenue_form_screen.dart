@@ -253,13 +253,17 @@ class _RevenueFormScreenState extends ConsumerState<RevenueFormScreen> {
                           
                           return DropdownButtonFormField<String>(
                             value: _selectedParentId,
+                            isExpanded: true, // Fix overflow by allowing content to expand/wrap
                             decoration: InputDecoration(
                               labelText: '${"finance.parent".tr()} (${filteredParents.length} ${"finance.results".tr()})',
                               prefixIcon: const Icon(Icons.person),
                             ),
                             items: filteredParents.map((p) => DropdownMenuItem(
                               value: p.id,
-                              child: Text('${p.firstName} ${p.lastName} (${p.familyCode})'),
+                              child: Text(
+                                '${p.firstName} ${p.lastName} (${p.familyCode})',
+                                overflow: TextOverflow.ellipsis, // Truncate long names
+                              ),
                             )).toList(),
                             onChanged: (v) {
                               setState(() {

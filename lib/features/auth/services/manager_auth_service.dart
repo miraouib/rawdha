@@ -92,6 +92,18 @@ class ManagerAuthService {
     }
   }
 
+  /// Mettre à jour le mot de passe du manager
+  Future<void> updatePassword(String managerId, String newPassword) async {
+    try {
+      final passwordHash = _encryption.hashPassword(newPassword);
+      await _firestore.collection('managers').doc(managerId).update({
+        'passwordHash': passwordHash,
+      });
+    } catch (e) {
+      throw Exception('Erreur lors de la mise à jour du mot de passe: $e');
+    }
+  }
+
   /// Créer un nouveau manager (pour l'initialisation)
   Future<ManagerModel> createManager({
     required String username,

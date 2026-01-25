@@ -206,8 +206,6 @@ class _RevenueFormScreenState extends ConsumerState<RevenueFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = _getStatusColor();
-
     return Scaffold(
       appBar: AppBar(title: Text('finance.record_revenue'.tr())),
       body: SingleChildScrollView(

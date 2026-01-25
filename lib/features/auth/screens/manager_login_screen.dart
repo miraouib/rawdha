@@ -7,7 +7,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/encryption/encryption_service.dart';
 import '../services/manager_auth_service.dart';
 import '../../../core/providers/rawdha_provider.dart';
-import '../../manager/dashboard/dashboard_screen.dart';
 import '../../../services/session_service.dart';
 
 class ManagerLoginScreen extends ConsumerStatefulWidget {
@@ -43,7 +42,7 @@ class _ManagerLoginScreenState extends ConsumerState<ManagerLoginScreen> {
           try {
             _passwordController.text = EncryptionService().decryptString(encryptedPassword);
           } catch (e) {
-            print('Error decrypting password: $e');
+            // Error decrypting
           }
         }
       }

@@ -132,7 +132,6 @@ class EmployeeService {
     final totalCount = allEmployees.docs.length;
     
     final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
     
     // Récupérer toutes les absences (car les legacy n'ont pas de rawdhaId)
     final absencesDocs = await _absencesCollection.get();

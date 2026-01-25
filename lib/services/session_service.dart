@@ -1,13 +1,10 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import '../core/encryption/encryption_service.dart'; // Import
-import '../../models/parent_model.dart';
-import '../../models/manager_model.dart'; // Import
+import '../core/encryption/encryption_service.dart';
 import '../../services/parent_service.dart';
-import '../../features/auth/services/manager_auth_service.dart'; // Import
+import '../../features/auth/services/manager_auth_service.dart';
 
 class SessionService {
   static const String _keyFamilyCode = 'parent_family_code';
-  static const String _keyAccessCode = 'parent_access_code';
   static const String _keyRawdhaId = 'parent_rawdha_id';
   static const String _keySchoolCode = 'parent_school_code';
   static const String _keyIsLoggedIn = 'parent_is_logged_in';
@@ -29,7 +26,6 @@ class SessionService {
     await prefs.setString(_keyRawdhaId, rawdhaId);
     await prefs.setString(_keyUserType, 'parent');
     await prefs.setBool(_keyIsLoggedIn, true);
-    print('SessionService: Saved PARENT session');
   }
 
   Future<void> saveManagerSession(String managerId, String rawdhaId) async {
@@ -38,7 +34,6 @@ class SessionService {
     await prefs.setString(_keyRawdhaId, rawdhaId);
     await prefs.setString(_keyUserType, 'manager');
     await prefs.setBool(_keyIsLoggedIn, true);
-    print('SessionService: Saved MANAGER session');
   }
 
   Future<void> clearSession() async {
@@ -47,7 +42,6 @@ class SessionService {
     await prefs.setBool(_keyIsLoggedIn, false);
     // Optional: Clear user type to force selection next time
     await prefs.remove(_keyUserType);
-    print('SessionService: Logged out');
   }
 
   Future<Map<String, String?>> getSavedCredentials() async {
@@ -82,7 +76,6 @@ class SessionService {
            final password = _encryptionService.decryptString(encryptedPass);
            return await _managerAuthService.login(username, password);
          } catch (e) {
-           print('SessionService: Manager auto-login failed: $e');
            return null;
          }
        }

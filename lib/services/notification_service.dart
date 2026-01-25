@@ -8,7 +8,7 @@ class NotificationService {
 
   /// 1️⃣ Request permissions (Android 13+ / iOS)
   Future<void> requestPermissions() async {
-    final settings = await _fcm.requestPermission(
+    await _fcm.requestPermission(
       alert: true,
       badge: true,
       sound: true,
@@ -47,7 +47,7 @@ class NotificationService {
         'lastFcmUpdate': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      debugPrint('❌ Topic subscription failed: $e');
+      // Topic subscription failed
     }
   }
 
@@ -69,7 +69,7 @@ class NotificationService {
         'createdAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      debugPrint('❌ Error saving notification: $e');
+      // Error saving notification
     }
   }
 }

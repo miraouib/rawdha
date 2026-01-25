@@ -42,7 +42,6 @@ class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
     _checkAndInitPub();
     _initNotifications();
     
-    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? widget.parent.rawdhaId;
     _pubStream = FirebaseFirestore.instance.collection('pub').doc('pub').snapshots();
     _studentsStream = _studentService.getStudentsByParentId(widget.parent.rawdhaId, widget.parent.id);
     _announcementsStream = _announcementService.getAnnouncements(widget.parent.rawdhaId);
@@ -74,7 +73,7 @@ class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
         });
       }
     } catch (e) {
-      debugPrint('Error initializing pub: $e');
+      // Error initializing pub
     }
   }
 

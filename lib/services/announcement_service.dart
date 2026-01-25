@@ -81,7 +81,6 @@ class AnnouncementService {
 
   // Get Current Active Announcement (for Parent App) pour une rawdha
   Future<AnnouncementModel?> getCurrentActiveAnnouncement(String rawdhaId) async {
-    final now = DateTime.now();
     final snapshot = await _firestore.collection(_collection)
         .where('rawdhaId', isEqualTo: rawdhaId)
         .get();

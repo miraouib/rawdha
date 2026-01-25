@@ -4,7 +4,6 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_theme.dart';
 import 'manager_login_screen.dart';
 import 'parent_login_screen.dart';
-import '../services/manager_auth_service.dart'; // Import
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/session_service.dart';
@@ -48,7 +47,7 @@ class _RoleSelectionScreenState extends ConsumerState<RoleSelectionScreen> {
         return;
       }
     } catch (e) {
-      debugPrint('Auto-login failed: $e');
+      // Auto-login failed
     }
 
     if (mounted) {

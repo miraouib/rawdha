@@ -39,6 +39,7 @@ class ManagerAuthService {
 
       // 2. Vérifier le mot de passe
       final passwordHash = _encryption.hashPassword(password);
+      
       if (manager.passwordHash != passwordHash) {
         throw Exception('Nom d\'utilisateur ou mot de passe incorrect');
       }
@@ -68,9 +69,34 @@ class ManagerAuthService {
       }
 
       return manager;
-      return manager;
     } catch (e) {
       rethrow;
+    }
+  }
+
+  /// Connexion automatique par ID (pour la persistance de session)
+  Future<ManagerModel?> loginWithId(String managerId) async {
+    try {
+      final doc = await _firestore.collection('managers').doc(managerId).get();
+      if (!doc.exists) return null;
+
+      final manager = ManagerModel.fromFirestore(doc.data()!, doc.id);
+
+      // Vérifier les restrictions d'appareil (optionnel, mais recommandé)
+      final deviceId = await DeviceUtils.getDeviceId();
+      final schoolConfig = await SchoolService().getSchoolConfig(manager.rawdhaId).first;
+      
+      if (schoolConfig.restrictDevices) {
+        if (!manager.authorizedDevices.contains(deviceId)) {
+           // Si l'appareil n'est plus autorisé, on refuse la connexion auto
+           return null; 
+        }
+      }
+
+      return manager;
+    } catch (e) {
+      // En cas d'erreur (réseau, etc.), on retourne null pour forcer la reconnexion manuelle
+      return null;
     }
   }
 

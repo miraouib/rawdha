@@ -1,15 +1,21 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/parent_model.dart';
+import '../../models/manager_model.dart'; // Import
 import '../../services/parent_service.dart';
+import '../../features/auth/services/manager_auth_service.dart'; // Import
 
 class SessionService {
   static const String _keyFamilyCode = 'parent_family_code';
   static const String _keyAccessCode = 'parent_access_code';
   static const String _keyRawdhaId = 'parent_rawdha_id';
-  static const String _keySchoolCode = 'parent_school_code'; // Added
+  static const String _keySchoolCode = 'parent_school_code';
   static const String _keyIsLoggedIn = 'parent_is_logged_in';
+  
+  static const String _keyManagerId = 'manager_id';
+  static const String _keyUserType = 'user_type'; // 'parent' or 'manager'
 
   final ParentService _parentService = ParentService();
+  final ManagerAuthService _managerAuthService = ManagerAuthService();
 
   Future<void> saveSession(String schoolCode, String familyCode, String rawdhaId) async {
     final prefs = await SharedPreferences.getInstance();
@@ -17,45 +23,66 @@ class SessionService {
     final upperSchoolCode = schoolCode.toUpperCase();
     
     await prefs.setString(_keySchoolCode, upperSchoolCode);
-    bool s1 = await prefs.setString(_keyFamilyCode, upperFamilyCode);
-    bool s3 = await prefs.setString(_keyRawdhaId, rawdhaId);
-    bool s4 = await prefs.setBool(_keyIsLoggedIn, true);
-    print('SessionService: Saved session ($upperSchoolCode, $upperFamilyCode, $rawdhaId) -> success: ${s1 && s3 && s4}');
+    await prefs.setString(_keyFamilyCode, upperFamilyCode);
+    await prefs.setString(_keyRawdhaId, rawdhaId);
+    await prefs.setString(_keyUserType, 'parent');
+    await prefs.setBool(_keyIsLoggedIn, true);
+    print('SessionService: Saved PARENT session');
+  }
+
+  Future<void> saveManagerSession(String managerId, String rawdhaId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyManagerId, managerId);
+    await prefs.setString(_keyRawdhaId, rawdhaId);
+    await prefs.setString(_keyUserType, 'manager');
+    await prefs.setBool(_keyIsLoggedIn, true);
+    print('SessionService: Saved MANAGER session');
   }
 
   Future<void> clearSession() async {
     final prefs = await SharedPreferences.getInstance();
-    // Keep familyCode and accessCode to allow pre-filling fields
+    // Keep familyCode/schoolCode/managerId for pre-fill if needed, but definitely clear login flag
     await prefs.setBool(_keyIsLoggedIn, false);
-    print('SessionService: Logged out (credentials kept for pre-fill)');
+    // Optional: Clear user type to force selection next time
+    await prefs.remove(_keyUserType);
+    print('SessionService: Logged out');
   }
 
   Future<Map<String, String?>> getSavedCredentials() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.reload();
-    final familyCode = prefs.getString(_keyFamilyCode);
-    final schoolCode = prefs.getString(_keySchoolCode);
-    print('SessionService: getSavedCredentials found $schoolCode / $familyCode');
     return {
-      'familyCode': familyCode,
-      'schoolCode': schoolCode,
+      'familyCode': prefs.getString(_keyFamilyCode),
+      'schoolCode': prefs.getString(_keySchoolCode),
+      'managerId': prefs.getString(_keyManagerId),
+      'userType': prefs.getString(_keyUserType),
     };
   }
 
-  Future<ParentModel?> tryAutoLogin() async {
+  /// Returns ParentModel or ManagerModel or null
+  Future<Object?> tryAutoLogin() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.reload();
     final isLoggedIn = prefs.getBool(_keyIsLoggedIn) ?? false;
-    print('SessionService: tryAutoLogin isLoggedIn=$isLoggedIn');
     if (!isLoggedIn) return null;
 
-    final familyCode = prefs.getString(_keyFamilyCode);
-    final schoolCode = prefs.getString(_keySchoolCode);
-    print('SessionService: Found credentials: $schoolCode / $familyCode');
-
-    if (familyCode != null && schoolCode != null) {
-      return await _parentService.loginParent(schoolCode, familyCode);
+    final userType = prefs.getString(_keyUserType);
+    
+    if (userType == 'manager') {
+       final managerId = prefs.getString(_keyManagerId);
+       if (managerId != null) {
+         return await _managerAuthService.loginWithId(managerId);
+       }
+    } else {
+       // Default to parent or check explicit 'parent'
+       final familyCode = prefs.getString(_keyFamilyCode);
+       final schoolCode = prefs.getString(_keySchoolCode);
+       
+       if (familyCode != null && schoolCode != null) {
+         return await _parentService.loginParent(schoolCode, familyCode);
+       }
     }
+    
     return null;
   }
 }

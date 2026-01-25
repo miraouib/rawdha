@@ -4,22 +4,87 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_theme.dart';
 import 'manager_login_screen.dart';
 import 'parent_login_screen.dart';
+import '../services/manager_auth_service.dart'; // Import
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../services/session_service.dart';
+import '../../../models/parent_model.dart';
+import '../../../models/manager_model.dart';
+import '../../../core/providers/rawdha_provider.dart';
 
 /// Écran de sélection du rôle (Manager ou Parent)
-/// 
-/// Premier écran de l'application permettant de choisir le type de connexion
-class RoleSelectionScreen extends StatelessWidget {
+class RoleSelectionScreen extends ConsumerStatefulWidget {
   const RoleSelectionScreen({super.key});
 
   @override
+  ConsumerState<RoleSelectionScreen> createState() => _RoleSelectionScreenState();
+}
+
+class _RoleSelectionScreenState extends ConsumerState<RoleSelectionScreen> {
+  final _sessionService = SessionService();
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSession();
+  }
+
+  Future<void> _checkSession() async {
+    try {
+      final user = await _sessionService.tryAutoLogin();
+      
+      if (!mounted) return;
+
+      if (user is ParentModel) {
+        ref.read(currentRawdhaIdProvider.notifier).state = user.rawdhaId;
+        context.goNamed('parent_dashboard', extra: user);
+        return;
+      } else if (user is ManagerModel) {
+        ref.read(currentRawdhaIdProvider.notifier).state = user.rawdhaId;
+        ref.read(currentManagerIdProvider.notifier).state = user.managerId;
+        ref.read(currentManagerUsernameProvider.notifier).state = user.username;
+        context.goNamed('manager_dashboard');
+        return;
+      }
+    } catch (e) {
+      debugPrint('Auto-login failed: $e');
+    }
+
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: AppTheme.backgroundLight,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+               Container(
+                  width: 150,
+                  height: 150,
+                  padding: const EdgeInsets.all(20.0),
+                  child: Image.asset('assets/images/logo.png', fit: BoxFit.contain),
+               ),
+               const SizedBox(height: 24),
+               const CircularProgressIndicator(),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
-          // Sélecteur de langue
           _LanguageSelector(),
         ],
       ),
@@ -30,13 +95,11 @@ class RoleSelectionScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo / Titre
                 Container(
                   width: 220,
                   height: 180,
-                  
                   child: Padding(
-                    padding: const EdgeInsets.all(20.0), // Padding to keep it inside the circle nicely
+                    padding: const EdgeInsets.all(20.0),
                     child: Image.asset(
                       'assets/images/logo.png',
                       fit: BoxFit.contain,
@@ -58,7 +121,6 @@ class RoleSelectionScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 64),
                 
-                // Bouton Manager
                 _RoleCard(
                   title: 'manager.title'.tr(),
                   icon: Icons.admin_panel_settings,
@@ -69,13 +131,11 @@ class RoleSelectionScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 
-                // Bouton Parent
                 _RoleCard(
                   title: 'parent.title'.tr(),
                   icon: Icons.family_restroom,
                   gradient: AppTheme.parentGradient,
                   onTap: () {
-                    // context.pushNamed('parent_login'); // Not yet configured in router?
                     Navigator.push(
                       context,
                       MaterialPageRoute(

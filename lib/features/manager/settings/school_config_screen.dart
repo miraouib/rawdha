@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart'; // Import
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import '../../../services/storage_service.dart';
+import '../../../services/session_service.dart'; // Import
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
@@ -542,10 +543,10 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
     );
 
     if (confirmed == true && mounted) {
+       await SessionService().clearSession(); // Clear persistent session
        ref.read(currentRawdhaIdProvider.notifier).state = null;
        ref.read(currentManagerIdProvider.notifier).state = null;
        ref.read(currentManagerUsernameProvider.notifier).state = null;
-       // Assuming ManagerAuthService might have a logout method, but simple state clear works as shown in dashboard.
        context.go('/'); 
     }
   }

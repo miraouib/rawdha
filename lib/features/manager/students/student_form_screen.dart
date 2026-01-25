@@ -7,6 +7,7 @@ import '../../../models/school_level_model.dart';
 import '../../../services/student_service.dart';
 import '../../../services/parent_service.dart';
 import '../../../services/school_service.dart';
+import '../../../core/helpers/date_helper.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
@@ -74,6 +75,7 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
       initialDate: _birthdate ?? DateTime(2020),
       firstDate: DateTime(2015),
       lastDate: DateTime.now(),
+      locale: const Locale('fr'),
     );
     if (picked != null && picked != _birthdate) {
       setState(() {
@@ -237,7 +239,7 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
                       decoration: InputDecoration(labelText: 'student.birthdate'.tr(), prefixIcon: const Icon(Icons.calendar_today)),
                       child: Text(
                         _birthdate != null 
-                          ? DateFormat('dd/MM/yyyy').format(_birthdate!) 
+                          ? DateHelper.formatDateLong(context, _birthdate!) 
                           : 'student.choose'.tr(),
                       ),
                     ),

@@ -6,8 +6,10 @@ import '../../../models/payment_model.dart';
 import '../../../services/parent_service.dart';
 import '../../../services/payment_service.dart';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
+import '../../../core/helpers/date_helper.dart';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class RevenueFormScreen extends ConsumerStatefulWidget {
   final String? parentId;
@@ -124,7 +126,7 @@ class _RevenueFormScreenState extends ConsumerState<RevenueFormScreen> {
                       ),
                       alignment: Alignment.center,
                       child: Text(
-                        DateFormat('MMM', 'fr').format(DateTime(2022, month)),
+                        DateHelper.formatDateShort(context, DateTime(2022, month)),
                         style: TextStyle(
                           color: isSelected ? Colors.white : Colors.black,
                           fontWeight: FontWeight.bold,
@@ -371,7 +373,7 @@ class _RevenueFormScreenState extends ConsumerState<RevenueFormScreen> {
                           onTap: () => _showMonthPicker(context),
                           child: InputDecorator(
                             decoration: InputDecoration(labelText: 'finance.month_concerned'.tr(), prefixIcon: const Icon(Icons.calendar_month)),
-                            child: Text(DateFormat('MM-yyyy', 'fr').format(_selectedDate), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            child: Text(DateHelper.formatMonthYear(context, _selectedDate), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                           ),
                         ),
                       const SizedBox(height: 16),

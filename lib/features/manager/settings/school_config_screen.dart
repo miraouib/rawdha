@@ -16,6 +16,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
 import '../../../core/helpers/validator_helper.dart';
 import '../../../core/widgets/manager_footer.dart';
+import '../../../core/helpers/date_helper.dart';
 
 class SchoolConfigScreen extends ConsumerStatefulWidget {
   const SchoolConfigScreen({super.key});
@@ -340,7 +341,7 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
                       ),
                       items: List.generate(12, (i) => i + 1).map((m) => DropdownMenuItem(
                         value: m,
-                        child: Text(DateFormat('MMMM', context.locale.languageCode).format(DateTime(2022, m))),
+                        child: Text(DateHelper.formatMonthYear(context, DateTime(2022, m)).split(' ')[0]),
                       )).toList(),
                       onChanged: (v) {
                         if (v != null) setState(() => _selectedStartMonth = v);

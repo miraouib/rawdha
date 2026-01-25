@@ -6,6 +6,7 @@ import '../../../services/employee_service.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
+import '../../../core/helpers/date_helper.dart';
 
 /// Dialog pour ajouter une absence
 class AddAbsenceDialog extends ConsumerStatefulWidget {
@@ -137,13 +138,14 @@ class _AddAbsenceDialogState extends ConsumerState<AddAbsenceDialog> {
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.calendar_today),
                 title: Text('absence.start_date'.tr()),
-                subtitle: Text(DateFormat('dd/MM/yyyy').format(_startDate)),
+                subtitle: Text(DateHelper.formatDateLong(context, _startDate)),
                 onTap: () async {
                   final date = await showDatePicker(
                     context: context,
                     initialDate: _startDate,
                     firstDate: DateTime(2020),
                     lastDate: DateTime.now().add(const Duration(days: 365)),
+                    locale: const Locale('fr'),
                   );
                   if (date != null) {
                     setState(() => _startDate = date);
@@ -158,7 +160,7 @@ class _AddAbsenceDialogState extends ConsumerState<AddAbsenceDialog> {
                 title: Text('absence.end_date'.tr()),
                 subtitle: Text(
                   _endDate != null
-                      ? DateFormat('dd/MM/yyyy').format(_endDate!)
+                      ? DateHelper.formatDateLong(context, _endDate!)
                       : 'absence.ongoing'.tr(),
                 ),
                 trailing: _endDate != null
@@ -173,6 +175,7 @@ class _AddAbsenceDialogState extends ConsumerState<AddAbsenceDialog> {
                     initialDate: _endDate ?? _startDate.add(const Duration(days: 1)),
                     firstDate: _startDate,
                     lastDate: DateTime.now().add(const Duration(days: 365)),
+                    locale: const Locale('fr'),
                   );
                   if (date != null) {
                     setState(() => _endDate = date);

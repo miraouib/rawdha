@@ -12,6 +12,7 @@ import '../../../models/payment_model.dart';
 import '../../../services/payment_service.dart';
 import '../../../services/school_service.dart'; // Import
 import '../../../models/school_config_model.dart'; // Import
+import '../../../core/helpers/date_helper.dart';
 import 'parent_form_screen.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -588,7 +589,7 @@ class _ParentPaymentHistoryState extends ConsumerState<_ParentPaymentHistory> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(DateFormat('MMM', 'fr').format(p.date).toUpperCase(), style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: color)),
+                        Text(DateHelper.formatDateShort(context, p.date).split(' ').last.toUpperCase(), style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: color)),
                         Text('${p.amount.toInt()}', style: const TextStyle(fontSize: 10)),
                       ],
                     ),

@@ -10,6 +10,7 @@ import '../../../services/parent_service.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
+import '../../../core/helpers/date_helper.dart';
 
 class FinanceUnpaidScreen extends ConsumerStatefulWidget {
   const FinanceUnpaidScreen({super.key});
@@ -78,7 +79,7 @@ class _FinanceUnpaidScreenState extends ConsumerState<FinanceUnpaidScreen> {
               children: [
                 IconButton(onPressed: () => _changeMonth(-1), icon: const Icon(Icons.chevron_left)),
                 Text(
-                  DateFormat('MMMM yyyy', 'fr').format(_currentMonth).toUpperCase(),
+                  DateHelper.formatMonthYear(context, _currentMonth).toUpperCase(),
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 IconButton(onPressed: () => _changeMonth(1), icon: const Icon(Icons.chevron_right)),

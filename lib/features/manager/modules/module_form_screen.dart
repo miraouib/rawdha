@@ -4,6 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../models/module_model.dart';
 import '../../../models/school_level_model.dart';
 import '../../../services/module_service.dart';
+import '../../../core/helpers/date_helper.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
@@ -60,9 +61,10 @@ class _ModuleFormScreenState extends ConsumerState<ModuleFormScreen> {
   Future<void> _pickDateRange() async {
     final picked = await showDateRangePicker(
       context: context,
-      firstDate: DateTime(2023),
+      firstDate: DateTime(2020),
       lastDate: DateTime(2030),
       initialDateRange: _selectedDateRange,
+      locale: const Locale('fr'),
     );
 
     if (picked != null) {
@@ -180,8 +182,8 @@ class _ModuleFormScreenState extends ConsumerState<ModuleFormScreen> {
                       subtitle: Text(_selectedDateRange == null
                           ? 'module.select_dates'.tr()
                           : 'module.period_format'.tr(args: [
-                              DateFormat('dd/MM/yyyy').format(_selectedDateRange!.start),
-                              DateFormat('dd/MM/yyyy').format(_selectedDateRange!.end),
+                              DateHelper.formatDateLong(context, _selectedDateRange!.start),
+                              DateHelper.formatDateLong(context, _selectedDateRange!.end),
                               ( _selectedDateRange!.end.difference(_selectedDateRange!.start).inDays + 1).toString()
                             ])),
                       trailing: const Icon(Icons.calendar_today),

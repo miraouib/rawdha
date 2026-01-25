@@ -6,6 +6,7 @@ import '../../../models/student_model.dart';
 import '../../../models/module_model.dart';
 import '../../../services/module_service.dart';
 import '../widgets/module_card.dart';
+import '../../../core/helpers/date_helper.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
@@ -166,7 +167,7 @@ class _StudentModulesScreenState extends ConsumerState<StudentModulesScreen> {
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(
-          '${DateFormat('dd/MM').format(module.startDate)} - ${DateFormat('dd/MM').format(module.endDate)}',
+          '${DateHelper.formatDateShort(context, module.startDate)} - ${DateHelper.formatDateShort(context, module.endDate)}',
           style: const TextStyle(fontSize: 12, color: AppTheme.textGray),
         ),
         trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: AppTheme.textLight),

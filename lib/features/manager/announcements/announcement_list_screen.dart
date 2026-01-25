@@ -11,6 +11,7 @@ import '../../../services/school_service.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
+import '../../../core/helpers/date_helper.dart';
 
 class AnnouncementListScreen extends ConsumerStatefulWidget {
   const AnnouncementListScreen({super.key});
@@ -206,7 +207,7 @@ class _AnnouncementListScreenState extends ConsumerState<AnnouncementListScreen>
                           const Icon(Icons.date_range, size: 16, color: Colors.grey),
                           const SizedBox(width: 4),
                           Text(
-                            '${DateFormat('dd/MM', 'fr').format(announcement.startDate)} - ${DateFormat('dd/MM/yyyy', 'fr').format(announcement.endDate)}',
+                            '${DateHelper.formatDateShort(context, announcement.startDate)} - ${DateHelper.formatDateLong(context, announcement.endDate)}',
                             style: const TextStyle(color: Colors.grey, fontSize: 12),
                           ),
                           const Spacer(),

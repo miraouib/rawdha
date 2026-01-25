@@ -6,6 +6,7 @@ import '../../../services/finance_service.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
+import '../../../core/helpers/date_helper.dart';
 
 class ExpenseFormScreen extends ConsumerStatefulWidget {
   const ExpenseFormScreen({super.key});
@@ -145,7 +146,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                         onTap: () => _selectDate(context),
                         child: InputDecorator(
                           decoration: InputDecoration(labelText: 'finance.payment_date'.tr(), prefixIcon: const Icon(Icons.calendar_today)),
-                          child: Text(DateFormat('dd/MM/yyyy', 'fr').format(_selectedDate)),
+                          child: Text(DateHelper.formatDateLong(context, _selectedDate)),
                         ),
                       ),
                       const SizedBox(height: 16),

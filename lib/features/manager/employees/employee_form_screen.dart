@@ -8,6 +8,7 @@ import '../../../services/employee_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
 import '../../../core/helpers/validator_helper.dart';
+import '../../../core/helpers/date_helper.dart';
 
 /// Formulaire d'ajout/modification d'employé
 class EmployeeFormScreen extends ConsumerStatefulWidget {
@@ -225,7 +226,7 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
               title: Text('employee.birthdate'.tr()),
               subtitle: Text(
                 _birthdate != null
-                    ? DateFormat('dd/MM/yyyy').format(_birthdate!)
+                    ? DateHelper.formatDateLong(context, _birthdate!)
                     : 'common.not_defined'.tr(),
               ),
               trailing: const Icon(Icons.calendar_today),
@@ -235,6 +236,7 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
                   initialDate: _birthdate ?? DateTime(1990),
                   firstDate: DateTime(1950),
                   lastDate: DateTime.now(),
+                  locale: const Locale('fr'),
                 );
                 if (date != null) {
                   setState(() => _birthdate = date);
@@ -247,7 +249,7 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
             ListTile(
               leading: const Icon(Icons.work_history),
               title: Text('employee.hire_date'.tr()),
-              subtitle: Text(DateFormat('dd/MM/yyyy').format(_hireDate)),
+              subtitle: Text(DateHelper.formatDateLong(context, _hireDate)),
               trailing: const Icon(Icons.calendar_today),
               onTap: () async {
                 final date = await showDatePicker(
@@ -255,6 +257,7 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
                   initialDate: _hireDate,
                   firstDate: DateTime(2000),
                   lastDate: DateTime.now(),
+                  locale: const Locale('fr'),
                 );
                 if (date != null) {
                   setState(() => _hireDate = date);

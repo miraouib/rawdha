@@ -6,6 +6,7 @@ import '../../../models/payment_model.dart';
 import '../../../models/parent_model.dart';
 import '../../../services/payment_service.dart';
 import '../../../services/parent_service.dart';
+import '../../../core/helpers/date_helper.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
@@ -85,7 +86,7 @@ class _FinanceRevenueScreenState extends ConsumerState<FinanceRevenueScreen> {
               children: [
                 IconButton(onPressed: () => _changeMonth(-1), icon: const Icon(Icons.chevron_left)),
                 Text(
-                  DateFormat('MMMM yyyy', 'fr').format(_currentMonth).toUpperCase(),
+                  DateHelper.formatMonthYear(context, _currentMonth).toUpperCase(),
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 IconButton(onPressed: () => _changeMonth(1), icon: const Icon(Icons.chevron_right)),

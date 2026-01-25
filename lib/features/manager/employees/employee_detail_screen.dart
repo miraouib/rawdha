@@ -8,6 +8,7 @@ import '../../../models/employee_absence_model.dart';
 import '../../../services/employee_service.dart';
 import 'employee_form_screen.dart';
 import 'add_absence_dialog.dart';
+import '../../../core/helpers/date_helper.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
@@ -121,13 +122,13 @@ class _EmployeeDetailScreenState extends ConsumerState<EmployeeDetailScreen> {
                 icon: Icons.cake,
                 label: 'employee.birthdate'.tr(),
                 value: widget.employee.birthdate != null
-                    ? DateFormat('dd/MM/yyyy').format(widget.employee.birthdate!)
+                    ? DateHelper.formatDateLong(context, widget.employee.birthdate!)
                     : 'common.not_defined'.tr(),
               ),
               _InfoTile(
                 icon: Icons.work_history,
                 label: 'employee.hire_date'.tr(),
-                value: DateFormat('dd/MM/yyyy').format(widget.employee.hireDate),
+                value: DateHelper.formatDateLong(context, widget.employee.hireDate),
               ),
               _InfoTile(
                 icon: Icons.attach_money,
@@ -383,8 +384,8 @@ class _AbsenceTile extends ConsumerWidget {
       ),
       title: Text(absence.reason.isEmpty ? 'absence.absence'.tr() : absence.reason),
       subtitle: Text(
-        '${DateFormat('dd/MM/yyyy').format(absence.startDate)} - '
-        '${isOngoing ? 'absence.ongoing'.tr() : DateFormat('dd/MM/yyyy').format(absence.endDate!)} '
+        '${DateHelper.formatDateLong(context, absence.startDate)} - '
+        '${isOngoing ? 'absence.ongoing'.tr() : DateHelper.formatDateLong(context, absence.endDate!)} '
         '(${plural('absence.days_count', absence.durationInDays)})',
       ),
       trailing: isCurrent

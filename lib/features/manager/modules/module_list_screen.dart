@@ -7,6 +7,7 @@ import '../../../models/module_model.dart';
 import '../../../services/module_service.dart';
 import '../../../services/school_service.dart';
 import 'module_form_screen.dart';
+import '../../../core/helpers/date_helper.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
@@ -179,8 +180,8 @@ class _ModuleListScreenState extends ConsumerState<ModuleListScreen> with Single
                             ),
                             subtitle: Text(
                               'module.period_format'.tr(args: [
-                                DateFormat('dd/MM').format(module.startDate),
-                                DateFormat('dd/MM').format(module.endDate),
+                                DateHelper.formatDateShort(context, module.startDate),
+                                DateHelper.formatDateShort(context, module.endDate),
                                 _calculateWorkingDays(module.startDate, module.endDate).toString()
                               ]),
                               style: const TextStyle(color: Colors.grey),
@@ -367,7 +368,7 @@ class _ModuleLevelViewState extends ConsumerState<_ModuleLevelView> {
                     const Icon(Icons.date_range, size: 16, color: AppTheme.textGray),
                     const SizedBox(width: 4),
                     Text(
-                      '${DateFormat('dd/MM').format(module.startDate)} - ${DateFormat('dd/MM').format(module.endDate)}',
+                      '${DateHelper.formatDateShort(context, module.startDate)} - ${DateHelper.formatDateShort(context, module.endDate)}',
                       style: const TextStyle(color: AppTheme.textGray),
                     ),
                   ],

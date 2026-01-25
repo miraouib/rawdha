@@ -7,6 +7,7 @@ import '../../../core/helpers/level_helper.dart';
 import '../../../models/student_model.dart';
 import '../../../models/parent_model.dart';
 import '../../../services/parent_service.dart';
+import '../../../core/helpers/date_helper.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
@@ -63,7 +64,7 @@ class StudentDetailScreen extends ConsumerWidget {
             _buildSectionTitle('student.personal_info'.tr()),
             _buildInfoTile(Icons.wc, 'student.gender'.tr(), student.gender == 'boy' ? 'student.boy'.tr() : 'student.girl'.tr()),
            if (student.birthdate != null)
-              _buildInfoTile(Icons.cake, 'student.birthdate'.tr(), DateFormat('dd/MM/yyyy').format(student.birthdate!)),
+              _buildInfoTile(Icons.cake, 'student.birthdate'.tr(), DateHelper.formatDateLong(context, student.birthdate!)),
             
             const SizedBox(height: 24),
             _buildSectionTitle('student.responsible'.tr()),

@@ -8,6 +8,7 @@ import '../../../services/payment_service.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
+import '../../../core/helpers/date_helper.dart';
 
 class ParentPaymentHistoryScreen extends ConsumerStatefulWidget {
   final ParentModel parent;
@@ -202,7 +203,7 @@ class _ParentPaymentHistoryScreenState extends ConsumerState<ParentPaymentHistor
   }
 
   void _showPaymentDetails(BuildContext context, DateTime month, PaymentModel? payment, String rawdhaId) {
-    final monthName = DateFormat('MMMM yyyy', 'fr').format(month);
+    final monthName = DateHelper.formatMonthYear(context, month);
     
     showDialog(
       context: context,
@@ -214,7 +215,7 @@ class _ParentPaymentHistoryScreenState extends ConsumerState<ParentPaymentHistor
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('${'parent.amount_paid'.tr()}: ${payment.amount.toStringAsFixed(2)} ${'finance.currency'.tr()}'),
-                  Text('${'parent.payment_date'.tr()}: ${DateFormat('dd/MM/yyyy', 'fr').format(payment.date)}'),
+                  Text('${'parent.payment_date'.tr()}: ${DateHelper.formatDateLong(context, payment.date)}'),
                   Text('${'parent.status'.tr()}: ${_getStatusText(payment.status)}'),
                   if (payment.note != null && payment.note!.isNotEmpty)
                     Text('${'parent.note'.tr()}: ${payment.note}'),
@@ -283,7 +284,7 @@ class _MonthCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _getStatusColor();
-    final monthName = DateFormat('MMM', 'fr').format(month).toUpperCase();
+    final monthName = DateHelper.formatDateShort(context, month).toUpperCase();
     final year = month.year.toString().substring(2);
 
     return InkWell(

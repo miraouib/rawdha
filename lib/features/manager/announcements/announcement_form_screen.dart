@@ -8,6 +8,7 @@ import '../../../services/school_service.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
+import '../../../core/helpers/date_helper.dart';
 
 class AnnouncementFormScreen extends ConsumerStatefulWidget {
   const AnnouncementFormScreen({super.key});
@@ -53,6 +54,7 @@ class _AnnouncementFormScreenState extends ConsumerState<AnnouncementFormScreen>
       firstDate: today,
       lastDate: today.add(const Duration(days: 365)),
       initialDateRange: _selectedDateRange,
+      locale: const Locale('fr'),
       builder: (context, child) {
         return Theme(
           data: ThemeData.light().copyWith(
@@ -234,7 +236,7 @@ class _AnnouncementFormScreenState extends ConsumerState<AnnouncementFormScreen>
                       Text(
                         _selectedDateRange == null
                             ? 'announcements.field_dates'.tr()
-                            : '${DateFormat('dd/MM', 'fr').format(_selectedDateRange!.start)} - ${DateFormat('dd/MM', 'fr').format(_selectedDateRange!.end)}',
+                            : '${DateHelper.formatDateShort(context, _selectedDateRange!.start)} - ${DateHelper.formatDateShort(context, _selectedDateRange!.end)}',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: _selectedDateRange == null ? FontWeight.normal : FontWeight.bold,

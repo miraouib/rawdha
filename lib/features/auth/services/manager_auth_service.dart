@@ -153,6 +153,18 @@ class ManagerAuthService {
       throw Exception('Erreur lors de la révocation de l\'appareil: $e');
     }
   }
+
+  /// Restreindre uniquement à l'appareil actuel
+  Future<void> restrictToCurrentDevice(String managerId) async {
+    try {
+      final deviceId = await DeviceUtils.getDeviceId();
+      await _firestore.collection('managers').doc(managerId).update({
+        'authorizedDevices': [deviceId],
+      });
+    } catch (e) {
+      throw Exception('Erreur lors de la restriction de l\'appareil: $e');
+    }
+  }
   /// Enregistrer une nouvelle Rawdha et son admin
   Future<void> registerRawdha({
     required String rawdhaName,

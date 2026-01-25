@@ -238,6 +238,15 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
       
       await _schoolService.saveSchoolConfig(newConfig, rawdhaId);
       
+      // If restriction is enabled, ensure only the current device is authorized for this manager
+      if (_restrictDevices) {
+        final managerId = ref.read(currentManagerIdProvider);
+        if (managerId != null) {
+          final managerAuth = ManagerAuthService();
+          await managerAuth.restrictToCurrentDevice(managerId);
+        }
+      }
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

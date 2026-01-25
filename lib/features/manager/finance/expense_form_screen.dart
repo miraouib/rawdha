@@ -106,6 +106,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                       // Type Selector
                       DropdownButtonFormField<ExpenseType>(
                         value: _selectedType,
+                        isExpanded: true,
                         decoration: InputDecoration(labelText: 'common.filter'.tr(), prefixIcon: const Icon(Icons.category)),
                         items: ExpenseType.values.map((type) {
                           return DropdownMenuItem(

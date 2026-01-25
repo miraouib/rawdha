@@ -31,6 +31,7 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
   DateTime? _birthdate;
   
   bool _isLoading = false;
+  String _parentSearchQuery = '';
   
   final StudentService _studentService = StudentService();
   final ParentService _parentService = ParentService();
@@ -282,10 +283,23 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
       stream: _parentService.getParents(rawdhaId),
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const CircularProgressIndicator();
-        final parents = snapshot.data!;
+        final allParents = snapshot.data!;
         
-        // Improve with Autocomplete or Searchable Dropdown for large lists
-        // For now simple dropdown
+        // Filter based on search query
+        final filteredParents = allParents.where((p) {
+          // Always keep the selected parent in the list
+          if (_selectedParentId != null && p.id == _selectedParentId) return true;
+
+          if (_parentSearchQuery.isEmpty) return true;
+          final fullName = '${p.firstName} ${p.lastName}'.toLowerCase();
+          return fullName.contains(_parentSearchQuery) || 
+                 p.familyCode.toLowerCase().contains(_parentSearchQuery);
+        }).toList();
+
+        filteredParents.sort((a, b) => 
+          '${a.firstName} ${a.lastName}'.compareTo('${b.firstName} ${b.lastName}')
+        );
+
         return Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -294,12 +308,32 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
               children: [
                 Text('student.parent_resp'.tr(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 16),
+                
+                // Search Field
+                TextField(
+                  decoration: InputDecoration(
+                    labelText: 'finance.search_parent'.tr(),
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  onChanged: (value) {
+                    setState(() => _parentSearchQuery = value.toLowerCase());
+                  },
+                ),
+                const SizedBox(height: 16),
+
                 DropdownButtonFormField<String>(
                   value: _selectedParentId,
-                  decoration: InputDecoration(labelText: 'student.select_parent_hint'.tr(), prefixIcon: const Icon(Icons.family_restroom)),
-                  items: parents.map((p) => DropdownMenuItem(
+                  decoration: InputDecoration(
+                    labelText: '${"student.select_parent_hint".tr()} (${filteredParents.length} ${"finance.results".tr()})', 
+                    prefixIcon: const Icon(Icons.family_restroom)
+                  ),
+                  items: filteredParents.map((p) => DropdownMenuItem(
                     value: p.id, 
-                    child: Text('${p.firstName} ${p.lastName} (${p.phone})', overflow: TextOverflow.ellipsis),
+                    child: Text(
+                      '${p.firstName} ${p.lastName} (${p.phone})', 
+                      overflow: TextOverflow.ellipsis
+                    ),
                   )).toList(),
                   onChanged: (v) => setState(() => _selectedParentId = v),
                   validator: (v) => v == null ? 'common.required'.tr() : null,

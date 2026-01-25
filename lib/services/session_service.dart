@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import '../core/encryption/encryption_service.dart'; // Import
 import '../../models/parent_model.dart';
 import '../../models/manager_model.dart'; // Import
 import '../../services/parent_service.dart';
@@ -16,6 +17,7 @@ class SessionService {
 
   final ParentService _parentService = ParentService();
   final ManagerAuthService _managerAuthService = ManagerAuthService();
+  final EncryptionService _encryptionService = EncryptionService();
 
   Future<void> saveSession(String schoolCode, String familyCode, String rawdhaId) async {
     final prefs = await SharedPreferences.getInstance();
@@ -60,21 +62,33 @@ class SessionService {
   }
 
   /// Returns ParentModel or ManagerModel or null
+  /// For Manager, it performs FULL re-authentication using stored credentials
   Future<Object?> tryAutoLogin() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.reload();
+    
     final isLoggedIn = prefs.getBool(_keyIsLoggedIn) ?? false;
     if (!isLoggedIn) return null;
 
     final userType = prefs.getString(_keyUserType);
     
     if (userType == 'manager') {
-       final managerId = prefs.getString(_keyManagerId);
-       if (managerId != null) {
-         return await _managerAuthService.loginWithId(managerId);
+       // Perform full re-authentication for Managers
+       final username = prefs.getString('remember_username');
+       final encryptedPass = prefs.getString('remember_password_enc');
+
+       if (username != null && encryptedPass != null) {
+         try {
+           final password = _encryptionService.decryptString(encryptedPass);
+           return await _managerAuthService.login(username, password);
+         } catch (e) {
+           print('SessionService: Manager auto-login failed: $e');
+           return null;
+         }
        }
+       return null; 
     } else {
-       // Default to parent or check explicit 'parent'
+       // Parent login remains simpler (uses stored school/family codes)
        final familyCode = prefs.getString(_keyFamilyCode);
        final schoolCode = prefs.getString(_keySchoolCode);
        

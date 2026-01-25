@@ -19,13 +19,16 @@ class SchoolManagementScreen extends ConsumerStatefulWidget {
 
 class _SchoolManagementScreenState extends ConsumerState<SchoolManagementScreen> {
   final SchoolService _schoolService = SchoolService();
+  late Stream<List<SchoolLevelModel>> _levelsStream;
 
   @override
   void initState() {
     super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    _levelsStream = _schoolService.getLevels(rawdhaId);
+    
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final rawdhaId = ref.read(currentRawdhaIdProvider);
-      if (rawdhaId != null) {
+      if (rawdhaId.isNotEmpty) {
         _schoolService.initializeDefaultLevels(rawdhaId);
       }
     });
@@ -39,7 +42,7 @@ class _SchoolManagementScreenState extends ConsumerState<SchoolManagementScreen>
         title: Text('school.levels_management'.tr()),
       ),
       body: StreamBuilder<List<SchoolLevelModel>>(
-        stream: _schoolService.getLevels(ref.watch(currentRawdhaIdProvider) ?? ''),
+        stream: _levelsStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

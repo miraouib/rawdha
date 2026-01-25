@@ -23,8 +23,16 @@ class LevelDetailScreen extends ConsumerStatefulWidget {
 
 class _LevelDetailScreenState extends ConsumerState<LevelDetailScreen> {
   final StudentService _studentService = StudentService();
+  late Stream<List<StudentModel>> _studentsStream;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    _studentsStream = _studentService.getStudentsByLevel(rawdhaId, widget.level.id);
+  }
 
   @override
   void dispose() {
@@ -70,7 +78,7 @@ class _LevelDetailScreenState extends ConsumerState<LevelDetailScreen> {
           ),
           Expanded(
             child: StreamBuilder<List<StudentModel>>(
-              stream: _studentService.getStudentsByLevel(ref.watch(currentRawdhaIdProvider) ?? '', widget.level.id),
+              stream: _studentsStream,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());

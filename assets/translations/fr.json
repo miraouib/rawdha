@@ -463,6 +463,8 @@
         "required": "Champ requis",
         "invalid": "Valeur invalide",
         "code_copied": "Code copié !",
+        "format_invalid_8_digits": "Format invalide (8 chiffres requis)",
+        "format_invalid_8_digits_only": "8 chiffres uniquement",
         "unknown": "Inconnu"
     }
 }

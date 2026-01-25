@@ -184,6 +184,7 @@ class _ParentFormScreenState extends ConsumerState<ParentFormScreen> {
               TextFormField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
+                inputFormatters: ValidatorHelper.phoneFormatters(),
                 decoration: InputDecoration(
                   labelText: 'parent.phone'.tr(),
                   prefixIcon: const Icon(Icons.phone),
@@ -217,6 +218,7 @@ class _ParentFormScreenState extends ConsumerState<ParentFormScreen> {
               TextFormField(
                 controller: _spousePhoneController,
                 keyboardType: TextInputType.phone,
+                inputFormatters: ValidatorHelper.phoneFormatters(),
                 decoration: InputDecoration(
                   labelText: 'parent.spouse_phone'.tr(),
                   prefixIcon: const Icon(Icons.phone),

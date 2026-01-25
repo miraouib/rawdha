@@ -33,7 +33,7 @@ class _RevenueFormScreenState extends ConsumerState<RevenueFormScreen> {
   String _paymentType = 'full'; // 'full' (Total) or 'partial' (Partiel)
 
   
-  late Stream<List<ParentModel>> _parentsStream;
+  late Future<List<ParentModel>> _parentsFuture;
   
   final PaymentService _paymentService = PaymentService();
   final ParentService _parentService = ParentService();
@@ -42,7 +42,7 @@ class _RevenueFormScreenState extends ConsumerState<RevenueFormScreen> {
   void initState() {
     super.initState();
     final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
-    _parentsStream = _parentService.getParents(rawdhaId);
+    _parentsFuture = _parentService.getParents(rawdhaId);
 
     if (widget.parentId != null) {
       _selectedParentId = widget.parentId;
@@ -234,12 +234,14 @@ class _RevenueFormScreenState extends ConsumerState<RevenueFormScreen> {
                       const SizedBox(height: 16),
                       
                       // Parent Selector
-                      StreamBuilder<List<ParentModel>>(
-                        stream: _parentsStream,
+                      FutureBuilder<List<ParentModel>>(
+                        future: _parentsFuture,
                         builder: (context, snapshot) {
-                          if (!snapshot.hasData) return const CircularProgressIndicator();
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const CircularProgressIndicator();
+                          }
                           
-                          final allParents = snapshot.data!;
+                          final allParents = snapshot.data ?? [];
                           final filteredParents = allParents.where((p) {
                             // Important: Always include the selected parent in the list to avoid Dropdown error
                             if (_selectedParentId != null && p.id == _selectedParentId) return true;

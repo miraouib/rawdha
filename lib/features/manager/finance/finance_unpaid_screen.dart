@@ -23,7 +23,7 @@ class _FinanceUnpaidScreenState extends ConsumerState<FinanceUnpaidScreen> {
   final PaymentService _paymentService = PaymentService();
   final ParentService _parentService = ParentService();
   
-  late Stream<List<ParentModel>> _parentsStream;
+  late Future<List<ParentModel>> _parentsFuture;
   late Stream<List<PaymentModel>> _paymentsStream;
   
   String _revenueSearchQuery = '';
@@ -32,7 +32,7 @@ class _FinanceUnpaidScreenState extends ConsumerState<FinanceUnpaidScreen> {
   void initState() {
     super.initState();
     final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
-    _parentsStream = _parentService.getParents(rawdhaId);
+    _parentsFuture = _parentService.getParents(rawdhaId);
     _paymentsStream = _paymentService.getPaymentsByMonth(rawdhaId, _currentMonth.month, _currentMonth.year);
   }
 
@@ -100,11 +100,14 @@ class _FinanceUnpaidScreenState extends ConsumerState<FinanceUnpaidScreen> {
           ),
           
           Expanded(
-            child: StreamBuilder<List<ParentModel>>(
-              stream: _parentsStream,
+            child: FutureBuilder<List<ParentModel>>(
+              future: _parentsFuture,
               builder: (context, parentSnapshot) {
-                if (!parentSnapshot.hasData) return const Center(child: CircularProgressIndicator());
-                final allParents = parentSnapshot.data!;
+                if (parentSnapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                
+                final allParents = parentSnapshot.data ?? [];
  
                 return StreamBuilder<List<PaymentModel>>(
                   stream: _paymentsStream,

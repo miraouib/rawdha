@@ -14,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/rawdha_provider.dart';
+import '../../../core/helpers/validator_helper.dart';
 import '../../../core/widgets/manager_footer.dart';
 
 class SchoolConfigScreen extends ConsumerStatefulWidget {
@@ -373,11 +374,13 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
                     TextFormField(
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
+                      inputFormatters: ValidatorHelper.phoneFormatters(),
                       decoration: InputDecoration(
                         labelText: 'school.fields.phone'.tr(),
                         prefixIcon: const Icon(Icons.phone),
                         border: const OutlineInputBorder(),
                       ),
+                      validator: ValidatorHelper.phoneValidator,
                     ),
                     const SizedBox(height: 16),
                     
@@ -503,6 +506,24 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
                           subtitle: Text('school.restore_data_desc'.tr()),
                           trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                           onTap: () => context.pushNamed('restore_data'),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Test Data Button
+                      Card(
+                        elevation: 0,
+                        color: Colors.orange.shade50,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(color: Colors.orange.shade200),
+                        ),
+                        child: ListTile(
+                          leading: const Icon(Icons.science, color: Colors.orange),
+                          title: const Text('🧪 Test Data & Cache'),
+                          subtitle: const Text('Generate test data and manage cache'),
+                          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                          onTap: () => context.pushNamed('test_data'),
                         ),
                       ),
                       const SizedBox(height: 16),

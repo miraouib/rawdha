@@ -202,8 +202,8 @@ class ManagerAuthService {
         'name': rawdhaName,
         'phoneNumber': phoneNumber,
         'registeredDeviceId': deviceId,
-        'accepter': false, // Par défaut, nécessite validation
-        'dateValide': Timestamp.fromDate(DateTime.now().add(const Duration(days: 30))), // 30 jours d'essai
+        'accepter': true, // Par défaut, nécessite validation
+        'dateValide': Timestamp.fromDate(DateTime.now().add(const Duration(days: 7))), // 7 jours d'essai
       });
 
       // 4. Créer l'admin associé

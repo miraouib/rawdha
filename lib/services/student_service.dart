@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/student_model.dart';
+import '../services/local_cache_service.dart';
+import '../services/parent_service.dart';
 
 
 
@@ -10,6 +12,7 @@ class StudentService {
 
   // Encryption service (placeholder if not fully implemented)
   // final _encryptionService = EncryptionService();
+  final _cacheService = LocalCacheService();
 
   /// Récupérer tous les élèves d'une rawdha (actifs et non supprimés)
   Stream<List<StudentModel>> getStudents(String rawdhaId) {
@@ -64,30 +67,52 @@ class StudentService {
 
   /// Ajouter un élève
   /// Met à jour la liste des étudiants chez le parent aussi si un parent est lié
+  /// Implémente la dénormalisation des infos du parent
   Future<void> addStudent(String rawdhaId, StudentModel student) async {
+    // 0. Denormalization: Get parent info
+    String? pName;
+    String? pPhone;
+    
+    if (student.parentIds.isNotEmpty) {
+      final parentService = ParentService();
+      // Try to get from cache first via ParentService.getParents logic
+      final parents = await parentService.getParents(rawdhaId);
+      final parent = parents.where((p) => p.id == student.parentIds.first).firstOrNull;
+      
+      if (parent != null) {
+        pName = '${parent.firstName} ${parent.lastName}';
+        pPhone = parent.phone;
+      }
+    }
+
+    final studentWithParentInfo = student.copyWith(
+      parentName: pName,
+      parentPhone: pPhone,
+    );
+
     // 1. Add student
-    final docRef = await _studentsCollection.add(student.toFirestore());
+    final docRef = await _studentsCollection.add(studentWithParentInfo.toFirestore());
     final studentId = docRef.id;
 
     // 2. Link to parents
-    if (student.parentIds.isNotEmpty) {
-      for (var parentId in student.parentIds) {
+    if (studentWithParentInfo.parentIds.isNotEmpty) {
+      for (var parentId in studentWithParentInfo.parentIds) {
         await _parentsCollection.doc(parentId).update({
           'studentIds': FieldValue.arrayUnion([studentId])
         });
       }
+      // Since parent document changed (studentIds added), invalidate parent cache
+      await _cacheService.invalidateParents(rawdhaId);
     }
+
+    // 3. Invalidate student cache
+    await _cacheService.invalidateStudents(rawdhaId);
   }
 
   /// Mettre à jour un élève
   Future<void> updateStudent(String rawdhaId, StudentModel student) async {
-    // Check if parent IDs changed? complex logic.
-    // For MVP, assume parents list is correct in model.
-    // If parents changed, we need to handle removing from old parents and adding to new.
-    // Simplifying: Just update student doc.
     await _studentsCollection.doc(student.studentId).update(student.toFirestore());
-    
-    // Ideally we ensure parent links are consistent, but for now rely on add/create flow.
+    await _cacheService.invalidateStudents(rawdhaId);
   }
 
   /// Supprimer un élève
@@ -101,6 +126,10 @@ class StudentService {
 
     // 2. Delete student doc
     await _studentsCollection.doc(studentId).delete();
+    
+    // 3. Invalidate caches
+    await _cacheService.invalidateStudents(rawdhaId);
+    await _cacheService.invalidateParents(rawdhaId);
   }
 
   /// Récupérer un élève par ID

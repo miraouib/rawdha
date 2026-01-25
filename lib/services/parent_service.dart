@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/parent_model.dart';
 import '../core/encryption/encryption_service.dart';
 import '../services/student_service.dart';
+import '../services/local_cache_service.dart';
 
 class ParentService {
   final CollectionReference _parentsCollection = FirebaseFirestore.instance.collection('parents');
@@ -26,37 +27,53 @@ class ParentService {
     return result;
   }
 
-    /// Stream of active parents for a given Rawdha
-  Stream<List<ParentModel>> getParents(String rawdhaId) {
-    return _parentsCollection
+  final _cacheService = LocalCacheService();
+
+  /// Get parents for a given Rawdha (with caching)
+  Future<List<ParentModel>> getParents(String rawdhaId, {bool forceRefresh = false}) async {
+    // 1. Try Cache
+    if (!forceRefresh) {
+      final cachedData = await _cacheService.getParents(rawdhaId);
+      if (cachedData != null) {
+        return cachedData.map((data) => ParentModel.fromFirestore(data, data['id'] ?? '')).toList();
+      }
+    }
+
+    // 2. Fetch from Firestore
+    final snapshot = await _parentsCollection
         .where('rawdhaId', isEqualTo: rawdhaId)
         .where('isDeleted', isEqualTo: false)
-        .snapshots()
-        .map((snapshot) {
-      final parents = snapshot.docs.map((doc) {
-        final data = doc.data() as Map<String, dynamic>;
-        return ParentModel.fromFirestore(data, doc.id);
-      }).toList();
-      parents.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      return parents;
-    });
+        .get();
+
+    final parents = snapshot.docs.map((doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      data['id'] = doc.id; // Ensure ID is in the map for caching
+      return ParentModel.fromFirestore(data, doc.id);
+    }).toList();
+
+    parents.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    // 3. Save to Cache
+    await _cacheService.saveParents(rawdhaId, parents.map((p) => p.toMap()..['id'] = p.id).toList());
+
+    return parents;
   }
 
-  /// Stream of archived (soft deleted) parents for a given Rawdha
-  Stream<List<ParentModel>> getArchivedParents(String rawdhaId) {
-    return _parentsCollection
+  /// Get archived parents (less frequent, can still use get())
+  Future<List<ParentModel>> getArchivedParents(String rawdhaId) async {
+    final snapshot = await _parentsCollection
         .where('rawdhaId', isEqualTo: rawdhaId)
         .where('isDeleted', isEqualTo: true)
-        .snapshots()
-        .map((snapshot) {
-      final parents = snapshot.docs.map((doc) {
-        final data = doc.data() as Map<String, dynamic>;
-        return ParentModel.fromFirestore(data, doc.id);
-      }).toList();
-      parents.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      return parents;
-    });
-  } 
+        .get();
+
+    final parents = snapshot.docs.map((doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      return ParentModel.fromFirestore(data, doc.id);
+    }).toList();
+    
+    parents.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return parents;
+  }
 
   /// Vérifier les identifiants d'un parent
   /// Login with ONLY School Code + Family Code
@@ -120,6 +137,7 @@ class ParentService {
     // map['accessCode'] = _encryptionService.encrypt(parent.accessCode);
 
     await _parentsCollection.add(map);
+    await _cacheService.invalidateParents(parent.rawdhaId);
   }
 
   Future<void> updateParent(ParentModel parent) async {
@@ -130,6 +148,7 @@ class ParentService {
     // map['accessCode'] = _encryptionService.encrypt(parent.accessCode); // Can change
 
     await _parentsCollection.doc(parent.id).update(map);
+    await _cacheService.invalidateParents(parent.rawdhaId);
   }
 
   Future<void> deleteParentWithStudents(String rawdhaId, String parentId) async {
@@ -151,6 +170,7 @@ class ParentService {
 
     // 3. Delete the parent
     await _parentsCollection.doc(parentId).delete();
+    await _cacheService.invalidateParents(rawdhaId);
   }
 
   Future<void> deleteParent(String parentId) async {

@@ -23,7 +23,7 @@ class _FinanceRevenueScreenState extends ConsumerState<FinanceRevenueScreen> {
   final ParentService _parentService = ParentService();
   
   late Stream<List<PaymentModel>> _paymentsStream;
-  late Stream<List<ParentModel>> _parentsStream;
+  late Future<List<ParentModel>> _parentsFuture;
 
   bool _filterOrange = true;
   bool _filterGreen = true;
@@ -34,7 +34,7 @@ class _FinanceRevenueScreenState extends ConsumerState<FinanceRevenueScreen> {
     super.initState();
     final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
     _paymentsStream = _paymentService.getPaymentsByMonth(rawdhaId, _currentMonth.month, _currentMonth.year);
-    _parentsStream = _parentService.getParents(rawdhaId);
+    _parentsFuture = _parentService.getParents(rawdhaId);
   }
 
   void _changeMonth(int increment) {
@@ -148,14 +148,14 @@ class _FinanceRevenueScreenState extends ConsumerState<FinanceRevenueScreen> {
 
                 final allPayments = snapshot.data ?? [];
                 
-                return StreamBuilder<List<ParentModel>>(
-                  stream: _parentsStream,
+                return FutureBuilder<List<ParentModel>>(
+                  future: _parentsFuture,
                   builder: (context, parentSnapshot) {
-                    if (!parentSnapshot.hasData) {
+                    if (parentSnapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     }
                     
-                    final parents = parentSnapshot.data!;
+                    final parents = parentSnapshot.data ?? [];
                     final parentMap = {for (var p in parents) p.id: p};
                     
                     final filteredPayments = allPayments.where((p) {

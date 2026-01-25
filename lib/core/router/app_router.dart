@@ -26,6 +26,7 @@ import '../../features/manager/announcements/announcement_list_screen.dart';
 import '../../features/manager/school/school_management_screen.dart';
 import '../../features/manager/settings/school_config_screen.dart';
 import '../../features/manager/settings/restore_data_screen.dart'; // Import
+import '../../features/manager/settings/test_data_screen.dart'; // Import test data screen
 import '../../features/manager/settings/contact_developer_screen.dart'; // Import
 import '../../features/manager/employees/hr_management_screen.dart';
 import '../../features/parent/dashboard/parent_dashboard_screen.dart';
@@ -199,6 +200,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                  path: 'restore',
                  name: 'restore_data',
                  builder: (context, state) => const RestoreDataScreen(),
+               ),
+               GoRoute(
+                 path: 'test-data',
+                 name: 'test_data',
+                 builder: (context, state) => const TestDataScreen(),
                ),
             ],
           ),

@@ -9,17 +9,23 @@ class ModuleService {
 
   /// Récupérer les modules d'un niveau, triés par date de début (plus récent en premier)
   Stream<List<ModuleModel>> getModulesForLevel(String rawdhaId, String levelId) {
+    // Normalisation : S'assurer que le levelId a le préfixe rawdhaId
+    // Cela permet de supporter les anciens élèves et de s'assurer que la requête est exacte.
+    String queryLevelId = levelId;
+    if (!levelId.startsWith(rawdhaId)) {
+      queryLevelId = '${rawdhaId}_$levelId';
+    }
+
     return _modulesCollection
-        .where('rawdhaId', isEqualTo: rawdhaId)
-        .where('levelId', isEqualTo: levelId)
-        // .orderBy('startDate', descending: true) // Commenté pour éviter besoin d'index composé pour l'instant
+        .where('levelId', isEqualTo: queryLevelId)
+        // .where('rawdhaId', isEqualTo: rawdhaId) // Retiré pour éviter le besoin d'index composite
         .snapshots()
         .map((snapshot) {
       final modules = snapshot.docs.map((doc) {
         return ModuleModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
       }).toList();
       
-      // Tri Chronologique (Ancien -> Récent) pour suivre la progression de l'année
+      // Tri Chronologique (Ancien -> Récent)
       modules.sort((a, b) => a.startDate.compareTo(b.startDate));
       return modules;
     });

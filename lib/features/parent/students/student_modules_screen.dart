@@ -27,8 +27,8 @@ class _StudentModulesScreenState extends ConsumerState<StudentModulesScreen> {
   @override
   void initState() {
     super.initState();
-    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? widget.student.rawdhaId;
-    _modulesStream = _moduleService.getModulesForLevel(rawdhaId, widget.student.levelId);
+    // On utilise directement le rawdhaId de l'élève pour garantir la correspondance
+    _modulesStream = _moduleService.getModulesForLevel(widget.student.rawdhaId, widget.student.levelId);
   }
 
   @override
@@ -42,74 +42,63 @@ class _StudentModulesScreenState extends ConsumerState<StudentModulesScreen> {
       body: StreamBuilder<List<ModuleModel>>(
         stream: _modulesStream,
         builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                    const SizedBox(height: 16),
+                    Text('common.error'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Text(snapshot.error.toString(), textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                  ],
+                ),
+              ),
+            );
+          }
+
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
           final allModules = snapshot.data ?? [];
+          final now = DateTime.now();
+          final today = DateTime(now.year, now.month, now.day);
+
           final activeModule = allModules.where((m) => m.isCurrentlyActive).firstOrNull;
+          
+          // Past modules: Modules that ended before today
+          final pastModules = allModules.where((m) {
+            final end = DateTime(m.endDate.year, m.endDate.month, m.endDate.day);
+            return end.isBefore(today);
+          }).toList().reversed.toList();
           
           return ListView(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
             children: [
-              // Bouton Signaler Absence - NOUVEAU
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    context.pushNamed('parent_report_absence', extra: widget.student);
-                  },
-                  icon: const Icon(Icons.warning_amber_rounded, color: Colors.white),
-                  label: Text('absence.report_title'.tr(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                    elevation: 4,
-                  ),
-                ),
-              ),
+              // Bouton Signaler Absence
+              _buildAbsenceButton(context),
               const SizedBox(height: 24),
 
-              // Module Actuel
-              if (activeModule != null) ...[
-                _buildSectionTitle('module.active_label'.tr(), Icons.star, Colors.orange),
-                const SizedBox(height: 12),
-                ModuleCard(module: activeModule),
-                const SizedBox(height: 32),
-              ] else ...[
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 40),
-                    child: Column(
-                      children: [
-                        const Icon(Icons.info_outline, size: 48, color: AppTheme.textLight),
-                        const SizedBox(height: 16),
-                        Text('module.no_active_module'.tr(), style: const TextStyle(color: AppTheme.textGray)),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+              // SECTION : MODULE ACTUEL
+              _buildSectionTitle('module.active_label'.tr(), Icons.star, Colors.orange),
+              const SizedBox(height: 12),
+              if (activeModule != null)
+                ModuleCard(module: activeModule)
+              else
+                _buildEmptyActiveState(),
 
-              // Bouton Historique
-              Center(
-                child: SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      context.pushNamed('student_history', extra: widget.student);
-                    },
-                    icon: const Icon(Icons.history),
-                    label: Text('module.view_history'.tr()),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      side: const BorderSide(color: AppTheme.primaryBlue),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                    ),
-                  ),
-                ),
-              ),
+              const SizedBox(height: 32),
+
+              // SECTION : HISTORIQUE (Anciens modules uniquement)
+              if (pastModules.isNotEmpty) ...[
+                _buildSectionTitle('module.view_history'.tr(), Icons.history, AppTheme.primaryBlue),
+                const SizedBox(height: 12),
+                ...pastModules.map((m) => _buildHistoryItem(context, m)).toList(),
+              ],
             ],
           );
         },
@@ -117,15 +106,141 @@ class _StudentModulesScreenState extends ConsumerState<StudentModulesScreen> {
     );
   }
 
+  Widget _buildAbsenceButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: () {
+          context.pushNamed('parent_report_absence', extra: widget.student);
+        },
+        icon: const Icon(Icons.warning_amber_rounded, color: Colors.white),
+        label: Text('absence.report_title'.tr(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.orange,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          elevation: 4,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyActiveState() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.borderColor),
+      ),
+      child: Column(
+        children: [
+          const Icon(Icons.info_outline, size: 40, color: AppTheme.textLight),
+          const SizedBox(height: 12),
+          Text(
+            'module.no_active_module'.tr(),
+            style: const TextStyle(color: AppTheme.textGray, fontSize: 16),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHistoryItem(BuildContext context, ModuleModel module) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      elevation: 2,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppTheme.primaryBlue.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.book, color: AppTheme.primaryBlue, size: 20),
+        ),
+        title: Text(
+          module.title,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(
+          '${DateFormat('dd/MM').format(module.startDate)} - ${DateFormat('dd/MM').format(module.endDate)}',
+          style: const TextStyle(fontSize: 12, color: AppTheme.textGray),
+        ),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: AppTheme.textLight),
+        onTap: () => _showModuleDetails(context, module),
+      ),
+    );
+  }
+
+  void _showModuleDetails(BuildContext context, ModuleModel module) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.8,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: AppTheme.backgroundLight,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+          ),
+          child: Column(
+            children: [
+              // Drag Handle & Close Button Row
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 12, 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const SizedBox(width: 40), // Spacer for centering handle
+                    Container(
+                      width: 40,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: AppTheme.textGray),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                  child: Column(
+                    children: [
+                      ModuleCard(module: module),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildSectionTitle(String title, IconData icon, Color color) {
     return Row(
       children: [
-        Icon(icon, color: color, size: 24),
-        const SizedBox(width: 8),
+        Icon(icon, color: color, size: 22),
+        const SizedBox(width: 10),
         Text(
           title,
           style: TextStyle(
-            fontSize: 20,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
             color: AppTheme.textDark,
           ),

@@ -41,7 +41,11 @@ class ParentModel {
       spousePhone: data['spousePhone'] ?? '',
       monthlyFee: (data['monthlyFee'] as num?)?.toDouble(),
       studentIds: List<String>.from(data['studentIds'] ?? []),
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      createdAt: data['createdAt'] is Timestamp 
+          ? (data['createdAt'] as Timestamp).toDate() 
+          : (data['createdAt'] is String 
+              ? DateTime.parse(data['createdAt']) 
+              : DateTime.now()),
       isDeleted: data['isDeleted'] ?? false,
     );
   }

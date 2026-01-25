@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/services.dart';
 
 class ValidatorHelper {
   static String? phoneValidator(String? value) {
@@ -6,18 +7,24 @@ class ValidatorHelper {
       return 'common.required'.tr();
     }
     
-    // Remove any spaces or special characters if needed, 
-    // but for now we expect exactly 8 digits
     final digitsOnly = value.replaceAll(RegExp(r'\D'), '');
     
     if (digitsOnly.length != 8) {
-      return 'Format invalide (8 chiffres requis)';
+      return 'format_invalid_8_digits'.tr(); // Note: Translation key should be added or used
     }
     
-    if (value.length != 8) {
-       return 'Format invalide (8 chiffres uniquement)';
+    // Check if it's strictly numbers and exactly 8
+    if (value.length != 8 || !RegExp(r'^\d{8}$').hasMatch(value)) {
+       return 'format_invalid_8_digits_only'.tr();
     }
 
     return null;
+  }
+
+  static List<TextInputFormatter> phoneFormatters() {
+    return [
+      FilteringTextInputFormatter.digitsOnly,
+      LengthLimitingTextInputFormatter(8),
+    ];
   }
 }

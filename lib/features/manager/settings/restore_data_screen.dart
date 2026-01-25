@@ -27,13 +27,13 @@ class _RestoreDataScreenState extends ConsumerState<RestoreDataScreen> {
   String _searchQuery = '';
   final Map<String, String> _selectedLevels = {}; // studentId -> levelId
 
-  late Stream<List<ParentModel>> _archivedParentsStream;
+  late Future<List<ParentModel>> _archivedParentsFuture;
 
   @override
   void initState() {
     super.initState();
     final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
-    _archivedParentsStream = _parentService.getArchivedParents(rawdhaId);
+    _archivedParentsFuture = _parentService.getArchivedParents(rawdhaId);
   }
 
   @override
@@ -64,12 +64,14 @@ class _RestoreDataScreenState extends ConsumerState<RestoreDataScreen> {
 
           // List
           Expanded(
-            child: StreamBuilder<List<ParentModel>>(
-              stream: _archivedParentsStream,
+            child: FutureBuilder<List<ParentModel>>(
+              future: _archivedParentsFuture,
               builder: (context, snapshot) {
-                if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
                 
-                final parents = snapshot.data!;
+                final parents = snapshot.data ?? [];
                 final filtered = parents.where((p) {
                   if (_searchQuery.isEmpty) return true;
                   final name = '${p.firstName} ${p.lastName}'.toLowerCase();

@@ -17,6 +17,8 @@ class PaymentModel {
   final int year;
   final String? note;
   final DateTime createdAt;
+  final String? parentName; // Denormalized
+  final String? parentFamilyCode; // Denormalized
 
   PaymentModel({
     required this.id,
@@ -29,6 +31,8 @@ class PaymentModel {
     required this.year,
     this.note,
     required this.createdAt,
+    this.parentName,
+    this.parentFamilyCode,
   });
 
   PaymentStatus get status {
@@ -51,6 +55,8 @@ class PaymentModel {
       year: data['year'] ?? DateTime.now().year,
       note: data['note'],
       createdAt: (data['createdAt'] as Timestamp).toDate(),
+      parentName: data['parentName'],
+      parentFamilyCode: data['parentFamilyCode'],
     );
   }
 
@@ -65,6 +71,8 @@ class PaymentModel {
       'year': year,
       'note': note,
       'createdAt': Timestamp.fromDate(createdAt),
+      'parentName': parentName,
+      'parentFamilyCode': parentFamilyCode,
     };
   }
 }

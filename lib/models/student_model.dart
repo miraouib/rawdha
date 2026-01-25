@@ -18,6 +18,8 @@ class StudentModel {
   final bool active;
   final bool isDeleted; // Soft delete
   final String? photoUrl; // URL de la photo (optionnel)
+  final String? parentName; // Denormalized: Primary parent name
+  final String? parentPhone; // Denormalized: Primary parent phone
 
   StudentModel({
     required this.studentId,
@@ -34,6 +36,8 @@ class StudentModel {
     this.active = true,
     this.isDeleted = false,
     this.photoUrl,
+    this.parentName,
+    this.parentPhone,
   });
 
   /// Crée un Élève depuis Firestore
@@ -48,11 +52,19 @@ class StudentModel {
       levelId: data['levelId'] ?? '',
       encryptedMonthlyFee: data['encryptedMonthlyFee'] ?? '',
       monthlyFee: (data['monthlyFee'] ?? 0).toDouble(),
-      birthdate: (data['birthdate'] as Timestamp?)?.toDate(),
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      birthdate: data['birthdate'] is Timestamp 
+          ? (data['birthdate'] as Timestamp).toDate() 
+          : (data['birthdate'] is String ? DateTime.tryParse(data['birthdate']) : null),
+      createdAt: data['createdAt'] is Timestamp 
+          ? (data['createdAt'] as Timestamp).toDate() 
+          : (data['createdAt'] is String 
+              ? DateTime.tryParse(data['createdAt']) ?? DateTime.now()
+              : DateTime.now()),
       active: data['active'] ?? true,
       isDeleted: data['isDeleted'] ?? false,
       photoUrl: data['photoUrl'],
+      parentName: data['parentName'],
+      parentPhone: data['parentPhone'],
     );
   }
 
@@ -72,6 +84,8 @@ class StudentModel {
       'active': active,
       'isDeleted': isDeleted,
       'photoUrl': photoUrl,
+      'parentName': parentName,
+      'parentPhone': parentPhone,
     };
   }
 
@@ -99,6 +113,8 @@ class StudentModel {
     bool? active,
     bool? isDeleted,
     String? photoUrl,
+    String? parentName,
+    String? parentPhone,
   }) {
     return StudentModel(
       studentId: studentId ?? this.studentId,
@@ -115,6 +131,8 @@ class StudentModel {
       active: active ?? this.active,
       isDeleted: isDeleted ?? this.isDeleted,
       photoUrl: photoUrl ?? this.photoUrl,
+      parentName: parentName ?? this.parentName,
+      parentPhone: parentPhone ?? this.parentPhone,
     );
   }
 }

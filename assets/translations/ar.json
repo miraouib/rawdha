@@ -463,6 +463,8 @@
         "required": "الحقل مطلوب",
         "invalid": "قيمة غير صالحة",
         "code_copied": "تم نسخ الرمز!",
+        "format_invalid_8_digits": "صيغة غير صالحة (8 أرقام مطلوبة)",
+        "format_invalid_8_digits_only": "8 أرقام فقط",
         "unknown": "غير معروف"
     }
 }

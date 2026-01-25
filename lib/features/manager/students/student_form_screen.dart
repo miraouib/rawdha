@@ -34,7 +34,7 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
   String _parentSearchQuery = '';
 
   late Stream<List<SchoolLevelModel>> _levelsStream;
-  late Stream<List<ParentModel>> _parentsStream;
+  late Future<List<ParentModel>> _parentsFuture;
   
   final StudentService _studentService = StudentService();
   final ParentService _parentService = ParentService();
@@ -45,7 +45,7 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
     super.initState();
     final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
     _levelsStream = _schoolService.getLevels(rawdhaId);
-    _parentsStream = _parentService.getParents(rawdhaId);
+    _parentsFuture = _parentService.getParents(rawdhaId);
 
     if (widget.student != null) {
       _firstNameController.text = widget.student!.firstName;
@@ -284,11 +284,14 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
   }
 
   Widget _buildParentSelector() {
-    return StreamBuilder<List<ParentModel>>(
-      stream: _parentsStream,
+    return FutureBuilder<List<ParentModel>>(
+      future: _parentsFuture,
       builder: (context, snapshot) {
-        if (!snapshot.hasData) return const CircularProgressIndicator();
-        final allParents = snapshot.data!;
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        }
+        
+        final allParents = snapshot.data ?? [];
         
         // Filter based on search query
         final filteredParents = allParents.where((p) {

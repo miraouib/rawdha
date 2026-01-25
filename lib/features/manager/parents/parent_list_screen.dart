@@ -30,7 +30,7 @@ class _ParentListScreenState extends ConsumerState<ParentListScreen> {
   final SchoolService _schoolService = SchoolService();
   
   late Stream<SchoolConfigModel> _configStream;
-  late Stream<List<ParentModel>> _parentsStream;
+  late Future<List<ParentModel>> _parentsFuture;
 
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
@@ -40,7 +40,19 @@ class _ParentListScreenState extends ConsumerState<ParentListScreen> {
     super.initState();
     final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
     _configStream = _schoolService.getSchoolConfig(rawdhaId);
-    _parentsStream = _parentService.getParents(rawdhaId);
+    _loadParents();
+  }
+
+  void _loadParents({bool forceRefresh = false}) {
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    setState(() {
+      _parentsFuture = _parentService.getParents(rawdhaId, forceRefresh: forceRefresh);
+    });
+  }
+
+  Future<void> _onRefresh() async {
+    _loadParents(forceRefresh: true);
+    await _parentsFuture;
   }
 
   @override
@@ -55,6 +67,13 @@ class _ParentListScreenState extends ConsumerState<ParentListScreen> {
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
         title: Text('parent.management'.tr()),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'common.refresh'.tr(),
+            onPressed: () => _loadParents(forceRefresh: true),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -95,51 +114,77 @@ class _ParentListScreenState extends ConsumerState<ParentListScreen> {
               builder: (context, configSnapshot) {
                 final schoolCode = configSnapshot.data?.schoolCode ?? '';
                 
-                return StreamBuilder<List<ParentModel>>(
-                  stream: _parentsStream,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
+                return RefreshIndicator(
+                  onRefresh: _onRefresh,
+                  child: FutureBuilder<List<ParentModel>>(
+                    future: _parentsFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
 
-                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return _buildEmptyState(context);
-                    }
-
-                    // Filter list
-                    final parents = snapshot.data!.where((parent) {
-                      final query = _searchQuery;
-                      return parent.firstName.toLowerCase().contains(query) ||
-                          parent.lastName.toLowerCase().contains(query) ||
-                          parent.phone.contains(query) ||
-                          parent.familyCode.toLowerCase().contains(query) ||
-                          parent.spouseName.toLowerCase().contains(query) ||
-                          parent.spousePhone.contains(query);
-                    }).toList()
-                    ..sort((a, b) {
-                       int cmp = a.firstName.toLowerCase().compareTo(b.firstName.toLowerCase());
-                       if (cmp != 0) return cmp;
-                       return a.lastName.toLowerCase().compareTo(b.lastName.toLowerCase());
-                    });
-
-                    if (parents.isEmpty) {
-                      return Center(child: Text('common.search'.tr() + ': "$_searchQuery"'));
-                    }
-
-                    return ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                      itemCount: parents.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        final parent = parents[index];
-                        return _ParentCard(
-                          parent: parent, 
-                          schoolCode: schoolCode,
-                          onDelete: () => _deleteParent(parent),
+                      if (snapshot.hasError) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                              const SizedBox(height: 16),
+                              Text('common.error'.tr()),
+                              Text(snapshot.error.toString(), style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                              const SizedBox(height: 16),
+                              ElevatedButton(onPressed: _onRefresh, child: Text('common.retry'.tr())),
+                            ],
+                          ),
                         );
-                      },
-                    );
-                  },
+                      }
+  
+                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.6,
+                            child: _buildEmptyState(context),
+                          ),
+                        );
+                      }
+  
+                      // Filter list
+                      final parents = snapshot.data!.where((parent) {
+                        final query = _searchQuery;
+                        return parent.firstName.toLowerCase().contains(query) ||
+                            parent.lastName.toLowerCase().contains(query) ||
+                            parent.phone.contains(query) ||
+                            parent.familyCode.toLowerCase().contains(query) ||
+                            parent.spouseName.toLowerCase().contains(query) ||
+                            parent.spousePhone.contains(query);
+                      }).toList()
+                      ..sort((a, b) {
+                         int cmp = a.firstName.toLowerCase().compareTo(b.firstName.toLowerCase());
+                         if (cmp != 0) return cmp;
+                         return a.lastName.toLowerCase().compareTo(b.lastName.toLowerCase());
+                      });
+  
+                      if (parents.isEmpty) {
+                        return Center(child: Text('common.search'.tr() + ': "$_searchQuery"'));
+                      }
+  
+                      return ListView.separated(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                        itemCount: parents.length,
+                        separatorBuilder: (context, index) => const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          final parent = parents[index];
+                          return _ParentCard(
+                            parent: parent, 
+                            schoolCode: schoolCode,
+                            onDelete: () => _deleteParent(parent),
+                          );
+                        },
+                      );
+                    },
+                  ),
                 );
               }
             ),

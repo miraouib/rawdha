@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/helpers/validator_helper.dart';
 import '../services/manager_auth_service.dart';
 
 class ManagerRegistrationScreen extends StatefulWidget {
@@ -108,15 +109,12 @@ class _ManagerRegistrationScreenState extends State<ManagerRegistrationScreen> {
                         TextFormField(
                           controller: _phoneController,
                           keyboardType: TextInputType.phone,
+                          inputFormatters: ValidatorHelper.phoneFormatters(),
                           decoration: InputDecoration(
                             labelText: 'manager.auth.phone_number'.tr(),
                             prefixIcon: const Icon(Icons.phone),
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) return 'common.required'.tr();
-                            if (value.length < 8) return 'manager.auth.phone_invalid'.tr();
-                            return null;
-                          },
+                          validator: ValidatorHelper.phoneValidator,
                         ),
                         const SizedBox(height: 16),
                         TextFormField(

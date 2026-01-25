@@ -177,12 +177,8 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
                 prefixIcon: const Icon(Icons.phone),
               ),
               keyboardType: TextInputType.phone,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'finance.required'.tr();
-                }
-                return null;
-              },
+              inputFormatters: ValidatorHelper.phoneFormatters(),
+              validator: ValidatorHelper.phoneValidator,
             ),
             const SizedBox(height: 16),
 

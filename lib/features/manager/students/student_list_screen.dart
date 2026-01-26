@@ -133,7 +133,14 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
           final students = snapshot.data!.where((s) {
             final matchesName = s.firstName.toLowerCase().contains(_searchQuery) || 
                               s.lastName.toLowerCase().contains(_searchQuery);
-            final matchesLevel = _selectedLevelId == null || s.levelId == _selectedLevelId;
+            
+            bool matchesLevel = _selectedLevelId == null;
+            if (!matchesLevel) {
+              final studentBaseLevelId = s.levelId.split('_').last;
+              final selectedBaseLevelId = _selectedLevelId!.split('_').last;
+              matchesLevel = studentBaseLevelId == selectedBaseLevelId;
+            }
+            
             return matchesName && matchesLevel;
           }).toList();
 

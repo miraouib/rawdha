@@ -43,7 +43,12 @@ class StudentService {
         .map((snapshot) {
       return snapshot.docs
           .map((doc) => StudentModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id))
-          .where((s) => s.levelId == levelId)
+          .where((s) {
+            // Flexible comparison: check if the base ID (e.g., 'level_5') matches
+            final studentBaseLevelId = s.levelId.split('_').last;
+            final targetBaseLevelId = levelId.split('_').last;
+            return studentBaseLevelId == targetBaseLevelId;
+          })
           .toList();
     });
   }
@@ -139,5 +144,26 @@ class StudentService {
     final data = doc.data() as Map<String, dynamic>;
     if (data['rawdhaId'] != rawdhaId) return null;
     return StudentModel.fromFirestore(data, doc.id);
+  }
+
+  /// Supprimer TOUS les élèves et parents d'une rawdha (pour test/reset)
+  Future<void> deleteAllStudentsAndParents(String rawdhaId) async {
+     final batch = _firestore.batch();
+     
+     // 1. Get all students
+     final studentsQuery = await _studentsCollection.where('rawdhaId', isEqualTo: rawdhaId).get();
+     for (var doc in studentsQuery.docs) {
+       batch.delete(doc.reference);
+     }
+     
+     // 2. Get all parents
+     final parentsQuery = await _parentsCollection.where('rawdhaId', isEqualTo: rawdhaId).get();
+     for (var doc in parentsQuery.docs) {
+       batch.delete(doc.reference);
+     }
+     
+     await batch.commit();
+     await _cacheService.invalidateStudents(rawdhaId);
+     await _cacheService.invalidateParents(rawdhaId);
   }
 }

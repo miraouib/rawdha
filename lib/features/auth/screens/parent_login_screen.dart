@@ -75,6 +75,13 @@ class _ParentLoginScreenState extends ConsumerState<ParentLoginScreen> {
           );
         }
       }
+    } on Exception catch (e) {
+      if (mounted) {
+        final message = e.toString().replaceAll('Exception: ', '');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message), backgroundColor: AppTheme.errorRed),
+        );
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -19,6 +19,7 @@ class AnnouncementModel {
   final DateTime createdAt;
   final String createdBy; // Manager ID
   final String? targetLevelId; // Null = All Levels
+  final DateTime? eventDate; // New optional field
 
   AnnouncementModel({
     required this.id,
@@ -31,6 +32,7 @@ class AnnouncementModel {
     required this.createdAt,
     required this.createdBy,
     this.targetLevelId,
+    this.eventDate,
   });
 
   bool isActiveNow() {
@@ -50,6 +52,7 @@ class AnnouncementModel {
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       createdBy: data['createdBy'] ?? '',
       targetLevelId: data['targetLevelId'],
+      eventDate: data['eventDate'] != null ? (data['eventDate'] as Timestamp).toDate() : null,
     );
   }
 
@@ -64,6 +67,7 @@ class AnnouncementModel {
       'createdAt': Timestamp.fromDate(createdAt),
       'createdBy': createdBy,
       'targetLevelId': targetLevelId,
+      'eventDate': eventDate != null ? Timestamp.fromDate(eventDate!) : null,
     };
   }
 

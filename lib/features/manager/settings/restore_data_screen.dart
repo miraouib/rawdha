@@ -27,13 +27,29 @@ class _RestoreDataScreenState extends ConsumerState<RestoreDataScreen> {
   String _searchQuery = '';
   final Map<String, String> _selectedLevels = {}; // studentId -> levelId
 
-  late Future<List<ParentModel>> _archivedParentsFuture;
+  List<ParentModel> _archivedParents = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
-    _archivedParentsFuture = _parentService.getArchivedParents(rawdhaId);
+    _loadArchivedParents();
+  }
+
+  Future<void> _loadArchivedParents() async {
+    setState(() => _isLoading = true);
+    try {
+      final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+      final parents = await _parentService.getArchivedParents(rawdhaId);
+      if (mounted) {
+        setState(() {
+          _archivedParents = parents;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -43,7 +59,15 @@ class _RestoreDataScreenState extends ConsumerState<RestoreDataScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: const Text('Restaurer Données'),
+        title: Text('school.restore.title'.tr()),
+        actions: [
+          if (_archivedParents.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.delete_forever, color: Colors.red),
+              tooltip: 'school.restore.delete_all_tooltip'.tr(),
+              onPressed: _confirmDeleteAll,
+            ),
+        ],
       ),
       body: Column(
         children: [
@@ -52,7 +76,7 @@ class _RestoreDataScreenState extends ConsumerState<RestoreDataScreen> {
             padding: const EdgeInsets.all(16),
             child: TextField(
               decoration: InputDecoration(
-                hintText: 'Rechercher un parent archivé...',
+                hintText: 'school.restore.search_hint'.tr(),
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 filled: true,
@@ -64,49 +88,45 @@ class _RestoreDataScreenState extends ConsumerState<RestoreDataScreen> {
 
           // List
           Expanded(
-            child: FutureBuilder<List<ParentModel>>(
-              future: _archivedParentsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                
-                final parents = snapshot.data ?? [];
-                final filtered = parents.where((p) {
-                  if (_searchQuery.isEmpty) return true;
-                  final name = '${p.firstName} ${p.lastName}'.toLowerCase();
-                  return name.contains(_searchQuery);
-                }).toList();
+            child: _isLoading 
+              ? const Center(child: CircularProgressIndicator())
+              : Builder(
+                  builder: (context) {
+                    final filtered = _archivedParents.where((p) {
+                      if (_searchQuery.isEmpty) return true;
+                      final name = '${p.firstName} ${p.lastName}'.toLowerCase();
+                      return name.contains(_searchQuery);
+                    }).toList();
 
-                if (filtered.isEmpty) {
-                  return const Center(
-                    child: Text('Aucun parent archivé trouvé', style: TextStyle(color: Colors.grey)),
-                  );
-                }
+                    if (filtered.isEmpty) {
+                      return Center(
+                        child: Text('school.restore.no_results'.tr(), style: const TextStyle(color: Colors.grey)),
+                      );
+                    }
 
-                return ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: filtered.length,
-                  itemBuilder: (context, index) {
-                    final parent = filtered[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: ExpansionTile(
-                        leading: const CircleAvatar(
-                          backgroundColor: Colors.grey,
-                          child: Icon(Icons.history, color: Colors.white),
-                        ),
-                        title: Text('${parent.firstName} ${parent.lastName}'),
-                        subtitle: Text('${parent.studentIds.length} enfant(s) archivés'),
-                        children: [
-                          _buildRestoreForm(rawdhaId, parent),
-                        ],
-                      ),
+                    return ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final parent = filtered[index];
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          child: ExpansionTile(
+                            leading: const CircleAvatar(
+                              backgroundColor: Colors.grey,
+                              child: Icon(Icons.history, color: Colors.white),
+                            ),
+                            title: Text('${parent.firstName} ${parent.lastName}'),
+                            subtitle: Text('${parent.studentIds.length} ${'school.restore.archived_children'.tr()}'),
+                            children: [
+                              _buildRestoreForm(rawdhaId, parent),
+                            ],
+                          ),
+                        );
+                      },
                     );
                   },
-                );
-              },
-            ),
+                ),
           ),
         ],
       ),
@@ -114,7 +134,12 @@ class _RestoreDataScreenState extends ConsumerState<RestoreDataScreen> {
   }
 
   Widget _buildRestoreForm(String rawdhaId, ParentModel parent) {
-    return _RestoreParentForm(rawdhaId: rawdhaId, parent: parent, onRestore: _restoreParent);
+    return _RestoreParentForm(
+      rawdhaId: rawdhaId, 
+      parent: parent, 
+      onRestore: _restoreParent,
+      onDeletePermanently: _deleteParentPermanently,
+    );
   }
 
   Future<void> _restoreParent(ParentModel parent, List<StudentModel> students) async {
@@ -127,16 +152,111 @@ class _RestoreDataScreenState extends ConsumerState<RestoreDataScreen> {
 
       await _schoolService.restoreParent(parent.id, updates);
       
+      // Update local state to remove restored parent
       if (mounted) {
+        setState(() {
+          _archivedParents.removeWhere((p) => p.id == parent.id);
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Parent et élèves restaurés avec succès ✅')),
+          SnackBar(content: Text('school.restore.success_restore'.tr())),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('${'common.error'.tr()}: $e'), backgroundColor: Colors.red),
         );
+      }
+    }
+  }
+  Future<void> _confirmDeleteAll() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('school.restore.delete_all_confirm_title'.tr()),
+        content: Text(
+          'school.restore.delete_all_confirm_msg'.tr(),
+          style: const TextStyle(color: Colors.red),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('common.cancel'.tr()),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('school.restore.delete_all_btn'.tr(), style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() => _isLoading = true);
+      try {
+        final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+        await _parentService.deleteAllArchivedParents(rawdhaId);
+        setState(() {
+          _archivedParents.clear();
+          _isLoading = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+             SnackBar(content: Text('school.restore.all_deleted'.tr())),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('${'common.error'.tr()}: $e'), backgroundColor: Colors.red),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _deleteParentPermanently(ParentModel parent) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('school.restore.delete_all_confirm_title'.tr()),
+        content: Text(
+          'school.restore.delete_individual_msg'.tr(args: [parent.firstName, parent.lastName]),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('common.cancel'.tr()),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('common.delete'.tr(), style: const TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+        await _parentService.deleteParentWithStudents(rawdhaId, parent.id);
+        
+        if (mounted) {
+          setState(() {
+            _archivedParents.removeWhere((p) => p.id == parent.id);
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+             SnackBar(content: Text('school.restore.parent_deleted'.tr())),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('${'common.error'.tr()}: $e'), backgroundColor: Colors.red),
+          );
+        }
       }
     }
   }
@@ -146,11 +266,13 @@ class _RestoreParentForm extends ConsumerStatefulWidget {
   final String rawdhaId;
   final ParentModel parent;
   final Function(ParentModel, List<StudentModel>) onRestore;
+  final Function(ParentModel) onDeletePermanently; // Added callback
 
   const _RestoreParentForm({
     required this.rawdhaId,
     required this.parent,
     required this.onRestore,
+    required this.onDeletePermanently,
   });
 
   @override
@@ -175,30 +297,50 @@ class _RestoreParentFormState extends ConsumerState<_RestoreParentForm> {
         if (!snapshot.hasData) return const Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator());
         
         final students = snapshot.data!;
-        if (students.isEmpty) return const Text("Aucun enfant trouvé.");
-
+        // Assuming we want to show existing students or a message if none
+        
         return Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text("Mettre à jour les niveaux pour la nouvelle année :", 
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              
-              ...students.map((student) {
-                return _StudentLevelSelector(rawdhaId: widget.rawdhaId, student: student);
-              }),
+              if (students.isNotEmpty) ...[
+                 Text("school.restore.update_levels".tr(), 
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                 const SizedBox(height: 10),
+                 ...students.map((student) {
+                   return _StudentLevelSelector(rawdhaId: widget.rawdhaId, student: student);
+                 }),
+              ] else ...[
+                 Text("school.restore.no_children_linked".tr(), style: const TextStyle(fontStyle: FontStyle.italic, color: Colors.grey)),
+              ],
 
               const SizedBox(height: 16),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.restore),
-                label: const Text('Restaurer ce parent et ses enfants'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryBlue,
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: () => widget.onRestore(widget.parent, students),
+              Row(
+                children: [
+                   Expanded(
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.restore),
+                      label: Text('school.restore.restore_btn'.tr()),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryBlue,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () => widget.onRestore(widget.parent, students),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                   Expanded(
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.delete_forever, color: Colors.red),
+                      label: Text('common.delete'.tr(), style: const TextStyle(color: Colors.red)),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.red),
+                      ),
+                      onPressed: () => widget.onDeletePermanently(widget.parent),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

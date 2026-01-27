@@ -181,6 +181,10 @@ class _ParentListScreenState extends ConsumerState<ParentListScreen> {
                             parent: parent, 
                             schoolCode: schoolCode,
                             onDelete: () => _deleteParent(parent),
+                            onEdit: () async {
+                              await context.pushNamed('parent_edit', extra: parent);
+                              _loadParents();
+                            },
                           );
                         },
                       );
@@ -193,8 +197,9 @@ class _ParentListScreenState extends ConsumerState<ParentListScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          context.pushNamed('parent_add');
+        onPressed: () async {
+          await context.pushNamed('parent_add');
+          _loadParents();
         },
         label: Text('parent.add_parent'.tr()),
         icon: const Icon(Icons.add),
@@ -259,7 +264,8 @@ class _ParentListScreenState extends ConsumerState<ParentListScreen> {
         if (rawdhaId == null) return;
 
         await _parentService.deleteParentWithStudents(rawdhaId, parent.id);
-        
+        _loadParents(); // Refresh list to show removal
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('common.success'.tr()), backgroundColor: Colors.green),
@@ -280,11 +286,13 @@ class _ParentCard extends StatelessWidget {
   final ParentModel parent;
   final String schoolCode;
   final VoidCallback onDelete;
+  final VoidCallback onEdit;
 
   const _ParentCard({
     required this.parent, 
     required this.schoolCode,
     required this.onDelete,
+    required this.onEdit,
   });
 
   Future<void> _copyToClipboard(BuildContext context, String text) async {
@@ -395,9 +403,7 @@ class _ParentCard extends StatelessWidget {
                 TextButton.icon(
                   icon: const Icon(Icons.edit, size: 18),
                   label: Text('common.edit'.tr()),
-                  onPressed: () {
-                    context.pushNamed('parent_edit', extra: parent);
-                  },
+                  onPressed: onEdit,
                 ),
                 TextButton.icon(
                   icon: const Icon(Icons.delete, size: 18, color: Colors.red),

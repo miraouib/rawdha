@@ -438,10 +438,20 @@ class _AnnouncementHighlightCard extends StatelessWidget {
                 ),
               ],
               const Spacer(),
-              Text(
-                DateHelper.formatDateShort(context, announcement.startDate),
-                style: const TextStyle(color: AppTheme.textGray, fontSize: 12),
-              ),
+              if (announcement.eventDate != null)
+                Text(
+                  DateHelper.formatDateFull(context, announcement.eventDate!),
+                  style: const TextStyle(
+                    color: Colors.purple,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                )
+              else
+                Text(
+                  DateHelper.formatDateShort(context, announcement.startDate),
+                  style: const TextStyle(color: AppTheme.textGray, fontSize: 12),
+                ),
             ],
           ),
           const SizedBox(height: 12),

@@ -98,7 +98,11 @@
             "scheduled": "Programmée",
             "past": "Passée"
         },
-        "confirm_delete": "Voulez-vous vraiment supprimer cette annonce ?"
+        "confirm_delete": "Voulez-vous vraiment supprimer cette annonce ?",
+        "event_date": "Date de l'événement",
+        "select_period": "Sélectionner la période d'affichage",
+        "select_date": "Sélectionner une date",
+        "published_on": "Publié le"
     },
     "parent": {
         "title": "Espace Parent",
@@ -162,7 +166,8 @@
         "delete_warning_title": "Attention ! Cette action est irréversible.",
         "delete_warning_student": "La suppression de ce parent entraînera la suppression définitive de TOUS les élèves associés.",
         "delete_warning_restore": "Les données ne pourront pas être restaurées.",
-        "delete_confirm_btn": "Supprimer Tout"
+        "delete_confirm_btn": "Supprimer Tout",
+        "account_archived": "Ce compte est archivé/désactivé. Veuillez contacter l'administration."
     },
     "student": {
         "students": "Élèves",
@@ -431,6 +436,23 @@
         "reset_warning_desc": "Cette action va archiver TOUS les parents et élèves actuels pour commencer une nouvelle année.\n\nVeuillez entrer votre mot de passe pour confirmer.",
         "confirm_reset": "Confirmer Réinitialisation",
         "reset_success": "Année réinitialisée avec succès 🚀",
+        "restore": {
+            "title": "Restaurer Données",
+            "search_hint": "Rechercher un parent archivé...",
+            "no_results": "Aucun parent archivé trouvé",
+            "archived_children": "enfant(s) archivés",
+            "success_restore": "Parent et élèves restaurés avec succès ✅",
+            "update_levels": "Mettre à jour les niveaux pour la nouvelle année :",
+            "no_children_linked": "Aucun enfant archivé associé.",
+            "restore_btn": "Restaurer",
+            "delete_all_tooltip": "Tout supprimer définitivement",
+            "delete_all_confirm_title": "Suppression définitive",
+            "delete_all_confirm_msg": "Êtes-vous sûr de vouloir supprimer DÉFINITIVEMENT tous les parents archivés et leurs élèves ?\n\nCette action est irréversible.",
+            "delete_all_btn": "Supprimer TOUT",
+            "delete_individual_msg": "Voulez-vous supprimer définitivement {} {} et ses élèves ?",
+            "parent_deleted": "Parent supprimé définitivement.",
+            "all_deleted": "Toutes les données archivées ont été supprimées."
+        },
         "restrict_devices": "Restreindre à cet appareil uniquement",
         "restrict_devices_hint": "Si activé, la connexion sera refusée sur tout nouvel appareil non autorisé.",
         "developer": {
@@ -466,6 +488,7 @@
         "format_invalid_8_digits": "Format invalide (8 chiffres requis)",
         "format_invalid_8_digits_only": "8 chiffres uniquement",
         "unknown": "Inconnu",
-        "refresh": "Actualiser"
+        "refresh": "Actualiser",
+        "optional": "Optionnel"
     }
 }

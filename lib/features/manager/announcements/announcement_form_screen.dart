@@ -24,6 +24,7 @@ class _AnnouncementFormScreenState extends ConsumerState<AnnouncementFormScreen>
   
   AnnouncementTag _selectedTag = AnnouncementTag.info;
   DateTimeRange? _selectedDateRange;
+  DateTime? _selectedEventDate; // New optional event date
   String? _selectedLevelId; // null = All levels
 
   
@@ -83,6 +84,33 @@ class _AnnouncementFormScreenState extends ConsumerState<AnnouncementFormScreen>
     }
   }
 
+  Future<void> _pickEventDate(BuildContext context) async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedEventDate ?? today,
+      firstDate: today,
+      lastDate: today.add(const Duration(days: 365)),
+      locale: const Locale('fr'), // Or adapt based on app locale
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: ColorScheme.light(primary: Colors.purple),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        _selectedEventDate = picked;
+      });
+    }
+  }
+
   Future<void> _saveAnnouncement() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedDateRange == null) {
@@ -111,6 +139,7 @@ class _AnnouncementFormScreenState extends ConsumerState<AnnouncementFormScreen>
         createdAt: DateTime.now(),
         createdBy: 'manager', // TODO: Use real user ID
         targetLevelId: _selectedLevelId,
+        eventDate: _selectedEventDate,
       );
 
       await AnnouncementService().createAnnouncement(rawdhaId, announcement);
@@ -220,7 +249,7 @@ class _AnnouncementFormScreenState extends ConsumerState<AnnouncementFormScreen>
               ),
               const SizedBox(height: 16),
               
-              // Date Picker
+              // Date Picker (Display Period)
               InkWell(
                 onTap: () => _pickDateRange(context),
                 child: Container(
@@ -233,15 +262,68 @@ class _AnnouncementFormScreenState extends ConsumerState<AnnouncementFormScreen>
                     children: [
                       const Icon(Icons.date_range, color: Colors.grey),
                       const SizedBox(width: 8),
-                      Text(
-                        _selectedDateRange == null
-                            ? 'announcements.field_dates'.tr()
-                            : '${DateHelper.formatDateShort(context, _selectedDateRange!.start)} - ${DateHelper.formatDateShort(context, _selectedDateRange!.end)}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: _selectedDateRange == null ? FontWeight.normal : FontWeight.bold,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('announcements.field_dates'.tr(), style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                            const SizedBox(height: 4),
+                            Text(
+                              _selectedDateRange == null
+                                  ? 'announcements.select_period'.tr()
+                                  : '${DateHelper.formatDateShort(context, _selectedDateRange!.start)} - ${DateHelper.formatDateShort(context, _selectedDateRange!.end)}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: _selectedDateRange == null ? FontWeight.normal : FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Event Date Picker (Optional)
+              InkWell(
+                onTap: () => _pickEventDate(context),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.event, color: Colors.purple),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('${'announcements.event_date'.tr()} (${'common.optional'.tr()})',
+                                style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                            const SizedBox(height: 4),
+                            Text(
+                              _selectedEventDate == null
+                                  ? 'announcements.select_date'.tr()
+                                  : DateHelper.formatDateFull(context, _selectedEventDate!),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: _selectedEventDate == null ? FontWeight.normal : FontWeight.bold,
+                                color: _selectedEventDate == null ? Colors.black : Colors.purple,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (_selectedEventDate != null)
+                        IconButton(
+                          icon: const Icon(Icons.clear, color: Colors.grey),
+                          onPressed: () => setState(() => _selectedEventDate = null),
+                        ),
                     ],
                   ),
                 ),

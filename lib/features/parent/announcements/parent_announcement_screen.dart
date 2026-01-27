@@ -118,11 +118,20 @@ class _ParentAnnouncementScreenState extends ConsumerState<ParentAnnouncementScr
                               ),
                             ),
                           ],
-                          const Spacer(),
-                          Text(
-                            DateHelper.formatDateShort(context, announcement.startDate),
-                            style: const TextStyle(color: Colors.grey, fontSize: 12),
-                          ),
+                          if (announcement.eventDate != null)
+                            Text(
+                              DateHelper.formatDateFull(context, announcement.eventDate!),
+                              style: const TextStyle(
+                                color: Colors.purple,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            )
+                          else
+                            Text(
+                              DateHelper.formatDateShort(context, announcement.startDate),
+                              style: const TextStyle(color: Colors.grey, fontSize: 12),
+                            ),
                         ],
                       ),
                       const SizedBox(height: 16),

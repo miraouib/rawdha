@@ -17,6 +17,13 @@ class DateHelper {
     return convertNumbers(context, formatted);
   }
 
+  static String formatDateFull(BuildContext context, DateTime date) {
+    String formatted = DateFormat('EEEE d MMMM yyyy', 'fr').format(date);
+    // Capitalize first letter
+    formatted = formatted[0].toUpperCase() + formatted.substring(1);
+    return convertNumbers(context, formatted);
+  }
+
   static String convertNumbers(BuildContext context, String text) {
     // Force Western numerals (123...) even if the locale/system produces Arabic numerals (٠١٢...)
     const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];

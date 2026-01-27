@@ -195,13 +195,24 @@ class _AnnouncementListScreenState extends ConsumerState<AnnouncementListScreen>
                       const SizedBox(height: 8),
                       Text(
                         announcement.content,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(color: AppTheme.textGray),
                       ),
                       const SizedBox(height: 12),
                       const Divider(),
                       const SizedBox(height: 8),
+                      if (announcement.eventDate != null) ...[
+                        Row(
+                          children: [
+                            const Icon(Icons.event, size: 16, color: Colors.purple),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${"announcements.event_date".tr()}: ${DateHelper.formatDateFull(context, announcement.eventDate!)}',
+                              style: const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold, fontSize: 13),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                      ],
                       Row(
                         children: [
                           const Icon(Icons.date_range, size: 16, color: Colors.grey),

@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/parent_model.dart';
 import '../core/encryption/encryption_service.dart';
@@ -104,8 +105,20 @@ class ParentService {
         final doc = snapshot.docs.first;
         return ParentModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
       }
+
+      // Check if archived/deleted parent exists
+      final snapshotDeleted = await _parentsCollection
+          .where('rawdhaId', isEqualTo: rawdhaId)
+          .where('familyCode', isEqualTo: familyCode)
+          .where('isDeleted', isEqualTo: true) 
+          .limit(1)
+          .get();
+
+      if (snapshotDeleted.docs.isNotEmpty) {
+        throw Exception('parent.account_archived'.tr());
+      }
       
-      throw Exception('Code famille introuvable pour cette école');
+      throw Exception('parent.invalid_credentials'.tr());
     } catch (e) {
       if (e is Exception) rethrow; // Pass specific messages
       return null;
@@ -175,5 +188,12 @@ class ParentService {
 
   Future<void> deleteParent(String parentId) async {
     await _parentsCollection.doc(parentId).delete();
+  }
+
+  Future<void> deleteAllArchivedParents(String rawdhaId) async {
+    final archivedParents = await getArchivedParents(rawdhaId);
+    for (var parent in archivedParents) {
+      await deleteParentWithStudents(rawdhaId, parent.id);
+    }
   }
 }

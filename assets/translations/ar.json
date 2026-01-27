@@ -4,7 +4,7 @@
         "message": "يرجى التحقق من اتصالك. تم تعليق الوصول إلى الميزات حتى يتم استعادة الشبكة."
     },
     "version": "1.0",
-    "app_name": "روضتي",
+    "application_title": "روضتي",
     "welcome": "مرحبا",
     "login": "تسجيل الدخول",
     "logout": "تسجيل الخروج",
@@ -465,6 +465,7 @@
         "code_copied": "تم نسخ الرمز!",
         "format_invalid_8_digits": "صيغة غير صالحة (8 أرقام مطلوبة)",
         "format_invalid_8_digits_only": "8 أرقام فقط",
-        "unknown": "غير معروف"
+        "unknown": "غير معروف",
+        "refresh": "تحديث"
     }
 }

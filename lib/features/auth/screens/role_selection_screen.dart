@@ -108,7 +108,7 @@ class _RoleSelectionScreenState extends ConsumerState<RoleSelectionScreen> {
                 const SizedBox(height: 32),
                 
                 Text(
-                  'app_name'.tr(),
+                  'application_title'.tr(),
                   style: Theme.of(context).textTheme.displayMedium,
                 ),
                 const SizedBox(height: 8),

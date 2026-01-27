@@ -4,7 +4,7 @@
         "message": "Veuillez vérifier votre connexion. L'accès aux fonctionnalités est suspendu jusqu'au rétablissement du réseau."
     },
     "version": "1.0",
-    "app_name": "RAWDHATI",
+    "application_title": "RAWDHATI",
     "welcome": "Bienvenue",
     "login": "Connexion",
     "logout": "Déconnexion",
@@ -465,6 +465,7 @@
         "code_copied": "Code copié !",
         "format_invalid_8_digits": "Format invalide (8 chiffres requis)",
         "format_invalid_8_digits_only": "8 chiffres uniquement",
-        "unknown": "Inconnu"
+        "unknown": "Inconnu",
+        "refresh": "Actualiser"
     }
 }

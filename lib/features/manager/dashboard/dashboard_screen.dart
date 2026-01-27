@@ -60,7 +60,7 @@ class _ManagerDashboardScreenState extends ConsumerState<ManagerDashboardScreen>
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: Text('app_name'.tr()),
+        title: Text('application_title'.tr()),
         actions: [
           // Sélecteur de langue
           _LanguageSelector(),

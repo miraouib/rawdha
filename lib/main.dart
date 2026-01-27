@@ -39,7 +39,7 @@ class RawdhaApp extends ConsumerWidget {
 
     return MaterialApp.router(
       key: ValueKey(context.locale.toString()),
-      title: 'app_name'.tr(),
+      title: 'application_title'.tr(),
       debugShowCheckedModeBanner: false,
       routerConfig: goRouter,
       

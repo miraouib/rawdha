@@ -64,7 +64,6 @@ class _ModuleFormScreenState extends ConsumerState<ModuleFormScreen> {
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
       initialDateRange: _selectedDateRange,
-      locale: const Locale('fr'),
     );
 
     if (picked != null) {

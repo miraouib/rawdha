@@ -236,7 +236,6 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
                   initialDate: _birthdate ?? DateTime(1990),
                   firstDate: DateTime(1950),
                   lastDate: DateTime.now(),
-                  locale: const Locale('fr'),
                 );
                 if (date != null) {
                   setState(() => _birthdate = date);
@@ -257,7 +256,6 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
                   initialDate: _hireDate,
                   firstDate: DateTime(2000),
                   lastDate: DateTime.now(),
-                  locale: const Locale('fr'),
                 );
                 if (date != null) {
                   setState(() => _hireDate = date);

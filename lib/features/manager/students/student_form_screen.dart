@@ -75,7 +75,6 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
       initialDate: _birthdate ?? DateTime(2020),
       firstDate: DateTime(2015),
       lastDate: DateTime.now(),
-      locale: const Locale('fr'),
     );
     if (picked != null && picked != _birthdate) {
       setState(() {

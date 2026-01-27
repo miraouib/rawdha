@@ -39,7 +39,6 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
       initialDate: _selectedDate,
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
-      locale: const Locale('fr'),
     );
     if (picked != null && picked != _selectedDate) {
       setState(() {

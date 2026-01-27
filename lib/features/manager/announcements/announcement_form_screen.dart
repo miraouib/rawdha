@@ -55,7 +55,6 @@ class _AnnouncementFormScreenState extends ConsumerState<AnnouncementFormScreen>
       firstDate: today,
       lastDate: today.add(const Duration(days: 365)),
       initialDateRange: _selectedDateRange,
-      locale: const Locale('fr'),
       builder: (context, child) {
         return Theme(
           data: ThemeData.light().copyWith(
@@ -93,7 +92,6 @@ class _AnnouncementFormScreenState extends ConsumerState<AnnouncementFormScreen>
       initialDate: _selectedEventDate ?? today,
       firstDate: today,
       lastDate: today.add(const Duration(days: 365)),
-      locale: const Locale('fr'), // Or adapt based on app locale
       builder: (context, child) {
         return Theme(
           data: ThemeData.light().copyWith(

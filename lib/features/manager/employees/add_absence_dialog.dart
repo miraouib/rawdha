@@ -145,7 +145,6 @@ class _AddAbsenceDialogState extends ConsumerState<AddAbsenceDialog> {
                     initialDate: _startDate,
                     firstDate: DateTime(2020),
                     lastDate: DateTime.now().add(const Duration(days: 365)),
-                    locale: const Locale('fr'),
                   );
                   if (date != null) {
                     setState(() => _startDate = date);
@@ -175,7 +174,6 @@ class _AddAbsenceDialogState extends ConsumerState<AddAbsenceDialog> {
                     initialDate: _endDate ?? _startDate.add(const Duration(days: 1)),
                     firstDate: _startDate,
                     lastDate: DateTime.now().add(const Duration(days: 365)),
-                    locale: const Locale('fr'),
                   );
                   if (date != null) {
                     setState(() => _endDate = date);

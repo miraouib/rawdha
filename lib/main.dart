@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'core/widgets/offline_wrapper.dart'; // Import global wrapper
+import 'core/helpers/tunisian_material_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,7 +45,10 @@ class RawdhaApp extends ConsumerWidget {
       routerConfig: goRouter,
       
       // Localisation
-      localizationsDelegates: context.localizationDelegates,
+      localizationsDelegates: [
+        TunisianMaterialLocalizations.delegate,
+        ...context.localizationDelegates,
+      ],
       supportedLocales: context.supportedLocales,
       locale: context.locale,
       

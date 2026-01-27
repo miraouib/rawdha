@@ -108,7 +108,6 @@ class _ParentAbsenceFormScreenState extends State<ParentAbsenceFormScreen> {
                     initialDate: _selectedDate,
                     firstDate: DateTime.now().subtract(const Duration(days: 7)),
                     lastDate: DateTime.now().add(const Duration(days: 30)),
-                    locale: const Locale('fr'),
                   );
                   if (date != null) {
                     setState(() => _selectedDate = date);

@@ -1,28 +1,39 @@
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 /// Utilitaires pour obtenir les informations de l'appareil
 /// 
 /// Utilisé pour le système d'autorisation des appareils managers
 class DeviceUtils {
   static final DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
+  static const String _deviceIdKey = 'unique_device_id';
+  static const _uuid = Uuid();
 
   /// Obtient l'ID unique de l'appareil
   /// 
-  /// Sur Android: retourne androidId
-  /// Sur iOS: retourne identifierForVendor
+  /// Génère et stocke un UUID unique par installation d'application.
+  /// Cet ID persiste même après redémarrage de l'app, mais sera réinitialisé
+  /// si l'utilisateur désinstalle et réinstalle l'application.
   /// 
   /// Cet ID est utilisé pour le système d'autorisation des appareils
   static Future<String> getDeviceId() async {
     try {
-      if (Platform.isAndroid) {
-        final androidInfo = await _deviceInfo.androidInfo;
-        return androidInfo.id; // Android ID unique
-      } else if (Platform.isIOS) {
-        final iosInfo = await _deviceInfo.iosInfo;
-        return iosInfo.identifierForVendor ?? 'unknown-ios';
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Vérifier si un ID existe déjà
+      String? deviceId = prefs.getString(_deviceIdKey);
+      
+      if (deviceId == null || deviceId.isEmpty) {
+        // Générer un nouvel UUID unique
+        deviceId = _uuid.v4();
+        
+        // Sauvegarder pour les prochaines utilisations
+        await prefs.setString(_deviceIdKey, deviceId);
       }
-      return 'unknown-platform';
+      
+      return deviceId;
     } catch (e) {
       throw Exception('Impossible d\'obtenir l\'ID de l\'appareil: $e');
     }
@@ -51,19 +62,23 @@ class DeviceUtils {
   /// Retourne un Map avec toutes les informations utiles
   static Future<Map<String, String>> getDeviceInfo() async {
     try {
+      final deviceId = await getDeviceId();
+      
       if (Platform.isAndroid) {
         final androidInfo = await _deviceInfo.androidInfo;
         return {
-          'id': androidInfo.id,
+          'id': deviceId,
           'name': '${androidInfo.manufacturer} ${androidInfo.model}',
           'platform': 'Android',
           'version': androidInfo.version.release,
           'sdk': androidInfo.version.sdkInt.toString(),
+          'buildId': androidInfo.id, // Build ID (version Android)
+          'fingerprint': androidInfo.fingerprint, // Empreinte de l'appareil
         };
       } else if (Platform.isIOS) {
         final iosInfo = await _deviceInfo.iosInfo;
         return {
-          'id': iosInfo.identifierForVendor ?? 'unknown',
+          'id': deviceId,
           'name': iosInfo.name,
           'platform': 'iOS',
           'version': iosInfo.systemVersion,
@@ -71,7 +86,7 @@ class DeviceUtils {
         };
       }
       return {
-        'id': 'unknown',
+        'id': deviceId,
         'name': 'Unknown Device',
         'platform': 'Unknown',
       };
@@ -80,3 +95,4 @@ class DeviceUtils {
     }
   }
 }
+

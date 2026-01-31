@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'dart:math';
 import '../../../core/encryption/encryption_service.dart';
 import '../../../core/utils/device_utils.dart';
 import '../../../models/manager_model.dart';
+import '../../../models/school_config_model.dart';
 import '../../../services/school_service.dart';
 
 /// Service d'authentification pour les Managers
@@ -178,6 +180,46 @@ class ManagerAuthService {
       throw Exception('Erreur lors de la restriction de l\'appareil: $e');
     }
   }
+  /// Générer un code école unique basé sur le nom
+  Future<String> _generateUniqueSchoolCode(String rawdhaName, String rawdhaId) async {
+    // Extraire les premières lettres du nom (enlever les espaces et caractères spéciaux)
+    final cleanName = rawdhaName
+        .toUpperCase()
+        .replaceAll(RegExp(r'[^A-Z0-9\u0600-\u06FF]'), ''); // Garder lettres latines, chiffres et arabes
+    
+    // Prendre les 4-6 premiers caractères
+    String baseCode = cleanName.length >= 4 
+        ? cleanName.substring(0, cleanName.length >= 6 ? 6 : cleanName.length)
+        : cleanName;
+    
+    // Vérifier si ce code existe déjà
+    final schoolService = SchoolService();
+    bool codeExists = await schoolService.checkSchoolCodeExists(baseCode, rawdhaId);
+    
+    if (!codeExists) {
+      return baseCode;
+    }
+    
+    // Si le code existe, générer un code aléatoire unique de 8 caractères
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    final random = Random();
+    
+    for (int attempt = 0; attempt < 10; attempt++) {
+      String randomCode = List.generate(
+        8, 
+        (index) => chars[random.nextInt(chars.length)]
+      ).join();
+      
+      bool exists = await schoolService.checkSchoolCodeExists(randomCode, rawdhaId);
+      if (!exists) {
+        return randomCode;
+      }
+    }
+    
+    // Fallback: utiliser timestamp
+    return 'SCH${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+  }
+
   /// Enregistrer une nouvelle Rawdha et son admin
   Future<void> registerRawdha({
     required String rawdhaName,
@@ -188,7 +230,18 @@ class ManagerAuthService {
     try {
       final deviceId = await DeviceUtils.getDeviceId();
 
-      // 1. Vérifier si le numéro de téléphone est déjà utilisé
+      // 1. Vérifier si le nom d'utilisateur est déjà pris
+      final usernameQuery = await _firestore
+          .collection('managers')
+          .where('username', isEqualTo: adminUsername)
+          .limit(1)
+          .get();
+
+      if (usernameQuery.docs.isNotEmpty) {
+        throw Exception('Ce nom d\'utilisateur est déjà pris.');
+      }
+
+      // 2. Vérifier si le numéro de téléphone est déjà utilisé
       final phoneQuery = await _firestore
           .collection('rawdhas')
           .where('phoneNumber', isEqualTo: phoneNumber)
@@ -199,7 +252,7 @@ class ManagerAuthService {
         throw Exception('Ce numéro de téléphone est déjà utilisé par un autre établissement.');
       }
 
-      // 2. Vérifier si cet appareil a déjà une inscription
+      // 3. Vérifier si cet appareil a déjà une inscription
       final deviceQuery = await _firestore
           .collection('rawdhas')
           .where('registeredDeviceId', isEqualTo: deviceId)
@@ -210,23 +263,37 @@ class ManagerAuthService {
         throw Exception('Cet appareil est déjà associé à une inscription.');
       }
 
-      // 3. Créer la Rawdha
+      // 4. Générer un code école unique
+      final schoolCode = await _generateUniqueSchoolCode(rawdhaName, 'temp');
+
+      // 5. Créer la Rawdha
       final rawdhaDocRef = await _firestore.collection('rawdhas').add({
         'name': rawdhaName,
         'phoneNumber': phoneNumber,
         'registeredDeviceId': deviceId,
+        'code': schoolCode, // Ajouter le code école
         'accepter': true, // Par défaut, nécessite validation
         'dateValide': Timestamp.fromDate(DateTime.now().add(const Duration(days: 7))), // 7 jours d'essai
       });
 
-      // 4. Créer l'admin associé
+      // 6. Créer la configuration de l'école avec le même nom et code
+      final schoolConfig = SchoolConfigModel(
+        rawdhaId: rawdhaDocRef.id,
+        name: rawdhaName,
+        schoolCode: schoolCode,
+        paymentStartMonth: 9, // Septembre par défaut
+        restrictDevices: false,
+      );
+      await SchoolService().saveSchoolConfig(schoolConfig, rawdhaDocRef.id);
+
+      // 7. Créer l'admin associé
       await createManager(
         username: adminUsername,
         password: adminPassword,
         rawdhaId: rawdhaDocRef.id,
       );
 
-      // 5. Initialiser les niveaux par défaut
+      // 8. Initialiser les niveaux par défaut
       await SchoolService().initializeDefaultLevels(rawdhaDocRef.id);
     } catch (e) {
       throw Exception('Erreur lors de l\'enregistrement: $e');

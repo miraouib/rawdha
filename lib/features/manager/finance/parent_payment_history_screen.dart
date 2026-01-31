@@ -223,21 +223,11 @@ class _ParentPaymentHistoryScreenState extends ConsumerState<ParentPaymentHistor
               )
             : Text('parent.no_payment_recorded'.tr()),
         actions: [
+          // Bouton "Fermer" toujours présent
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text('parent.close'.tr()),
-          ),
-          if (payment == null)
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                context.pushNamed('revenue_add', extra: {
-                  'parentId': widget.parent.id,
-                  'rawdhaId': rawdhaId,
-                });
-              },
-              child: Text('parent.add_payment'.tr()),
-            ),
+          )
         ],
       ),
     );

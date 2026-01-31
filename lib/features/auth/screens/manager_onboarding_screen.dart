@@ -101,7 +101,7 @@ class _ManagerOnboardingScreenState extends ConsumerState<ManagerOnboardingScree
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     Text(
                       slide.descKey.tr(),
                       style: const TextStyle(
@@ -137,7 +137,7 @@ class _ManagerOnboardingScreenState extends ConsumerState<ManagerOnboardingScree
                     ),
                   ),
                 ),
-                const SizedBox(height: 48),
+                const SizedBox(height: 10),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 40),
                   child: SizedBox(

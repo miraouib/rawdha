@@ -150,7 +150,8 @@ class _RestoreDataScreenState extends ConsumerState<RestoreDataScreen> {
         updates[s.studentId] = _selectedLevels[s.studentId] ?? s.levelId;
       }
 
-      await _schoolService.restoreParent(parent.id, updates);
+      final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+      await _schoolService.restoreParent(rawdhaId, parent.id, updates);
       
       // Update local state to remove restored parent
       if (mounted) {

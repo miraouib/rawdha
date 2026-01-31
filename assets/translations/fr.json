@@ -490,5 +490,22 @@
         "unknown": "Inconnu",
         "refresh": "Actualiser",
         "optional": "Optionnel"
+    },
+    "onboarding": {
+        "welcome_title": "Bienvenue sur Rawdhati",
+        "welcome_desc": "Votre période d'essai de 7 jours commence maintenant. Découvrez comment gérer votre établissement facilement.",
+        "students_title": "Gestion des Élèves",
+        "students_desc": "Inscrivez vos élèves, gérez leur présence et suivez leur progression au quotidien.",
+        "parents_title": "Espace Parents",
+        "parents_desc": "Communiquez facilement avec les parents et donnez-leur un accès sécurisé grâce aux codes uniques.",
+        "modules_title": "Modules Pédagogiques",
+        "modules_desc": "Créez vos programmes de la semaine : lettres, chiffres, chants et plus encore.",
+        "finance_title": "Suivi Financier",
+        "finance_desc": "Gérez vos revenus (paiements parents) et vos dépenses en toute simplicité.",
+        "validation_title": "Validation du Compte",
+        "validation_desc": "Pour valider définitivement votre accès après les 7 jours d'essai, n'hésitez pas à nous contacter.",
+        "next": "Suivant",
+        "start": "Commencer maintenant",
+        "skip": "Ignorer"
     }
 }

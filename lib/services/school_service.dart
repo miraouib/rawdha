@@ -4,6 +4,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import '../../models/school_level_model.dart';
 import '../../models/school_config_model.dart';
 import '../../models/rawdha_model.dart';
+import '../services/local_cache_service.dart';
 
 /// Service de gestion de l'école (Niveaux)
 class SchoolService {
@@ -42,11 +43,12 @@ class SchoolService {
     }
 
     await batch.commit();
+    await LocalCacheService().clearCache(rawdhaId);
   }
 
   /// Restaurer un parent et ses enfants
   /// Met isDeleted = false et met à jour les niveaux des enfants
-  Future<void> restoreParent(String parentId, Map<String, String> studentLevelUpdates) async {
+  Future<void> restoreParent(String rawdhaId, String parentId, Map<String, String> studentLevelUpdates) async {
     final batch = _firestore.batch();
     
     // 1. Restore Parent
@@ -66,6 +68,7 @@ class SchoolService {
     }
 
     await batch.commit();
+    await LocalCacheService().clearCache(rawdhaId);
   }
 
   /// Récupérer les infos d'une Rawdha par ID

@@ -5,6 +5,7 @@ import '../../features/auth/screens/role_selection_screen.dart';
 import '../../features/auth/screens/manager_login_screen.dart';
 import '../../features/auth/screens/parent_login_screen.dart'; // Import this
 import '../../features/auth/screens/manager_registration_screen.dart';
+import '../../features/auth/screens/manager_onboarding_screen.dart';
 import '../../features/manager/dashboard/dashboard_screen.dart';
 import '../../features/manager/students/student_list_screen.dart';
 import '../../features/manager/students/manager_absence_list_screen.dart';
@@ -60,6 +61,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: 'register',
             name: 'manager_registration',
             builder: (context, state) => const ManagerRegistrationScreen(),
+          ),
+          GoRoute(
+            path: 'onboarding',
+            name: 'manager_onboarding',
+            builder: (context, state) => const ManagerOnboardingScreen(),
           ),
         ],
       ),

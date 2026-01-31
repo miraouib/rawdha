@@ -80,7 +80,12 @@ class _ManagerLoginScreenState extends ConsumerState<ManagerLoginScreen> {
         ref.read(currentRawdhaIdProvider.notifier).state = manager.rawdhaId;
         ref.read(currentManagerIdProvider.notifier).state = manager.managerId;
         ref.read(currentManagerUsernameProvider.notifier).state = manager.username;
-        context.goNamed('manager_dashboard');
+
+        if (!manager.hasSeenOnboarding) {
+          context.goNamed('manager_onboarding');
+        } else {
+          context.goNamed('manager_dashboard');
+        }
       }
     } catch (e) {
       if (mounted) {

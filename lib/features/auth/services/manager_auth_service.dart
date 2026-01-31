@@ -118,6 +118,7 @@ class ManagerAuthService {
         'passwordHash': passwordHash,
         'rawdhaId': rawdhaId,
         'authorizedDevices': [],
+        'hasSeenOnboarding': false,
       });
 
       return ManagerModel(
@@ -126,6 +127,7 @@ class ManagerAuthService {
         username: username,
         passwordHash: passwordHash,
         authorizedDevices: [],
+        hasSeenOnboarding: false,
       );
     } catch (e) {
       throw Exception('Erreur lors de la création du manager: $e');
@@ -140,6 +142,17 @@ class ManagerAuthService {
       });
     } catch (e) {
       throw Exception('Erreur lors de l\'autorisation de l\'appareil: $e');
+    }
+  }
+
+  /// Marquer l'onboarding comme terminé
+  Future<void> completeOnboarding(String managerId) async {
+    try {
+      await _firestore.collection('managers').doc(managerId).update({
+        'hasSeenOnboarding': true,
+      });
+    } catch (e) {
+      throw Exception('Erreur lors de la mise à jour de l\'onboarding: $e');
     }
   }
 

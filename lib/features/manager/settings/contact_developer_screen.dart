@@ -184,6 +184,16 @@ class _ContactDeveloperScreenState extends State<ContactDeveloperScreen> {
                                 onTap: () => _launchWhatsApp(developer.phone!),
                               ),*/
                               const Divider(height: 1, indent: 64),
+                              if (developer.isUpdateAvailable && developer.updateUrl != null) ...[
+                                _buildContactListTile(
+                                  icon: Icons.system_update,
+                                  title: 'updates.update_btn'.tr(),
+                                  subtitle: 'updates.title'.tr(),
+                                  color: Colors.green,
+                                  onTap: () => _launchUrl(developer.updateUrl!),
+                                ),
+                                const Divider(height: 1, indent: 64),
+                              ],
                             ],
                             if (developer.email != null) ...[
                               _buildContactListTile(

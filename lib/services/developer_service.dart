@@ -24,14 +24,15 @@ class DeveloperService {
         'nameAr': 'فريق روضتي',
         'nameFr': 'Rawdhati Team',
         'email': 'support@rawdhati.com',
-        'phone': '+213123456789',
+        'phone': '+21626383646',
         'bioAr': 'فريق تطوير شغوف بالتعليم والتكنولوجيا.',
         'bioFr': 'Équipe de développement passionnée par l\'éducation et la technologie.',
         'photoUrl': 'https://firebasestorage.googleapis.com/v0/b/safe-kids-7f0b5.appspot.com/o/developer%2Flogo_dev.png?alt=media',
         'socialLinks': {
-          'facebook': 'https://facebook.com/rawdhati',
           'linkedin': 'https://linkedin.com/company/rawdhati',
         },
+        'isUpdateAvailable': false,
+        'updateUrl': 'https://play.google.com/store/apps/details?id=com.rawdha.rawdha',
       });
     }
   }

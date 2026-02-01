@@ -10,6 +10,8 @@ class DeveloperModel {
   final String? bioFr;
   final String? photoUrl;
   final Map<String, dynamic>? socialLinks;
+  final bool isUpdateAvailable;
+  final String? updateUrl;
 
   DeveloperModel({
     required this.id,
@@ -21,6 +23,8 @@ class DeveloperModel {
     this.bioFr,
     this.photoUrl,
     this.socialLinks,
+    this.isUpdateAvailable = false,
+    this.updateUrl,
   });
 
   factory DeveloperModel.fromFirestore(Map<String, dynamic> data, String id) {
@@ -34,6 +38,8 @@ class DeveloperModel {
       bioFr: data['bioFr'] ?? data['bio'],
       photoUrl: data['photoUrl'],
       socialLinks: data['socialLinks'] as Map<String, dynamic>?,
+      isUpdateAvailable: data['isUpdateAvailable'] ?? false,
+      updateUrl: data['updateUrl'],
     );
   }
 
@@ -47,6 +53,8 @@ class DeveloperModel {
       'bioFr': bioFr,
       'photoUrl': photoUrl,
       'socialLinks': socialLinks,
+      'isUpdateAvailable': isUpdateAvailable,
+      'updateUrl': updateUrl,
     };
   }
 }

@@ -507,5 +507,9 @@
         "next": "Suivant",
         "start": "Commencer maintenant",
         "skip": "Ignorer"
+    },
+    "updates": {
+        "title": "Mise à jour disponible",
+        "update_btn": "Mettre à jour"
     }
 }

@@ -101,7 +101,7 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
     final file = File(image.path);
     final size = await file.length();
     
-    if (size > 350 * 1024) { // 350 KB
+    if (size > 2 * 1024 * 1024) { // 2 MB
        if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('school.logo_too_large'.tr())),
@@ -399,61 +399,86 @@ class _SchoolConfigScreenState extends ConsumerState<SchoolConfigScreen> {
                     _buildSectionHeader('school.branding'.tr()),
                     const SizedBox(height: 16),
                     
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: _logoUrlController,
-                            readOnly: true,
-                            decoration: InputDecoration(
-                              labelText: 'school.fields.logo_url'.tr(),
-                              prefixIcon: const Icon(Icons.image),
-                              border: const OutlineInputBorder(),
-                              helperText: 'school.logo_hint'.tr(),
+                    Center(
+                      child: Column(
+                        children: [
+                          GestureDetector(
+                            onTap: _isLoading ? null : _pickAndUploadLogo,
+                            child: Stack(
+                              children: [
+                                Container(
+                                  height: 140,
+                                  width: 140,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade50,
+                                    border: Border.all(color: Colors.grey.shade200, width: 2),
+                                    borderRadius: BorderRadius.circular(20),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.05),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: _logoUrlController.text.isNotEmpty
+                                      ? ClipRRect(
+                                          borderRadius: BorderRadius.circular(18),
+                                          child: Image.network(
+                                            _logoUrlController.text,
+                                            fit: BoxFit.contain,
+                                            loadingBuilder: (context, child, loadingProgress) {
+                                              if (loadingProgress == null) return child;
+                                              return const Center(child: CircularProgressIndicator());
+                                            },
+                                            errorBuilder: (context, error, stackTrace) =>
+                                                const Center(child: Icon(Icons.broken_image, size: 40, color: Colors.grey)),
+                                          ),
+                                        )
+                                      : Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.add_a_photo_outlined, size: 40, color: AppTheme.primaryBlue.withOpacity(0.5)),
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              'common.add'.tr(),
+                                              style: TextStyle(color: AppTheme.primaryBlue.withOpacity(0.7), fontWeight: FontWeight.bold),
+                                            ),
+                                          ],
+                                        ),
+                                ),
+                                if (_logoUrlController.text.isNotEmpty)
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.primaryBlue,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: Colors.white, width: 2),
+                                      ),
+                                      child: const Icon(Icons.edit, size: 16, color: Colors.white),
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          children: [
-                            IconButton.filled(
-                              onPressed: _pickAndUploadLogo,
-                              icon: const Icon(Icons.upload_file),
-                              tooltip: 'school.upload_logo_tooltip'.tr(),
-                            ),
-                            Text('school.max_size'.tr(), style: const TextStyle(fontSize: 10, color: Colors.grey)),
-                          ],
-                        ),
-                      ],
-                    ),
-                    if (_logoUrlController.text.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 16.0),
-                        child: Center(
-                          child: Container(
-                            height: 120,
-                            width: 120,
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey.shade300),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.network(
-                                _logoUrlController.text,
-                                fit: BoxFit.contain,
-                                loadingBuilder: (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return const Center(child: CircularProgressIndicator());
-                                },
-                                errorBuilder: (context, error, stackTrace) =>
-                                    const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
-                              ),
-                            ),
+                          const SizedBox(height: 12),
+                          Text(
+                            _logoUrlController.text.isNotEmpty 
+                                ? 'school.upload_logo_tooltip'.tr() 
+                                : 'school.branding'.tr(),
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                           ),
-                        ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'school.max_size'.tr(),
+                            style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                          ),
+                        ],
                       ),
+                    ),
                     
                     const SizedBox(height: 32),
                     

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../core/encryption/encryption_service.dart';
 
 class ParentModel {
   final String id;
@@ -35,10 +36,10 @@ class ParentModel {
       rawdhaId: data['rawdhaId'] ?? 'default',
       firstName: data['firstName'] ?? '',
       lastName: data['lastName'] ?? '',
-      phone: data['phone'] ?? '',
+      phone: _decryptPhone(data['phone']),
       familyCode: data['familyCode'] ?? '',
       spouseName: data['spouseName'] ?? '',
-      spousePhone: data['spousePhone'] ?? '',
+      spousePhone: _decryptPhone(data['spousePhone']),
       monthlyFee: (data['monthlyFee'] as num?)?.toDouble(),
       studentIds: List<String>.from(data['studentIds'] ?? []),
       createdAt: data['createdAt'] is Timestamp 
@@ -64,5 +65,16 @@ class ParentModel {
       'createdAt': Timestamp.fromDate(createdAt),
       'isDeleted': isDeleted,
     };
+  }
+  static String _decryptPhone(String? encrypted) {
+    if (encrypted == null || encrypted.isEmpty) return '';
+    try {
+      // Lazy fix: avoid creating service instance for every field, but for now safe.
+      // Better: check if it looks like base64 + IV
+      if (encrypted.length < 20) return encrypted; // Too short to be AES
+      return EncryptionService().decryptString(encrypted);
+    } catch (e) {
+      return encrypted; // Fallback to plain text if decryption fails (migration)
+    }
   }
 }

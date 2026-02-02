@@ -145,7 +145,10 @@ class ParentService {
   Future<void> addParent(ParentModel parent) async {
     // Encrypt sensitive data before saving
     final map = parent.toMap();
-    // map['phone'] = _encryptionService.encrypt(parent.phone);
+    map['phone'] = _encryptionService.encryptString(parent.phone);
+    if (parent.spousePhone.isNotEmpty) {
+      map['spousePhone'] = _encryptionService.encryptString(parent.spousePhone);
+    }
     // map['familyCode'] = _encryptionService.encrypt(parent.familyCode);
     // map['accessCode'] = _encryptionService.encrypt(parent.accessCode);
 
@@ -156,7 +159,10 @@ class ParentService {
   Future<void> updateParent(ParentModel parent) async {
     final map = parent.toMap();
     // Encrypt sensitive data
-    // map['phone'] = _encryptionService.encrypt(parent.phone);
+    map['phone'] = _encryptionService.encryptString(parent.phone);
+    if (parent.spousePhone.isNotEmpty) {
+      map['spousePhone'] = _encryptionService.encryptString(parent.spousePhone);
+    }
     // map['familyCode'] = _encryptionService.encrypt(parent.familyCode); // ID usually doesn't change?
     // map['accessCode'] = _encryptionService.encrypt(parent.accessCode); // Can change
 

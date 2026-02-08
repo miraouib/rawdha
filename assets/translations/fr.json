@@ -134,6 +134,7 @@
         "monthly_fee": "Frais mensuels",
         "children_enrolled": "Enfants inscrits",
         "payment_history": "Historique des paiements",
+        "payment_history_short": "Hist. Paiements",
         "view_payments": "Voir les paiements",
         "no_parent": "Aucun parent",
         "search_parent": "Rechercher un parent",

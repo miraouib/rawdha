@@ -17,6 +17,14 @@ class DateHelper {
     12: 'ديسمبر',
   };
 
+  static String getMonthName(BuildContext context, int month) {
+    if (context.locale.languageCode == 'ar') {
+      return _tunisianMonths[month] ?? '';
+    }
+    final date = DateTime(2024, month, 1);
+    return DateFormat('MMM', 'fr').format(date);
+  }
+
   static final Map<int, String> _arabicWeekdays = {
     1: 'الإثنين',
     2: 'الثلاثاء',
@@ -29,7 +37,10 @@ class DateHelper {
 
   static String formatMonthYear(BuildContext context, DateTime date) {
     if (context.locale.languageCode == 'ar') {
-      return convertNumbers(context, '${_tunisianMonths[date.month]} ${date.year}');
+      return convertNumbers(
+        context,
+        '${_tunisianMonths[date.month]} ${date.year}',
+      );
     }
     String formatted = DateFormat('MMMM yyyy', 'fr').format(date);
     return convertNumbers(context, formatted);
@@ -37,7 +48,10 @@ class DateHelper {
 
   static String formatDateShort(BuildContext context, DateTime date) {
     if (context.locale.languageCode == 'ar') {
-      return convertNumbers(context, '${date.day} ${_tunisianMonths[date.month]}');
+      return convertNumbers(
+        context,
+        '${date.day} ${_tunisianMonths[date.month]}',
+      );
     }
     String formatted = DateFormat('dd MMM', 'fr').format(date);
     return convertNumbers(context, formatted);
@@ -45,7 +59,10 @@ class DateHelper {
 
   static String formatDateLong(BuildContext context, DateTime date) {
     if (context.locale.languageCode == 'ar') {
-      return convertNumbers(context, '${date.day} ${_tunisianMonths[date.month]} ${date.year}');
+      return convertNumbers(
+        context,
+        '${date.day} ${_tunisianMonths[date.month]} ${date.year}',
+      );
     }
     String formatted = DateFormat('dd MMMM yyyy', 'fr').format(date);
     return convertNumbers(context, formatted);
@@ -53,7 +70,10 @@ class DateHelper {
 
   static String formatDateFull(BuildContext context, DateTime date) {
     if (context.locale.languageCode == 'ar') {
-      return convertNumbers(context, '${_arabicWeekdays[date.weekday]} ${date.day} ${_tunisianMonths[date.month]} ${date.year}');
+      return convertNumbers(
+        context,
+        '${_arabicWeekdays[date.weekday]} ${date.day} ${_tunisianMonths[date.month]} ${date.year}',
+      );
     }
     String formatted = DateFormat('EEEE d MMMM yyyy', 'fr').format(date);
     // Capitalize first letter

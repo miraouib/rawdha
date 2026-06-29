@@ -9,7 +9,7 @@ class SchoolConfigModel {
   final String? email;
   final String? logoUrl;
   final Map<String, dynamic>? socialLinks;
-  final String? schoolCode; // Unique School Code (e.g. ISRAA)
+  final String? schoolCode; // Unique School Code (e.g. MARIEM)
   final int paymentStartMonth; // Mois de début des calculs (1-12, default 9)
   final int? paymentStartYear; // Année de début (optionnel)
   final bool restrictDevices; // Restriction par appareil

@@ -160,7 +160,7 @@
         "save_button": "Enregistrer",
         "error_rawdha_id": "Erreur: ID Rawdha non trouvé",
         "school_code_label": "Code École",
-        "school_code_hint": "ex: ISRAA",
+        "school_code_hint": "ex: MARIEM",
         "ask_school_code": "Demandez votre code unique à l'école",
         "school_label": "École",
         "family_id_short": "ID",
@@ -413,7 +413,7 @@
             "email": "Email",
             "logo_url": "URL du Logo",
             "code": "Code École (Unique)",
-            "code_hint": "Ex: ISRAA - Requis pour connexion parents"
+            "code_hint": "Ex: MARIEM - Requis pour connexion parents"
         },
         "validation": {
             "code_required": "Code requis",
@@ -512,5 +512,22 @@
     "updates": {
         "title": "Mise à jour disponible",
         "update_btn": "Mettre à jour"
+    },
+    "messages": {
+        "dashboard_title": "Messages",
+        "dashboard_subtitle": "Consulter les messages",
+        "admin_title": "Administration",
+        "admin_label": "Administration",
+        "conversations_title": "Messages des parents",
+        "load_error": "Impossible de charger les messages",
+        "parent_empty_title": "Envoyez un message à l'administration",
+        "admin_empty_title": "Aucun message dans cette discussion",
+        "no_conversations": "Aucune discussion pour le moment",
+        "retention_note": "Les messages sont conservés 7 jours",
+        "daily_limit_reached": "Vous avez atteint la limite de 20 messages par jour",
+        "daily_limit_reached_admin": "Limite de 20 messages par jour atteinte pour cette discussion",
+        "daily_limit_banner": "Limite de 20 messages atteinte pour aujourd'hui",
+        "write_hint": "Écrivez votre message...",
+        "write_hint_admin": "Écrivez un message..."
     }
 }

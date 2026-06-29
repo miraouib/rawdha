@@ -30,6 +30,9 @@ import '../../features/manager/settings/restore_data_screen.dart'; // Import
 import '../../features/manager/settings/test_data_screen.dart'; // Import test data screen
 import '../../features/manager/settings/contact_developer_screen.dart'; // Import
 import '../../features/manager/employees/hr_management_screen.dart';
+import '../../features/manager/messages/conversation_list_screen.dart';
+import '../../features/manager/messages/conversation_detail_screen.dart';
+import '../../features/parent/messages/parent_conversation_screen.dart';
 import '../../features/parent/dashboard/parent_dashboard_screen.dart';
 import '../../features/parent/students/student_modules_screen.dart';
 import '../../features/parent/students/student_history_screen.dart';
@@ -39,6 +42,7 @@ import '../../features/parent/announcements/parent_announcement_screen.dart';
 import '../../features/parent/dashboard/parent_school_detail_screen.dart';
 import '../../models/student_model.dart';
 import '../../models/parent_model.dart';
+import '../../services/parent_message_service.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -219,10 +223,26 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             name: 'hr_management',
             builder: (context, state) => const HRManagementScreen(),
           ),
-          GoRoute(
+           GoRoute(
             path: 'student-absences',
             name: 'manager_absences',
             builder: (context, state) => const ManagerAbsenceListScreen(),
+          ),
+           GoRoute(
+            path: 'admin-messages',
+            name: 'admin_messages',
+            builder: (context, state) => const ConversationListScreen(),
+          ),
+           GoRoute(
+            path: 'conversation-detail',
+            name: 'conversation_detail',
+            builder: (context, state) {
+              final conv = state.extra as ConversationSummary;
+              return ConversationDetailScreen(
+                conversationId: conv.conversationId,
+                parentName: conv.parentName,
+              );
+            },
           ),
         ],
       ),
@@ -283,6 +303,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: 'school-details',
             name: 'parent_school_details',
             builder: (context, state) => const ParentSchoolDetailScreen(),
+          ),
+           GoRoute(
+            path: 'contact-admin',
+            name: 'parent_contact_admin',
+            builder: (context, state) {
+              final parent = state.extra as ParentModel;
+              return ParentConversationScreen(parent: parent);
+            },
           ),
         ],
       ),

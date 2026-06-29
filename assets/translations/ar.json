@@ -160,7 +160,7 @@
         "save_button": "حفظ",
         "error_rawdha_id": "خطأ: لم يتم العثور على معرف الروضة",
         "school_code_label": "رمز المدرسة",
-        "school_code_hint": "مثال: ISRAA",
+        "school_code_hint": "مثال: MARIEM",
         "ask_school_code": "اطلب الرمز الخاص بك من المدرسة",
         "school_label": "المدرسة",
         "family_id_short": "المعرف",
@@ -413,7 +413,7 @@
             "email": "البريد الإلكتروني",
             "logo_url": "رابط الشعار",
             "code": "رمز المدرسة (فريد)",
-            "code_hint": "مثال: ISRAA - مطلوب لتسجيل دخول الأولياء"
+            "code_hint": "مثال: MARIEM - مطلوب لتسجيل دخول الأولياء"
         },
         "validation": {
             "code_required": "الرمز مطلوب",
@@ -512,5 +512,22 @@
     "updates": {
         "title": "تحديث جديد متوفر",
         "update_btn": "تحديث التطبيق"
+    },
+    "messages": {
+        "dashboard_title": "الرسائل",
+        "dashboard_subtitle": "عرض الرسائل",
+        "admin_title": "الإدارة",
+        "admin_label": "الإدارة",
+        "conversations_title": "رسائل الأولياء",
+        "load_error": "تعذر تحميل الرسائل",
+        "parent_empty_title": "أرسل رسالة إلى الإدارة",
+        "admin_empty_title": "لا توجد رسائل في هذه المحادثة",
+        "no_conversations": "لا توجد محادثات حالياً",
+        "retention_note": "يتم الاحتفاظ بالرسائل لمدة 7 أيام",
+        "daily_limit_reached": "لقد وصلت إلى حد 20 رسالة في اليوم",
+        "daily_limit_reached_admin": "تم الوصول إلى حد 20 رسالة في اليوم لهذه المحادثة",
+        "daily_limit_banner": "تم الوصول إلى حد 20 رسالة اليوم",
+        "write_hint": "اكتب رسالتك...",
+        "write_hint_admin": "اكتب رسالة..."
     }
 }

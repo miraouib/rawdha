@@ -5,10 +5,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../services/student_absence_service.dart';
 import '../../../services/student_service.dart';
+import '../../../services/parent_message_service.dart';
 import '../../../core/widgets/manager_footer.dart';
 import '../../../core/helpers/date_helper.dart';
 import '../../../models/student_absence_model.dart';
-import '../../../models/student_model.dart';
 import '../../../models/student_model.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -90,6 +90,11 @@ class _ManagerDashboardScreenState extends ConsumerState<ManagerDashboardScreen>
             // NOUVEAU: Alerte dernière absence
             _LatestAbsenceAlert(),
             
+            const SizedBox(height: 12),
+
+            // Alerte nouveaux messages des parents
+            _UnreadMessagesAlert(),
+
             const SizedBox(height: 32),
 
             // Accès rapides
@@ -162,18 +167,25 @@ class _ManagerDashboardScreenState extends ConsumerState<ManagerDashboardScreen>
         onTap: () => context.pushNamed('hr_management'),
       ),
       _ActionData(
-        title: 'school.configuration'.tr(),
-        subtitle: 'school.config_desc'.tr(),
-        icon: Icons.settings,
-        color: Colors.blueGrey,
-        onTap: () => context.pushNamed('school_settings'),
-      ),
-      _ActionData(
         title: 'manager.actions.manage_absences'.tr(),
         subtitle: 'manager.actions.manage_absences_desc'.tr(),
         icon: Icons.notifications_active,
         color: Colors.orange,
         onTap: () => context.pushNamed('manager_absences'),
+      ),
+      _ActionData(
+        title: 'messages.dashboard_title'.tr(),
+        subtitle: 'messages.dashboard_subtitle'.tr(),
+        icon: Icons.message,
+        color: AppTheme.accentTeal,
+        onTap: () => context.pushNamed('admin_messages'),
+      ),
+       _ActionData(
+        title: 'school.configuration'.tr(),
+        subtitle: 'school.config_desc'.tr(),
+        icon: Icons.settings,
+        color: Colors.blueGrey,
+        onTap: () => context.pushNamed('school_settings'),
       ),
     ];
 
@@ -481,27 +493,122 @@ class _LatestAbsenceAlertState extends ConsumerState<_LatestAbsenceAlert> {
                             ),
                           ),
                           const SizedBox(height: 2),
-                          Text(
-                            '$studentName - ${'absence.causes.${absence.cause}'.tr()}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 13),
-                          ),
-                        ],
+                            Text(
+                              '$studentName - ${'absence.causes.${absence.cause}'.tr()}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 13),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      DateHelper.formatDateShort(context, absence.startDate),
-                      style: const TextStyle(fontSize: 11, color: AppTheme.textGray),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.arrow_forward_ios, size: 12, color: Colors.orange),
-                  ],
+                      const SizedBox(width: 8),
+                      Text(
+                        DateHelper.formatDateShort(context, absence.startDate),
+                        style: const TextStyle(fontSize: 11, color: AppTheme.textGray),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.arrow_forward_ios, size: 12, color: Colors.orange),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          );
+        },
+      );
+    }
+  }
+
+class _UnreadMessagesAlert extends ConsumerStatefulWidget {
+  const _UnreadMessagesAlert();
+
+  @override
+  ConsumerState<_UnreadMessagesAlert> createState() => _UnreadMessagesAlertState();
+}
+
+class _UnreadMessagesAlertState extends ConsumerState<_UnreadMessagesAlert> {
+  final ParentMessageService _messageService = ParentMessageService();
+  late Stream<int> _unreadCountStream;
+
+  @override
+  void initState() {
+    super.initState();
+    final rawdhaId = ref.read(currentRawdhaIdProvider) ?? '';
+    _unreadCountStream = _messageService.getUnreadCount(rawdhaId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<int>(
+      stream: _unreadCountStream,
+      builder: (context, snapshot) {
+        final count = snapshot.data ?? 0;
+        if (count == 0) return const SizedBox.shrink();
+
+        return InkWell(
+          onTap: () => context.pushNamed('admin_messages'),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryBlue.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.primaryBlue.withOpacity(0.3)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryBlue.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.message, color: AppTheme.primaryBlue, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Nouveaux messages',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.primaryBlue,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '$count message${count > 1 ? 's' : ''} non lu${count > 1 ? 's' : ''}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryBlue,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '$count',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(Icons.arrow_forward_ios, size: 12, color: AppTheme.primaryBlue),
+              ],
+            ),
+          ),
         );
       },
     );
